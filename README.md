@@ -11,6 +11,7 @@ js/layout.js         Header/footer theo vai trò: <body data-role="public|reside
 js/mock-data.js      Dữ liệu mẫu (cùng cấu trúc Firestore dự kiến)
 js/components.js     Thẻ voucher, popup mã ưu đãi, hộp xác nhận, toast
 js/charts.js         Cấu hình biểu đồ Chart.js dùng chung
+js/map.js            Sơ đồ khu dân cư + đường đi bộ + link chỉ đường (FR-3.6) dùng chung
 assets/img/          Ảnh minh họa đã nén (~70KB/ảnh, NFR-3)
 ```
 
@@ -23,7 +24,7 @@ assets/img/          Ảnh minh họa đã nén (~70KB/ảnh, NFR-3)
 | P-04 | Quên mật khẩu | `forgot-password.html` | `?sent=1` |
 | R-01 | Khám phá ưu đãi | `pages/resident/explore.html` | ngăn kéo tóm tắt khi rê chuột: `?hover=v1` · hiện hết 15 thẻ (bỏ nút Xem thêm): `?all=1` · lọc nhanh: `?quick=exp3` · bộ lọc trên điện thoại: `?filter=open` |
 | R-01b | Khám phá – chế độ Bản đồ (FR-3.6) | `pages/resident/explore-map.html` | chọn sẵn quán: `?shop=Phở Bò Gia Truyền` · nút "Danh sách \| Bản đồ" chuyển qua lại với R-01 |
-| R-02 | Chi tiết voucher | `pages/resident/voucher-detail.html` | `?id=v1` · popup mã: `?id=v1&code=1` · mở từ Ví: `&from=wallet` (dải ảnh chạy ngang tự tắt khi có `fx=off`) |
+| R-02 | Chi tiết voucher (có sơ đồ vị trí quán, phút đi bộ, Chỉ đường) | `pages/resident/voucher-detail.html` | `?id=v1` · popup mã: `?id=v1&code=1` · mở từ Ví: `&from=wallet` (dải ảnh chạy ngang tự tắt khi có `fx=off`) |
 | R-03 | Ví voucher (vé nằm ngang, "Bạn đã tiết kiệm được" FR-3.9; bấm dòng → chi tiết; mở sẵn chi tiết tiết kiệm `?savings=open`) | `pages/resident/wallet.html` | `?tab=saved|unused|used|expired` · popup đánh giá: `?tab=used&review=1` |
 | R-04 | Đánh giá của tôi | `pages/resident/my-reviews.html` | |
 | B-00/01 | Tổng quan đối tác | `pages/partner/dashboard.html` | chờ duyệt: `?pending=1` |
