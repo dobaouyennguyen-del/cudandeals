@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P-02 Đăng nhập – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-role="public" data-active="">
+<div id="cdd-header"></div>
+
+<!-- ============ P-02 · Đăng nhập ============
+  FR-1.1 Đăng nhập (email + mật khẩu) · FR-1.6 Tiếp tục với Google (chỉ cư dân ĐÃ đăng ký)
+  Hệ thống tự chuyển trang theo vai trò · Xem trạng thái email chưa đăng ký: login.html?google=new
+  Phase 3: Firebase Authentication + đọc users/{uid}.role
+========================================== -->
+<main class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-icon"><i class="bi bi-box-arrow-in-right"></i></div>
+    <h1 class="h3 fw-bold text-center mb-1">Đăng nhập</h1>
+    <p class="text-center text-muted-2 small-2 mb-4">Chưa có tài khoản? <a href="register.html" class="fw-semibold">Đăng ký ngay</a></p>
+    <div class="note note-info mb-3 d-none" id="needLogin"><i class="bi bi-info-circle"></i><span>Vui lòng đăng nhập để lưu và nhận mã ưu đãi.</span></div>
+    <form id="loginForm" novalidate>
+      <div class="mb-3"><label class="form-label" for="email">Email</label>
+        <input id="email" type="email" class="form-control" placeholder="email@gmail.com" required><div class="invalid-feedback">Vui lòng nhập email.</div></div>
+      <div class="mb-2"><label class="form-label" for="pass">Mật khẩu</label>
+        <div class="position-relative"><input id="pass" type="password" class="form-control pe-5" placeholder="Nhập mật khẩu" required>
+          <button type="button" class="icon-btn position-absolute top-50 end-0 translate-middle-y me-2" id="eye" aria-label="Hiện mật khẩu"><i class="bi bi-eye"></i></button></div></div>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="remember"><label class="form-check-label small-2" for="remember">Ghi nhớ đăng nhập</label></div>
+        <a href="forgot-password.html" class="small-2 fw-semibold">Quên mật khẩu?</a></div>
+      <div class="alert alert-danger small-2 py-2 d-none" id="err">Email hoặc mật khẩu không đúng.</div>
+      <button type="submit" class="btn btn-accent w-100" style="min-height:52px">Đăng nhập<i class="bi bi-arrow-right"></i></button>
+    </form>
+    <div class="divider-or">HOẶC</div>
+    <button type="button" class="btn btn-google w-100" id="googleBtn" style="min-height:52px"><i class="bi bi-google"></i>Tiếp tục với Google</button>
+    <p class="text-center small-2 text-muted-2 mt-2 mb-0">Dành cho cư dân đã đăng ký bằng địa chỉ Gmail.</p>
+    <div class="note note-warning mt-3 d-none" id="gNotFound"><i class="bi bi-person-exclamation"></i>
+      <div><b><span id="gMail"></span></b> chưa có tài khoản CuDanDeals. Vui lòng đăng ký trước, lần sau bạn có thể đăng nhập bằng Google.
+        <div class="mt-2"><a href="register.html?step=2&role=resident" class="btn btn-sm btn-accent px-3" id="gRegister">Đăng ký ngay<i class="bi bi-arrow-right"></i></a></div></div></div>
+    <p class="text-center small-2 text-muted-2 mt-3 mb-0"><i class="bi bi-shield-check me-1"></i>Hệ thống tự chuyển đến trang phù hợp với vai trò của bạn.</p>
+    <hr class="my-4">
+    <div class="small-2 text-muted-2 text-center mb-2">Tài khoản demo (để trình bày)</div>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a href="pages/resident/explore.html" class="btn btn-sm btn-light-primary"><i class="bi bi-house-heart"></i>Cư dân</a>
+      <a href="pages/partner/dashboard.html" class="btn btn-sm btn-light-primary"><i class="bi bi-shop"></i>Đối tác</a>
+      <a href="pages/admin/dashboard.html" class="btn btn-sm btn-light-primary"><i class="bi bi-shield-lock"></i>Ban quản lý</a>
+    </div>
+  </div>
+</main>
+
+<!-- Demo: mô phỏng cửa sổ chọn tài khoản Google (bản thật do Google/Firebase hiển thị) -->
+<div class="modal fade" id="gModal" tabindex="-1" aria-labelledby="gTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-sm">
+  <div class="modal-content code-modal">
+    <div class="text-center mb-3"><i class="bi bi-google fs-3"></i><h2 class="h6 fw-bold mt-2 mb-0" id="gTitle">Chọn tài khoản Google</h2><div class="small-2 text-muted-2">để tiếp tục vào CuDanDeals.vn</div></div>
+    <button class="g-acc" data-mail="hoanggiang@gmail.com" data-name="Hoàng Giang"><span class="cdd-avatar">HG</span><span class="text-start"><b>Hoàng Giang</b><span class="d-block small-2 text-muted-2">hoanggiang@gmail.com</span></span></button>
+    <button class="g-acc" data-mail="nguyenvana@gmail.com" data-name="Nguyễn Văn A"><span class="cdd-avatar" style="background:var(--accent)">NA</span><span class="text-start"><b>Nguyễn Văn A</b><span class="d-block small-2 text-muted-2">nguyenvana@gmail.com</span></span></button>
+    <div class="small-2 text-muted-2 text-center mt-2">Demo giao diện – bản thật do Google hiển thị</div>
+  </div>
+</div></div>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/mock-data.js"></script>
+<script src="js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('next')) $('needLogin').classList.remove('d-none');
+
+  // ---- FR-1.6: Tiếp tục với Google (chỉ đăng nhập, không đăng ký) ----
+  // Phase 3: signInWithPopup(auth, new GoogleAuthProvider()) → kiểm tra users/{uid} có tồn tại & role = resident
+  const REGISTERED = ['hoanggiang@gmail.com'];                  // demo: email đã đăng ký
+  function googleResult(mail) {
+    if (REGISTERED.includes(mail)) { location.href = 'pages/resident/explore.html'; return; }
+    $('gMail').textContent = mail;
+    $('gRegister').href = 'register.html?step=2&role=resident&email=' + encodeURIComponent(mail);
+    $('gNotFound').classList.remove('d-none');
+  }
+  $('googleBtn').onclick = () => bootstrap.Modal.getOrCreateInstance($('gModal')).show();
+  document.querySelectorAll('.g-acc').forEach(b => b.onclick = () => { bootstrap.Modal.getInstance($('gModal')).hide(); googleResult(b.dataset.mail); });
+  if (qs.get('google') === 'new') googleResult('nguyenvana@gmail.com');
+  $('eye').onclick = () => { const t = $('pass').type === 'password'; $('pass').type = t ? 'text' : 'password'; $('eye').innerHTML = `<i class="bi ${t ? 'bi-eye-slash' : 'bi-eye'}"></i>`; };
+  $('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault(); let ok = true;
+    ['email', 'pass'].forEach(id => { const bad = !$(id).value.trim(); $(id).classList.toggle('is-invalid', bad); if (bad) ok = false; });
+    if (!ok) return;
+    // Demo: chuyển trang theo vai trò dựa vào email (Phase 3: đọc role từ Firestore)
+    const em = $('email').value.toLowerCase();
+    location.href = em.includes('admin') ? 'pages/admin/dashboard.html' : em.includes('shop') || em.includes('doitac') ? 'pages/partner/dashboard.html' : 'pages/resident/explore.html';
+  });
+</script>
+</body>
+</html>

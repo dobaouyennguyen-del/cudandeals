@@ -1,0 +1,50 @@
+# CuDanDeals.vn – Frontend (Phase 2: giao diện)
+
+HTML + CSS + JavaScript + **Bootstrap 5** (đúng NFR-6). Dữ liệu hiện là **dữ liệu mẫu** (`js/mock-data.js`) — Phase 3 thay bằng Firebase.
+Mở file `.html` bằng Chrome để xem (cần Internet để tải Bootstrap, icon, font, Chart.js, qrcode.js từ CDN).
+**Khi chụp bằng html.to.design:** thêm `fx=off` vào link (VD `index.html?fx=off`, `wallet.html?tab=used&fx=off`) để tắt hiệu ứng hiện dần, tránh phần chưa cuộn tới bị trống.
+
+## Cấu trúc
+```
+css/style.css        Design tokens (xanh #2563EB, cam #EA580C, Be Vietnam Pro) + thành phần dùng chung
+js/layout.js         Header/footer theo vai trò: <body data-role="public|resident|partner|admin" data-active="...">
+js/mock-data.js      Dữ liệu mẫu (cùng cấu trúc Firestore dự kiến)
+js/components.js     Thẻ voucher, popup mã ưu đãi, hộp xác nhận, toast
+js/charts.js         Cấu hình biểu đồ Chart.js dùng chung
+assets/img/          Ảnh minh họa đã nén (~70KB/ảnh, NFR-3)
+```
+
+## Danh sách màn hình (27 màn + popup)
+| Mã | Màn | File | Trạng thái để chụp (html.to.design) |
+|---|---|---|---|
+| P-01 | Trang chủ | `index.html` | |
+| P-02 | Đăng nhập | `login.html` | `?next=deal` (yêu cầu đăng nhập) · `?google=new` (email Google chưa đăng ký) |
+| P-03 | Đăng ký | `register.html` | `?step=2&role=resident` · `?step=2&role=partner` |
+| P-04 | Quên mật khẩu | `forgot-password.html` | `?sent=1` |
+| R-01 | Khám phá ưu đãi | `pages/resident/explore.html` | |
+| R-02 | Chi tiết voucher | `pages/resident/voucher-detail.html` | `?id=v1` · popup mã: `?id=v1&code=1` |
+| R-03 | Ví voucher | `pages/resident/wallet.html` | `?tab=saved|unused|used|expired` · popup đánh giá: `?tab=used&review=1` |
+| R-04 | Đánh giá của tôi | `pages/resident/my-reviews.html` | |
+| B-00/01 | Tổng quan đối tác | `pages/partner/dashboard.html` | chờ duyệt: `?pending=1` |
+| B-02 | Hồ sơ cửa hàng | `pages/partner/store-profile.html` | |
+| B-03 | Danh sách voucher | `pages/partner/voucher-list.html` | `?tab=pending|active|paused|soldout|expired|removed` |
+| B-04 | Tạo voucher (AI) | `pages/partner/create-voucher.html` | bấm "Tự động điền form" |
+| B-05 | Xác nhận mã | `pages/partner/confirm-redeem.html` | `?result=ok` · `?result=fail` |
+| B-06 | Thống kê hiệu quả | `pages/partner/statistics.html` | |
+| B-07 | Đánh giá từ cư dân | `pages/partner/reviews.html` | |
+| A-01 | Tổng quan BQL | `pages/admin/dashboard.html` | |
+| A-02 | Quản lý cư dân | `pages/admin/residents.html` | |
+| A-03 | Quản lý & duyệt đối tác | `pages/admin/partners.html` | `?tab=pending` · hồ sơ: `?review=pt3` |
+| A-04 | Duyệt / gỡ voucher | `pages/admin/approve-vouchers.html` | |
+| A-05 | Báo cáo & thống kê | `pages/admin/reports.html` | |
+| A-06 | Quản lý khu dân cư | `pages/admin/residential-areas.html` | |
+| A-07 | Quản lý ngành hàng | `pages/admin/categories.html` | |
+| C-01 | Hồ sơ cá nhân / Tài khoản & mật khẩu | `pages/common/profile.html` | `?role=partner|admin` · popup đổi mật khẩu: `?pw=1` |
+| C-02 | Thông báo | `pages/common/notifications.html` | `?role=partner|admin` |
+
+## Mã demo ở B-05
+`CDD-HG2026-001` hợp lệ (xác nhận lần 2 sẽ báo đã dùng) · `CDD-MT2026-002` đã dùng · `CDD-HG2026-009` hết hạn
+
+## Việc của Phase 3
+Firebase Auth (đăng ký/đăng nhập/quên mật khẩu), Firestore thay `mock-data.js`, phân quyền theo vai trò (`js/auth.js`),
+Cloud Function gọi AI cho FR-5.1 (không để API key ở trình duyệt – NFR-4), quét QR bằng camera (FR-2.8).

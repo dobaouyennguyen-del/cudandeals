@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>P-01 Trang chủ – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .hero { padding: 56px 0 40px; overflow-x: clip; }
+    .hero h1 { font-size: 44px; font-weight: 800; line-height: 1.15; letter-spacing: -.02em; }
+    .hero h1 span { color: var(--primary); }
+    .hero-visual { position: relative; }
+    .hero-img { border-radius: 20px; overflow: hidden; aspect-ratio: 4/3; box-shadow: 0 20px 40px rgba(15,23,42,.15); position: relative; z-index: 1; background: #0f172a; }
+    .hero-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.2s ease; }
+    .hero-img img.on { opacity: 1; animation: kenburns 9s ease-out both; }
+    /* Thẻ nổi */
+    .float-chip { position: absolute; left: -20px; bottom: 28px; z-index: 2; background: #fff; border-radius: 14px; padding: 10px 16px; box-shadow: 0 12px 28px rgba(15,23,42,.18); font-size: 13px; display: flex; gap: 10px; align-items: center; min-width: 250px; animation: floatY 4s ease-in-out infinite; }
+    .live-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--success); flex-shrink: 0; box-shadow: 0 0 0 0 rgba(22,163,74,.5); animation: pulse 1.8s infinite; }
+    .ticker { overflow: hidden; height: 38px; }
+    .ticker #tick { transition: transform .45s ease, opacity .45s ease; }
+    .ticker #tick.out { transform: translateY(-100%); opacity: 0; }
+    .ticker #tick.pre { transform: translateY(100%); opacity: 0; transition: none; }
+    .float-badge { position: absolute; right: -16px; top: 26px; z-index: 2; background: var(--accent); color: #fff; border-radius: 14px; padding: 10px 14px; display: flex; gap: 10px; align-items: center; box-shadow: 0 12px 28px rgba(234,88,12,.35); animation: floatY 4.6s ease-in-out .8s infinite; }
+    .float-badge i { font-size: 22px; }
+    .float-badge b { display: block; font-size: 15px; line-height: 1.2; } .float-badge span { font-size: 12px; opacity: .9; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(40px); opacity: .55; z-index: 0; }
+    .blob.b1 { width: 220px; height: 220px; background: #93C5FD; top: -40px; left: -50px; animation: drift 12s ease-in-out infinite alternate; }
+    .blob.b2 { width: 200px; height: 200px; background: #FDBA74; bottom: -40px; right: -30px; animation: drift 14s ease-in-out infinite alternate-reverse; }
+    /* Chữ & nút */
+    .hero-in { animation: heroUp .8s cubic-bezier(.2,.7,.2,1) var(--d, 0s) both; }
+    .hero h1 .mark { background: linear-gradient(transparent 70%, rgba(234,88,12,.2) 70%, rgba(234,88,12,.2) 92%, transparent 92%) no-repeat 0 0 / 0% 100%; padding: 0 2px; -webkit-box-decoration-break: clone; box-decoration-break: clone; animation: markIn .9s ease 1s forwards; }
+    .btn-shine { position: relative; overflow: hidden; }
+    .btn-shine::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent); transform: skewX(-20deg); animation: shine 4s ease-in-out 1.6s infinite; }
+    @keyframes heroUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    @keyframes markIn { to { background-size: 100% 100%; } }
+    @keyframes kenburns { from { transform: scale(1.12); } to { transform: scale(1); } }
+    @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(22,163,74,.5); } 70% { box-shadow: 0 0 0 10px rgba(22,163,74,0); } 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); } }
+    @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(30px, 20px) scale(1.1); } }
+    @keyframes shine { 0% { left: -60%; } 30%, 100% { left: 130%; } }
+    .no-fx .hero *, .no-fx .hero *::after { animation: none !important; }
+    .no-fx .hero h1 .mark { background-size: 100% 100%; }
+    @media (prefers-reduced-motion: reduce) { .hero h1 .mark { background-size: 100% 100%; } }
+    @media (max-width: 767.98px) { .float-chip { left: 10px; bottom: 12px; min-width: 0; } .float-badge { right: 10px; top: 12px; } .blob { display: none; } }
+    .trust { background: var(--primary); border-radius: 16px; color: #fff; padding: 24px; }
+    .trust .n { font-size: 30px; font-weight: 800; } .trust .l { opacity: .85; font-size: 14px; }
+    .chip-cat { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px; color: var(--text); text-decoration: none; display: inline-flex; gap: 8px; align-items: center; }
+    .chip-cat:hover { border-color: var(--primary); color: var(--primary); }
+    .chip-cat.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    /* Băng chuyền ưu đãi (trượt ngang) */
+    .car-wrap { position: relative; }
+    .car-track { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 6px 4px 18px; scrollbar-width: none; }
+    .car-track::-webkit-scrollbar { display: none; }
+    .car-item { flex: 0 0 calc((100% - 48px) / 3); scroll-snap-align: start; }
+    .car-btn { position: absolute; top: 38%; z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: #fff; color: var(--text); box-shadow: var(--shadow-hover); display: grid; place-items: center; font-size: 18px; transition: transform .15s, background-color .15s; }
+    .car-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: scale(1.06); }
+    .car-btn.prev { left: -18px; } .car-btn.next { right: -18px; }
+    .car-dots { display: flex; justify-content: center; gap: 8px; }
+    .car-dots button { width: 8px; height: 8px; border-radius: 999px; border: 0; background: #CBD5E1; padding: 0; transition: width .3s, background-color .3s; }
+    .car-dots button.on { width: 24px; background: var(--primary); }
+    @media (max-width: 991.98px) { .car-item { flex-basis: calc((100% - 24px) / 2); } }
+    @media (max-width: 575.98px) { .car-item { flex-basis: 85%; } .car-btn { display: none; } .car-track { gap: 16px; } }
+    .sec { padding: 56px 0 0; } .sec-head { text-align: center; margin-bottom: 28px; }
+    .sec-head .eyebrow { font-size: 12px; font-weight: 700; color: var(--primary); letter-spacing: .08em; text-transform: uppercase; }
+    .sec-head h2 { font-size: 30px; font-weight: 800; margin: 6px 0; }
+    .step-n { font-size: 40px; font-weight: 800; color: var(--primary-soft); line-height: 1; }
+    .partner-cta { background: linear-gradient(135deg, #1D4ED8, #2563EB); border-radius: 20px; color: #fff; padding: 48px 32px; }
+    .partner-cta h2 { color: #fff; font-weight: 800; }
+    .pc-item { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 14px; padding: 20px; height: 100%; }
+    html { scroll-behavior: smooth; }
+    main section[id] { scroll-margin-top: 80px; }
+    .testi { height: 100%; display: flex; flex-direction: column; }
+    .testi q { font-style: italic; color: var(--text); flex: 1; quotes: "“" "”"; }
+    .testi .who { display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 16px; }
+    .accordion-button { font-weight: 600; } .accordion-button:not(.collapsed) { background: var(--primary-soft); color: var(--primary); box-shadow: none; }
+    @media (max-width: 767.98px) { .hero h1 { font-size: 32px; } .sec-head h2 { font-size: 24px; } }
+  </style>
+</head>
+<body data-role="public" data-active="home">
+<div id="cdd-header"></div>
+
+<!-- ============ P-01 · Trang chủ (landing page) ============
+  Giới thiệu nền tảng cho khách chưa đăng nhập. Bấm Lưu / Nhận mã → yêu cầu đăng nhập.
+========================================================= -->
+<main class="container container-cdd">
+  <script>
+    // Tắt hiệu ứng ngay từ đầu nếu chụp trang (?fx=off) – tránh nháy hình
+    if (new URLSearchParams(location.search).get('fx') === 'off') document.documentElement.classList.add('no-fx');
+  </script>
+  <section class="hero row g-4 g-lg-5 align-items-center" id="top">
+    <div class="col-lg-6">
+      <span class="tag tag-primary mb-3 hero-in" style="--d:0s"><i class="bi bi-patch-check"></i>Ưu đãi được Ban quản lý kiểm duyệt</span>
+      <h1 class="hero-in" style="--d:.12s">Ưu đãi từ cửa hàng gần nhà, <span class="mark">dành riêng cho cư dân</span></h1>
+      <p class="fs-5 text-muted-2 my-4 hero-in" style="--d:.24s">Nhận mã giảm giá từ quán cà phê, nhà hàng, spa, gym… ngay trong khu dân cư của bạn. Miễn phí, dùng ngay.</p>
+      <div class="d-flex flex-wrap gap-3 hero-in" style="--d:.36s">
+        <a href="register.html" class="btn btn-accent btn-lg px-4 btn-shine">Đăng ký cư dân<i class="bi bi-arrow-right"></i></a>
+        <a href="#uu-dai" class="btn btn-outline-primary btn-lg px-4">Xem ưu đãi</a>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="hero-visual hero-in" style="--d:.2s">
+        <span class="blob b1" aria-hidden="true"></span><span class="blob b2" aria-hidden="true"></span>
+        <div class="hero-img" id="heroSlides">
+          <img src="assets/img/coffee-seating.jpg" alt="Cư dân tại quán cà phê trong khu" class="on">
+          <img src="assets/img/pho.jpg" alt="Món phở tại quán trong khu dân cư">
+          <img src="assets/img/spa.jpg" alt="Phòng spa gần khu dân cư">
+        </div>
+        <div class="float-chip chip-live" aria-live="polite">
+          <span class="live-dot"></span>
+          <div class="ticker"><div id="tick"><span class="text-muted-2">Vừa nhận mã</span><div class="fw-bold">Sunrise Coffee & Tea · Giảm 30%</div></div></div>
+        </div>
+        <div class="float-badge"><i class="bi bi-lightning-charge-fill"></i><div><b>Giảm đến 50%</b><span>Ưu đãi riêng cư dân</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust"><div class="row g-3 text-center">
+    <div class="col-6 col-md-3"><div class="n">2.700+</div><div class="l">Cư dân đang dùng</div></div>
+    <div class="col-6 col-md-3"><div class="n">45</div><div class="l">Cửa hàng đối tác</div></div>
+    <div class="col-6 col-md-3"><div class="n">3</div><div class="l">Khu dân cư</div></div>
+    <div class="col-6 col-md-3"><div class="n">890+</div><div class="l">Mã đã được dùng</div></div>
+  </div></section>
+
+  <section class="sec" id="uu-dai">
+    <div class="sec-head"><div class="eyebrow">Ưu đãi nổi bật</div><h2>Đang có gì quanh khu bạn?</h2><p class="text-muted-2">Một vài ưu đãi đang chạy tại Khu dân cư Sunrise.</p></div>
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4" id="cats"></div>
+    <div class="car-wrap" id="carousel" aria-roledescription="carousel" aria-label="Ưu đãi nổi bật">
+      <button class="car-btn prev" id="carPrev" aria-label="Ưu đãi trước"><i class="bi bi-chevron-left"></i></button>
+      <div class="car-track" id="featured" tabindex="0"></div>
+      <button class="car-btn next" id="carNext" aria-label="Ưu đãi tiếp theo"><i class="bi bi-chevron-right"></i></button>
+    </div>
+    <div class="car-dots" id="carDots"></div>
+    <div class="text-center mt-4"><p class="text-muted-2 small-2 mb-2">Đăng nhập để lưu voucher, nhận mã và xem ưu đãi riêng của khu bạn.</p>
+      <a href="login.html" class="btn btn-accent px-4">Đăng nhập để nhận ưu đãi<i class="bi bi-arrow-right"></i></a></div>
+  </section>
+
+  <section class="sec" id="cach-dung">
+    <div class="sec-head"><div class="eyebrow">Cách sử dụng</div><h2>3 bước nhận ưu đãi</h2></div>
+    <div class="row g-4">
+      <div class="col-md-4"><div class="cdd-card h-100"><div class="d-flex justify-content-between"><span class="kpi"><span class="ic ic-blue"><i class="bi bi-person-plus"></i></span></span><span class="step-n">01</span></div><h3 class="h5 fw-bold mt-3">Đăng ký & chọn khu</h3><p class="text-muted-2 mb-0">Tạo tài khoản, chọn khu dân cư bạn đang sống. Không cần chờ duyệt.</p></div></div>
+      <div class="col-md-4"><div class="cdd-card h-100"><div class="d-flex justify-content-between"><span class="kpi"><span class="ic ic-orange"><i class="bi bi-ticket-perforated"></i></span></span><span class="step-n">02</span></div><h3 class="h5 fw-bold mt-3">Nhận mã ưu đãi</h3><p class="text-muted-2 mb-0">Chọn voucher thích hợp, bấm Nhận mã. Mã được lưu trong Ví voucher.</p></div></div>
+      <div class="col-md-4"><div class="cdd-card h-100"><div class="d-flex justify-content-between"><span class="kpi"><span class="ic ic-green"><i class="bi bi-qr-code"></i></span></span><span class="step-n">03</span></div><h3 class="h5 fw-bold mt-3">Đưa mã tại cửa hàng</h3><p class="text-muted-2 mb-0">Đưa mã hoặc mã QR cho nhân viên khi thanh toán để được áp dụng.</p></div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="danh-gia">
+    <div class="sec-head"><div class="eyebrow">Cư dân nói gì</div><h2>Hàng xóm của bạn đã dùng thử</h2><p class="text-muted-2">Đánh giá từ cư dân sau khi dùng voucher tại cửa hàng.</p></div>
+    <div class="row g-4" id="testimonials"></div>
+  </section>
+
+  <section class="sec" id="doi-tac">
+    <div class="partner-cta">
+      <div class="text-center mb-4"><h2>Bạn có cửa hàng gần khu dân cư?</h2><p class="opacity-75 mb-0">Tiếp cận đúng cư dân sống quanh cửa hàng — miễn phí.</p></div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="pc-item"><i class="bi bi-geo-alt fs-3"></i><h3 class="h6 fw-bold mt-2 text-white">Đúng khách hàng gần</h3><p class="small-2 opacity-75 mb-0">Chọn voucher công khai hoặc chỉ dành cho một khu dân cư.</p></div></div>
+        <div class="col-md-4"><div class="pc-item"><i class="bi bi-stars fs-3"></i><h3 class="h6 fw-bold mt-2 text-white">Tạo voucher nhanh với AI</h3><p class="small-2 opacity-75 mb-0">Dán nội dung tờ rơi, AI điền sẵn thông tin voucher cho bạn.</p></div></div>
+        <div class="col-md-4"><div class="pc-item"><i class="bi bi-shield-check fs-3"></i><h3 class="h6 fw-bold mt-2 text-white">Được Ban quản lý xác thực</h3><p class="small-2 opacity-75 mb-0">Cư dân tin tưởng hơn vì cửa hàng và ưu đãi đều được kiểm duyệt.</p></div></div>
+      </div>
+      <div class="text-center"><a href="register.html#doi-tac" class="btn btn-accent btn-lg px-4">Đăng ký làm đối tác<i class="bi bi-arrow-right"></i></a></div>
+    </div>
+  </section>
+
+  <section class="sec" id="hoi-dap">
+    <div class="sec-head"><div class="eyebrow">Giải đáp</div><h2>Câu hỏi thường gặp</h2></div>
+    <div class="accordion mx-auto" id="faq" style="max-width:800px">
+      <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#f1">Tôi có cần chờ duyệt để dùng ưu đãi không?</button></h3>
+        <div id="f1" class="accordion-collapse collapse show" data-bs-parent="#faq"><div class="accordion-body">Không. Bạn chỉ cần đăng ký và chọn khu dân cư nơi bạn sống, sau đó có thể nhận mã ngay.</div></div></div>
+      <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f2">Nhận voucher có mất phí không?</button></h3>
+        <div id="f2" class="accordion-collapse collapse" data-bs-parent="#faq"><div class="accordion-body">Hoàn toàn miễn phí. CuDanDeals chỉ là nơi trung gian cấp mã ưu đãi, không thu tiền của cư dân.</div></div></div>
+      <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f3">Vì sao tôi không thấy một số voucher?</button></h3>
+        <div id="f3" class="accordion-collapse collapse" data-bs-parent="#faq"><div class="accordion-body">Một số voucher chỉ dành riêng cho cư dân của một khu dân cư. Bạn sẽ thấy voucher công khai và voucher riêng của khu mình.</div></div></div>
+      <div class="accordion-item"><h3 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#f4">Cửa hàng của tôi muốn tham gia thì làm sao?</button></h3>
+        <div id="f4" class="accordion-collapse collapse" data-bs-parent="#faq"><div class="accordion-body">Đăng ký tài khoản đối tác và điền thông tin cửa hàng. Sau khi Ban quản lý duyệt hồ sơ, bạn có thể tạo voucher.</div></div></div>
+    </div>
+  </section>
+</main>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/mock-data.js"></script>
+<script src="js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  // ---- Hero: ảnh luân phiên & dòng "vừa nhận mã" (demo; Phase 3 lấy từ lượt nhận mã gần nhất) ----
+  (function heroFx() {
+    const off = document.documentElement.classList.contains('no-fx') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (off) return;
+    const imgs = [...document.querySelectorAll('#heroSlides img')]; let k = 0;
+    setInterval(() => { if (document.hidden) return; imgs[k].classList.remove('on'); k = (k + 1) % imgs.length; imgs[k].classList.add('on'); }, 6000);
+    const NAMES = ['Hoàng G.', 'Minh T.', 'Thanh H.', 'Văn N.', 'Lan N.'];
+    const tick = $('tick'); let n = 0;
+    setInterval(() => {
+      if (document.hidden) return;
+      const v = D.vouchers[++n % D.vouchers.length];
+      tick.classList.add('out');
+      setTimeout(() => {
+        tick.innerHTML = `<span class="text-muted-2">${NAMES[n % NAMES.length]} vừa nhận mã</span><div class="fw-bold">${v.shop} · ${v.badge.charAt(0) + v.badge.slice(1).toLowerCase()}</div>`;
+        tick.classList.remove('out'); tick.classList.add('pre'); void tick.offsetWidth; tick.classList.remove('pre');
+      }, 450);
+    }, 3200);
+  })();
+
+  // ---- Ưu đãi nổi bật: băng chuyền trượt ngang, tự chạy, lọc theo ngành hàng ----
+  // Khách chưa đăng nhập: thẻ chỉ để xem, không có nút Lưu / Nhận mã
+  const track = $('featured'), GAP = () => parseFloat(getComputedStyle(track).columnGap) || 24;
+  let cat = 'all', timer = null, paused = false;
+  $('cats').innerHTML = `<button class="chip-cat active" data-cat="all"><i class="bi bi-grid"></i>Tất cả</button>` +
+    D.categories.filter(c => D.vouchers.some(v => v.cat === c.id)).map(c => `<button class="chip-cat" data-cat="${c.id}"><i class="bi ${c.icon}"></i>${c.name}</button>`).join('');
+  const step = () => { const it = track.querySelector('.car-item'); return it ? it.offsetWidth + GAP() : 0; };
+  const visible = () => Math.max(1, Math.round(track.clientWidth / step()));
+  function renderCarousel() {
+    const list = D.vouchers.filter(v => cat === 'all' || v.cat === cat);
+    track.innerHTML = list.map(v => `<div class="car-item">${CDD.voucherCard(v, { guest: true })}</div>`).join('');
+    track.scrollTo({ left: 0, behavior: 'auto' }); drawDots();
+  }
+  function drawDots() {
+    const n = Math.max(1, track.children.length - visible() + 1);
+    $('carDots').innerHTML = n > 1 ? Array.from({ length: n }, (_, i) => `<button aria-label="Đến nhóm ưu đãi ${i + 1}" data-i="${i}"></button>`).join('') : '';
+    updateDots();
+  }
+  function updateDots() {
+    const i = Math.round(track.scrollLeft / (step() || 1));
+    [...$('carDots').children].forEach((d, k) => d.classList.toggle('on', k === Math.min(i, $('carDots').children.length - 1)));
+  }
+  function go(dir) {
+    const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 5;
+    if (dir > 0 && atEnd) track.scrollTo({ left: 0 });                    // hết thì quay lại đầu
+    else if (dir < 0 && track.scrollLeft <= 5) track.scrollTo({ left: track.scrollWidth });
+    else track.scrollBy({ left: dir * step() });
+  }
+  $('carPrev').onclick = () => go(-1); $('carNext').onclick = () => go(1);
+  $('carDots').onclick = (e) => { if (e.target.dataset.i) track.scrollTo({ left: e.target.dataset.i * step() }); };
+  track.addEventListener('scroll', () => requestAnimationFrame(updateDots), { passive: true });
+  track.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1); });
+  $('cats').onclick = (e) => { const b = e.target.closest('.chip-cat'); if (!b) return;
+    cat = b.dataset.cat; document.querySelectorAll('.chip-cat').forEach(c => c.classList.toggle('active', c === b)); renderCarousel(); };
+  // Tự chạy mỗi 3,5 giây; dừng khi rê chuột / chạm / focus. Không tự chạy nếu bật "giảm chuyển động" hoặc ?fx=off
+  const noMotion = matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchParams(location.search).get('fx') === 'off';
+  ['mouseenter', 'focusin', 'touchstart'].forEach(ev => $('carousel').addEventListener(ev, () => paused = true, { passive: true }));
+  ['mouseleave', 'focusout'].forEach(ev => $('carousel').addEventListener(ev, () => paused = false));
+  if (!noMotion) timer = setInterval(() => { if (!paused && !document.hidden) go(1); }, 3500);
+  window.addEventListener('resize', drawDots);
+  renderCarousel();
+  const TESTI = [
+    { name: 'Nguyễn Thanh Tùng', initials: 'NT', area: 'Khu dân cư Sunrise', shop: 'Sunrise Coffee & Tea', stars: 5, text: 'Voucher cà phê ngay dưới sảnh, sáng nào cũng ghé. Nhận mã trên điện thoại, đưa nhân viên quét là xong.' },
+    { name: 'Trần Mai Hương', initials: 'MH', area: 'Khu dân cư Green Park', shop: 'GreenMart Siêu Thị Sạch', stars: 5, text: 'Đăng ký chọn khu là dùng được ngay, không phải chờ duyệt. Đi chợ ở siêu thị mini trong khu tiết kiệm được kha khá.' },
+    { name: 'Lê Hoàng Nam', initials: 'HN', area: 'Khu dân cư Sunrise', shop: 'An Nhiên Spa', stars: 4, text: 'Thích nhất là ưu đãi đều được Ban quản lý duyệt nên yên tâm, cửa hàng áp dụng đúng như mô tả.' },
+  ];
+  $('testimonials').innerHTML = TESTI.map(t => `<div class="col-md-4"><div class="cdd-card testi">
+    <div class="d-flex justify-content-between align-items-center mb-2"><span class="rating fs-6">${CDD.stars(t.stars)}</span><span class="small-2 text-success fw-semibold"><i class="bi bi-check2-circle me-1"></i>Đã dùng voucher</span></div>
+    <q>${t.text}</q>
+    <div class="who"><span class="cdd-avatar" style="background:#E0E7FF;color:var(--primary)">${t.initials}</span>
+      <div class="flex-fill"><b>${t.name}</b><div class="small-2 text-muted-2">${t.area} · tại ${t.shop}</div></div></div>
+  </div></div>`).join('');
+</script>
+</body>
+</html>
