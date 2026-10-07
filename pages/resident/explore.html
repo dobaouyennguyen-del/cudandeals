@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>R-01 Khám phá ưu đãi – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .filter-card { position: sticky; top: 88px; }
+    .area-box { background: var(--primary-soft); border-radius: 10px; padding: 12px 14px; font-weight: 600; color: var(--primary); display: flex; gap: 8px; align-items: center; }
+    .cat-list .form-check { padding: 6px 0 6px 1.8em; }
+    .cat-list .form-check-label { display: flex; gap: 8px; align-items: center; width: 100%; }
+    .search-lg .form-control { padding-left: 48px; background: #fff; }
+    .search-lg .bi-search { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    .empty { text-align: center; padding: 48px 16px; color: var(--muted); }
+  </style>
+</head>
+<body data-role="resident" data-active="explore">
+<div id="cdd-header"></div>
+
+<!-- ============ R-01 · Khám phá ưu đãi ============
+  FR-3.1 Danh sách deal công khai + riêng khu của cư dân · FR-3.5 Tìm kiếm theo từ khóa
+  FR-3.3 Lưu · FR-3.4 Nhận mã
+================================================== -->
+<main class="container container-cdd">
+  <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+      <h1>Ưu đãi dành cho bạn</h1>
+      <p>Voucher công khai và voucher riêng của <b>Khu dân cư Sunrise</b>.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Bộ lọc -->
+    <aside class="col-lg-3">
+      <button class="btn btn-outline-primary w-100 d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-expanded="false" aria-controls="filters"><i class="bi bi-funnel"></i>Bộ lọc ngành hàng</button>
+      <div class="collapse d-lg-block mt-3 mt-lg-0" id="filters">
+      <div class="cdd-card filter-card">
+        <div class="small-2 fw-bold text-muted-2 text-uppercase mb-2">Khu dân cư của bạn</div>
+        <div class="area-box mb-1"><i class="bi bi-buildings"></i>Khu dân cư Sunrise</div>
+        <a href="../common/profile.html" class="small-2">Đổi khu trong hồ sơ</a>
+        <hr>
+        <div class="small-2 fw-bold text-muted-2 text-uppercase mb-2">Ngành hàng</div>
+        <div class="cat-list" id="catList"></div>
+        <button class="btn btn-outline-primary w-100 mt-3" id="clearFilter">Xóa bộ lọc</button>
+      </div>
+      </div>
+    </aside>
+
+    <!-- Danh sách -->
+    <section class="col-lg-9">
+      <div class="position-relative search-lg mb-3">
+        <i class="bi bi-search"></i>
+        <input id="search" class="form-control" placeholder="Tìm theo tên quán, món ăn hoặc dịch vụ..." aria-label="Tìm kiếm ưu đãi">
+      </div>
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <div class="pill-tabs" id="scopeTabs">
+          <button class="pill active" data-scope="all">Tất cả <span class="n" data-n="all"></span></button>
+          <button class="pill" data-scope="area"><i class="bi bi-buildings"></i>Riêng khu Sunrise <span class="n" data-n="area"></span></button>
+          <button class="pill" data-scope="public"><i class="bi bi-globe2"></i>Công khai <span class="n" data-n="public"></span></button>
+        </div>
+        <select class="form-select w-auto" id="sort" style="min-height:44px" aria-label="Sắp xếp">
+          <option value="new">Mới nhất</option>
+          <option value="end">Sắp hết hạn</option>
+          <option value="rating">Đánh giá cao</option>
+        </select>
+      </div>
+
+      <div class="row g-4" id="grid"></div>
+      <div class="empty d-none" id="empty"><i class="bi bi-search fs-1 d-block mb-2"></i>Không tìm thấy ưu đãi phù hợp. Thử từ khóa khác nhé.</div>
+
+      <nav class="d-flex justify-content-center mt-4" aria-label="Phân trang">
+        <ul class="pagination">
+          <li class="page-item disabled"><a class="page-link" href="#">‹</a></li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-item"><a class="page-link" href="#">›</a></li>
+        </ul>
+      </nav>
+    </section>
+  </div>
+</main>
+
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  const state = { scope: 'all', cats: new Set(), q: '', sort: 'new' };
+
+  $('catList').innerHTML = D.categories.map(c => `
+    <div class="form-check"><input class="form-check-input" type="checkbox" value="${c.id}" id="c-${c.id}">
+      <label class="form-check-label" for="c-${c.id}"><i class="bi ${c.icon} text-muted-2"></i>${c.name}</label></div>`).join('');
+
+  // Bỏ dấu tiếng Việt để tìm kiếm dễ hơn (FR-3.5: so khớp chuỗi, không cần AI)
+  const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+
+  function render() {
+    // FR-3.1: chỉ hiện deal công khai + deal riêng khu của cư dân (dữ liệu mẫu đều thuộc khu Sunrise)
+    let list = D.vouchers.filter(v =>
+      (state.cats.size === 0 || state.cats.has(v.cat)) &&
+      (!state.q || norm(v.title + ' ' + v.shop).includes(norm(state.q))));
+    ['all', 'area', 'public'].forEach(s => document.querySelector(`[data-n=${s}]`).textContent =
+      s === 'all' ? list.length : list.filter(v => v.scope === s).length);
+    if (state.scope !== 'all') list = list.filter(v => v.scope === state.scope);
+    if (state.sort === 'end') list.sort((a, b) => a.daysLeft - b.daysLeft);
+    if (state.sort === 'rating') list.sort((a, b) => b.rating - a.rating);
+    $('grid').innerHTML = list.map(v => `<div class="col-md-6 col-xl-4">${CDD.voucherCard(v)}</div>`).join('');
+    $('empty').classList.toggle('d-none', list.length > 0);
+  }
+
+  $('scopeTabs').addEventListener('click', (e) => {
+    const b = e.target.closest('.pill'); if (!b) return;
+    document.querySelectorAll('#scopeTabs .pill').forEach(p => p.classList.toggle('active', p === b));
+    state.scope = b.dataset.scope; render();
+  });
+  $('catList').addEventListener('change', (e) => { e.target.checked ? state.cats.add(e.target.value) : state.cats.delete(e.target.value); render(); });
+  $('search').addEventListener('input', (e) => { state.q = e.target.value; render(); });
+  $('sort').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
+  $('clearFilter').addEventListener('click', () => { state.cats.clear(); document.querySelectorAll('#catList input').forEach(i => i.checked = false); render(); });
+  // Khung chờ tải trong lúc lấy dữ liệu (Phase 3: thay setTimeout bằng truy vấn Firestore)
+  CDD.skeleton($('grid'), 6); setTimeout(render, 500);
+</script>
+</body>
+</html>

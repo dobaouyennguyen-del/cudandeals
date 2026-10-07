@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C-01 Tài khoản – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .avatar-lg { width: 80px; height: 80px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 28px; font-weight: 700; display: grid; place-items: center; position: relative; flex-shrink: 0; }
+    .avatar-lg .cam { position: absolute; right: -4px; bottom: -4px; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: var(--primary); border: 2px solid var(--primary-soft); display: grid; place-items: center; font-size: 13px; cursor: pointer; }
+    .set-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0; }
+    .set-row + .set-row { border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body data-role="resident" data-active="">
+<div id="cdd-header"></div>
+
+<script>
+  // Trang dùng chung cho 3 vai trò: ?role=resident | partner | admin (Phase 3: lấy từ tài khoản đăng nhập)
+  document.body.dataset.role = new URLSearchParams(location.search).get('role') || 'resident';
+</script>
+<!-- ============ C-01 · Tài khoản & mật khẩu (dùng chung 3 vai trò) ============
+  Sửa bản ghi users/{uid} của CHÍNH người đăng nhập (thông tin cửa hàng nằm ở B-02 – partners)
+  FR-1.4 Cập nhật hồ sơ: họ tên, SĐT, ảnh đại diện · FR-1.3 Đổi mật khẩu · FR-6.1 Thông báo trong app
+  Mở sẵn popup đổi mật khẩu: profile.html?pw=1
+=========================================================================== -->
+<main class="container container-cdd" style="max-width:760px">
+  <div class="page-head"><h1 id="pgTitle">Hồ sơ cá nhân</h1><p id="pgSub">Thông tin tài khoản của bạn.</p></div>
+
+  <form class="cdd-card" id="infoForm" novalidate>
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div class="avatar-lg" id="av"><span id="avTxt">HG</span><label class="cam" title="Đổi ảnh đại diện"><input type="file" accept="image/*" hidden><i class="bi bi-camera"></i></label></div>
+      <div><div class="fw-bold fs-5" id="pName"></div><span class="tag tag-primary mt-1" id="pRole"></span></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-sm-7"><label class="form-label" for="fName">Họ và tên <span class="req">*</span></label><input id="fName" class="form-control" required><div class="invalid-feedback">Vui lòng nhập họ tên.</div></div>
+      <div class="col-sm-5"><label class="form-label" for="fPhone">Số điện thoại <span class="req d-none" id="phoneReq">*</span></label><input id="fPhone" type="tel" class="form-control"><div class="invalid-feedback">Vui lòng nhập số điện thoại.</div></div>
+      <div class="col-12"><label class="form-label" for="fEmail">Email đăng nhập</label><input id="fEmail" class="form-control" readonly><div class="form-text"><i class="bi bi-lock me-1"></i>Email đăng nhập không thể thay đổi.</div></div>
+      <div class="col-12" id="areaWrap"><label class="form-label" for="fArea">Khu dân cư</label><select id="fArea" class="form-select"></select><div class="form-text">Voucher được lọc theo khu bạn chọn.</div></div>
+    </div>
+    <div class="d-flex justify-content-end gap-2 mt-4"><button type="button" class="btn btn-light px-4" id="cancelBtn">Hủy</button><button type="submit" class="btn btn-accent px-4"><i class="bi bi-floppy"></i>Lưu thay đổi</button></div>
+  </form>
+
+  <section class="cdd-card">
+    <div class="section-title">Mật khẩu</div>
+    <div class="set-row pt-0"><div><b>Mật khẩu đăng nhập</b><div class="small-2 text-muted-2">Nên đổi định kỳ để bảo vệ tài khoản</div></div>
+      <button class="btn btn-outline-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#pwModal"><i class="bi bi-key"></i>Đổi mật khẩu</button></div>
+  </section>
+
+  <section class="cdd-card">
+    <div class="section-title">Thông báo trong ứng dụng</div>
+    <div id="notiSettings"></div>
+  </section>
+</main>
+
+<div class="modal fade" id="pwModal" tabindex="-1" aria-labelledby="pwTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered">
+  <form class="modal-content code-modal" id="pwForm" novalidate>
+    <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Đóng"></button>
+    <h2 class="h5 fw-bold mb-3" id="pwTitle"><i class="bi bi-key text-primary me-2"></i>Đổi mật khẩu</h2>
+    <div class="mb-3"><label class="form-label" for="pw0">Mật khẩu hiện tại</label><input id="pw0" type="password" class="form-control" required></div>
+    <div class="mb-3"><label class="form-label" for="pw1">Mật khẩu mới</label><input id="pw1" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" required></div>
+    <div class="mb-3"><label class="form-label" for="pw2">Nhập lại mật khẩu mới</label><input id="pw2" type="password" class="form-control" required><div class="invalid-feedback">Mật khẩu nhập lại không khớp.</div></div>
+    <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary px-4">Cập nhật</button></div>
+  </form>
+</div></div>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  const role = document.body.dataset.role;
+  const ACC = {
+    resident: { ini: 'HG', name: 'Hoàng Giang', phone: '0912 345 678', email: 'hoanggiang@gmail.com', tag: '<i class="bi bi-house-heart"></i>Cư dân · Khu dân cư Sunrise',
+      title: 'Hồ sơ cá nhân', sub: 'Thông tin tài khoản cư dân của bạn.',
+      noti: [['Voucher mới trong khu của tôi', true], ['Voucher đã lưu sắp hết hạn', true], ['Cửa hàng phản hồi đánh giá của tôi', true]] },
+    partner: { ini: 'NT', name: 'Nguyễn Thu Trang', phone: '0909 123 456', email: 'sunrisecoffee@gmail.com', tag: '<i class="bi bi-shop"></i>Người đại diện · Sunrise Coffee & Tea',
+      title: 'Tài khoản & mật khẩu', sub: 'Thông tin người đại diện. Thông tin cửa hàng (tên, địa chỉ, ảnh…) sửa ở <a href="../partner/store-profile.html">Hồ sơ cửa hàng</a>.',
+      noti: [['Kết quả duyệt hồ sơ & voucher', true], ['Đánh giá mới từ cư dân', true], ['Voucher sắp hết lượt / hết hạn', false]] },
+    admin: { ini: 'AD', name: 'Admin BQL', phone: '', email: 'admin@cudandeals.vn', tag: '<i class="bi bi-shield-lock"></i>Ban quản lý',
+      title: 'Tài khoản & mật khẩu', sub: 'Tài khoản quản trị do hệ thống cấp sẵn.',
+      noti: [['Hồ sơ đối tác mới cần duyệt', true], ['Voucher mới cần duyệt', true]] },
+  }[role] || {};
+  $('pgTitle').textContent = ACC.title; $('pgSub').innerHTML = ACC.sub;
+  $('avTxt').textContent = ACC.ini; $('pName').textContent = $('fName').value = ACC.name; $('pRole').innerHTML = ACC.tag;
+  $('fPhone').value = ACC.phone; $('fEmail').value = ACC.email;
+  if (role === 'partner') { $('av').style.background = 'var(--accent)'; $('fPhone').required = true; $('phoneReq').classList.remove('d-none'); }
+  if (role === 'resident') $('fArea').innerHTML = D.areas.map(a => `<option>${a.name}</option>`).join(''); else $('areaWrap').remove();
+  $('notiSettings').innerHTML = ACC.noti.map(([t, on], i) => `<div class="set-row ${i ? '' : 'pt-0'}"><label for="n${i}" class="mb-0">${t}</label>
+    <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" role="switch" id="n${i}" ${on ? 'checked' : ''}></div></div>`).join('');
+  $('cancelBtn').onclick = () => { $('fName').value = ACC.name; $('fPhone').value = ACC.phone; document.querySelectorAll('.is-invalid').forEach(x => x.classList.remove('is-invalid')); };
+  $('infoForm').addEventListener('submit', (e) => {
+    e.preventDefault(); let ok = true;
+    ['fName', 'fPhone'].forEach(id => { const bad = $(id).required && !$(id).value.trim(); $(id).classList.toggle('is-invalid', bad); if (bad) ok = false; });
+    if (ok) { $('pName').textContent = $('fName').value; CDD.toast('Đã lưu thông tin tài khoản'); }
+  });
+  $('pwForm').addEventListener('submit', (e) => {
+    e.preventDefault(); const bad = !$('pw1').value || $('pw1').value !== $('pw2').value; $('pw2').classList.toggle('is-invalid', bad);
+    if (!bad) { bootstrap.Modal.getInstance($('pwModal')).hide(); CDD.toast('Đã đổi mật khẩu'); }
+  });
+  if (new URLSearchParams(location.search).get('pw')) bootstrap.Modal.getOrCreateInstance($('pwModal')).show();
+</script>
+</body>
+</html>

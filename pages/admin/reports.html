@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A-05 Báo cáo & thống kê – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body data-role="admin" data-active="reports">
+<div id="cdd-header"></div>
+
+<!-- ============ A-05 · Báo cáo & thống kê ============
+  Tổng hợp hoạt động toàn hệ thống cho Ban quản lý (dữ liệu từ Redemption & voucher)
+================================================== -->
+<main class="container container-cdd">
+  <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div><h1>Báo cáo & thống kê</h1><p>Hiệu quả voucher trên toàn hệ thống.</p></div>
+    <div class="d-flex gap-2">
+      <select class="form-select w-auto" style="min-height:44px" aria-label="Khoảng thời gian"><option>30 ngày qua</option><option>7 ngày qua</option><option>90 ngày qua</option></select>
+      <select class="form-select w-auto" style="min-height:44px" aria-label="Khu dân cư"><option>Tất cả khu dân cư</option><option>Khu dân cư Sunrise</option><option>Khu dân cư Green Park</option><option>Khu dân cư Riverside</option></select>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Voucher đang chạy<span class="ic ic-blue"><i class="bi bi-ticket-perforated"></i></span></div><div class="num">156</div><div class="sub"><span class="text-success fw-semibold">+12</span> so với kỳ trước</div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Lượt nhận mã<span class="ic ic-orange"><i class="bi bi-download"></i></span></div><div class="num">1.482</div><div class="sub"><span class="text-success fw-semibold">+18%</span> so với kỳ trước</div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Lượt đã dùng<span class="ic ic-green"><i class="bi bi-check2-circle"></i></span></div><div class="num">892</div><div class="sub">Tỷ lệ sử dụng 60%</div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Đánh giá TB<span class="ic ic-amber"><i class="bi bi-star"></i></span></div><div class="num">4.7</div><div class="sub">Từ 340 đánh giá</div></div></div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8"><div class="cdd-card h-100">
+      <div class="chart-head"><div><h2>Lượt nhận mã và đã dùng theo tuần</h2><p>8 tuần gần nhất · toàn hệ thống</p></div><button class="link-btn" data-bs-toggle="collapse" data-bs-target="#t1">Xem dạng bảng</button></div>
+      <div class="chart-box"><canvas id="c1" role="img" aria-label="Biểu đồ đường lượt nhận mã và đã dùng theo tuần"></canvas></div>
+      <div class="collapse mt-3" id="t1"></div>
+    </div></div>
+    <div class="col-lg-4"><div class="cdd-card h-100">
+      <div class="chart-head"><div><h2>Lượt dùng theo ngành hàng</h2><p>30 ngày qua</p></div><button class="link-btn" data-bs-toggle="collapse" data-bs-target="#t2">Bảng</button></div>
+      <div class="chart-box"><canvas id="c2" role="img" aria-label="Biểu đồ cột ngang lượt dùng theo ngành hàng"></canvas></div>
+      <div class="collapse mt-3" id="t2"></div>
+    </div></div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7"><div class="cdd-card h-100">
+      <div class="chart-head"><div><h2>Đối tác hiệu quả nhất</h2><p>Theo lượt mã được dùng tại cửa hàng</p></div><a href="partners.html" class="link-btn">Tất cả đối tác</a></div>
+      <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr class="small-2 text-muted-2"><th>#</th><th>Đối tác</th><th class="text-end">Nhận mã</th><th class="text-end">Đã dùng</th><th class="text-end">Đánh giá</th></tr></thead>
+        <tbody id="top"></tbody></table></div>
+    </div></div>
+    <div class="col-lg-5"><div class="cdd-card h-100">
+      <div class="chart-head"><div><h2>Cư dân theo khu dân cư</h2><p>Số tài khoản đã đăng ký</p></div><button class="link-btn" data-bs-toggle="collapse" data-bs-target="#t3">Bảng</button></div>
+      <div class="chart-box sm"><canvas id="c3" role="img" aria-label="Biểu đồ cột ngang số cư dân theo khu"></canvas></div>
+      <div class="collapse mt-3" id="t3"></div>
+    </div></div>
+  </div>
+</main>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="../../js/charts.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  const weeks = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'];
+  const recv = [120, 145, 160, 152, 188, 205, 240, 272], used = [70, 88, 96, 101, 112, 130, 141, 154];
+  CDDChart.line($('c1'), weeks, [{ label: 'Nhận mã', data: recv }, { label: 'Đã dùng', data: used }]);
+  CDDChart.table($('t1'), ['Tuần', 'Nhận mã', 'Đã dùng'], weeks.map((w, i) => [w, recv[i], used[i]]));
+  const cats = [['Ẩm thực', 312], ['Cà phê & Đồ uống', 268], ['Siêu thị', 132], ['Spa & Làm đẹp', 84], ['Thể thao & Gym', 58], ['Giáo dục', 22], ['Sửa chữa', 16]];
+  CDDChart.bar($('c2'), cats.map(c => c[0]), cats.map(c => c[1]), { horizontal: true, label: 'Lượt dùng' });
+  CDDChart.table($('t2'), ['Ngành hàng', 'Lượt dùng'], cats);
+  CDDChart.bar($('c3'), D.areas.map(a => a.name.replace('Khu dân cư ', '')), D.areas.map(a => a.residents), { horizontal: true, label: 'Cư dân' });
+  CDDChart.table($('t3'), ['Khu dân cư', 'Cư dân'], D.areas.map(a => [a.name, a.residents]));
+  const topPartners = [['Sunrise Coffee & Tea', 245, 150, 4.8], ['Phở Bò Gia Truyền', 210, 142, 4.9], ['Tiệm Bánh Mì Artisan', 180, 118, 4.7], ['GreenMart Siêu Thị Sạch', 160, 96, 4.7], ['An Nhiên Spa', 92, 61, 4.9]];
+  $('top').innerHTML = topPartners.map((t, i) => `<tr><td class="fw-bold text-muted-2">${i + 1}</td><td class="fw-semibold">${t[0]}</td><td class="text-end">${t[1]}</td><td class="text-end fw-semibold">${t[2]}</td><td class="text-end"><i class="bi bi-star-fill text-warning"></i> ${t[3]}</td></tr>`).join('');
+</script>
+</body>
+</html>

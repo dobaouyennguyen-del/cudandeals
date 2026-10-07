@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C-02 Thông báo – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .noti { display: flex; gap: 14px; padding: 16px; border-radius: 12px; background: #fff; border: 1px solid var(--border); position: relative; }
+    .noti + .noti { margin-top: 10px; }
+    .noti.unread { background: #F5F8FF; border-color: #C7D7FE; }
+    .noti.unread::after { content: ""; position: absolute; top: 18px; right: 16px; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+    .noti .ic { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-size: 18px; }
+    .grp { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 20px 0 10px; }
+  </style>
+</head>
+<body data-role="resident" data-active="notifications">
+<div id="cdd-header"></div>
+
+<script>
+  // Trang dùng chung cho cả 3 vai trò: ?role=resident | partner | admin (Phase 3: lấy từ tài khoản đăng nhập)
+  document.body.dataset.role = new URLSearchParams(location.search).get('role') || 'resident';
+</script>
+<!-- ============ C-02 · Thông báo (dùng chung 3 vai trò) ============
+  FR-6.1 Thông báo trong app: voucher mới ở khu mình, voucher đã lưu sắp hết hạn,
+  hồ sơ đối tác được duyệt/từ chối, admin nhận thông báo hồ sơ mới cần duyệt.
+  Chỉ hiển thị trong app – KHÔNG gửi email/SMS/push ở mức MVP.
+  Đổi vai trò: notifications.html?role=partner | ?role=admin
+================================================================= -->
+<main class="container container-cdd" style="max-width:800px">
+  <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div><h1>Thông báo</h1><p id="sub"></p></div>
+    <button class="btn btn-light-primary btn-sm px-3" id="readAll"><i class="bi bi-check2-all"></i>Đánh dấu tất cả đã đọc</button>
+  </div>
+  <div class="pill-tabs mb-2" id="tabs"><button class="pill active" data-f="all">Tất cả <span class="n" id="nAll"></span></button><button class="pill" data-f="unread">Chưa đọc <span class="n" id="nUnread"></span></button></div>
+  <div id="list"></div>
+</main>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  const role = document.body.dataset.role;
+  const R = (base, f) => '../' + base + f;
+  const LISTS = {
+    resident: [
+      ['Hôm nay', 'bi-ticket-perforated', 'ic-orange', 'Voucher mới trong khu của bạn', 'Sunrise Coffee & Tea: Giảm 30% toàn menu đồ uống — dành riêng cư dân Sunrise.', '10 phút trước', true, R('resident/', 'voucher-detail.html?id=v1')],
+      ['Hôm nay', 'bi-hourglass-split', 'ic-amber', 'Voucher đã lưu sắp hết hạn', 'An Nhiên Spa: Giảm 40% gói gội đầu dưỡng sinh còn 2 ngày.', '1 giờ trước', true, R('resident/', 'wallet.html?tab=saved')],
+      ['Hôm qua', 'bi-chat-left-text', 'ic-blue', 'Cửa hàng đã phản hồi đánh giá của bạn', 'Trà & Gốm Thảo Mộc: “Cảm ơn bạn đã ghé quán!”', 'Hôm qua, 15:30', false, R('resident/', 'my-reviews.html')],
+      ['Hôm qua', 'bi-check2-circle', 'ic-green', 'Đã dùng mã thành công', 'Mã CDD-HG2026-009 đã được xác nhận tại Phở Bò Gia Truyền.', 'Hôm qua, 12:15', false, R('resident/', 'wallet.html?tab=used')],
+      ['Tuần trước', 'bi-ticket-perforated', 'ic-orange', 'Voucher mới trong khu của bạn', 'GreenMart: Giảm 50.000đ cho đơn từ 200.000đ.', '14/10/2026', false, R('resident/', 'explore.html')],
+    ],
+    partner: [
+      ['Hôm nay', 'bi-patch-check', 'ic-green', 'Voucher đã được duyệt', '“Mua 1 tặng 1 Latte size M” đã hiển thị cho cư dân.', '20 phút trước', true, R('partner/', 'voucher-list.html')],
+      ['Hôm nay', 'bi-star', 'ic-amber', 'Đánh giá mới từ cư dân', 'Minh Tú đánh giá 4 sao cho “Mua 1 tặng 1 Latte”.', '2 giờ trước', true, R('partner/', 'reviews.html')],
+      ['Hôm qua', 'bi-x-octagon', '', 'Voucher bị gỡ', '“Tặng topping khi mua 2 ly” bị gỡ. Lý do: Nội dung ưu đãi không đúng thực tế.', 'Hôm qua, 09:00', false, R('partner/', 'voucher-list.html?tab=removed')],
+      ['Tuần trước', 'bi-shop', 'ic-green', 'Hồ sơ cửa hàng đã được duyệt', 'Bạn có thể bắt đầu tạo voucher cho cư dân.', '22/10/2026', false, R('partner/', 'dashboard.html')],
+    ],
+    admin: [
+      ['Hôm nay', 'bi-person-check', 'ic-amber', 'Hồ sơ đối tác mới cần duyệt', 'The Pizza House vừa gửi hồ sơ đăng ký.', '15 phút trước', true, R('admin/', 'partners.html?review=pt3')],
+      ['Hôm nay', 'bi-ticket-detailed', 'ic-amber', 'Voucher mới cần duyệt', 'Sunrise Coffee & Tea gửi “Combo bánh + cà phê chỉ 59K”.', '1 giờ trước', true, R('admin/', 'approve-vouchers.html')],
+      ['Hôm qua', 'bi-person-check', 'ic-amber', 'Hồ sơ đối tác mới cần duyệt', 'Gym Elite Fitness vừa gửi hồ sơ đăng ký.', 'Hôm qua, 18:20', false, R('admin/', 'partners.html?review=pt4')],
+    ],
+  };
+  const items = LISTS[role] || LISTS.resident;
+  $('sub').textContent = { resident: 'Cập nhật ưu đãi và hoạt động của bạn.', partner: 'Kết quả duyệt và hoạt động của cửa hàng.', admin: 'Các việc cần Ban quản lý xử lý.' }[role];
+  let filter = 'all';
+  function render() {
+    $('nAll').textContent = items.length; $('nUnread').textContent = items.filter(i => i[6]).length;
+    let g = '', html = '';
+    items.forEach((it, idx) => {
+      if (filter === 'unread' && !it[6]) return;
+      if (it[0] !== g) { g = it[0]; html += `<div class="grp">${g}</div>`; }
+      html += `<a href="${it[7]}" class="noti text-decoration-none text-reset ${it[6] ? 'unread' : ''}" data-i="${idx}">
+        <span class="ic ${it[2]}" ${it[2] ? '' : 'style="background:var(--danger-soft);color:var(--danger)"'}><i class="bi ${it[1]}"></i></span>
+        <div class="flex-fill pe-3"><div class="fw-bold">${it[3]}</div><div class="small-2">${it[4]}</div><div class="small-2 text-muted-2 mt-1">${it[5]}</div></div></a>`;
+    });
+    $('list').innerHTML = html || '<div class="cdd-card text-center text-muted-2 py-5"><i class="bi bi-bell-slash fs-1 d-block mb-2"></i>Không có thông báo chưa đọc.</div>';
+  }
+  $('tabs').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (!b) return; filter = b.dataset.f; document.querySelectorAll('#tabs .pill').forEach(p => p.classList.toggle('active', p === b)); render(); });
+  $('readAll').onclick = () => { items.forEach(i => i[6] = false); render(); CDD.toast('Đã đánh dấu tất cả đã đọc'); };
+  render();
+</script>
+</body>
+</html>

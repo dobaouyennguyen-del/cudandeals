@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A-02 Quản lý cư dân – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body data-role="admin" data-active="residents">
+<div id="cdd-header"></div>
+
+<!-- ============ A-02 · Quản lý cư dân ============
+  FR-4.3 Xem danh sách cư dân theo từng khu (chỉ xem, KHÔNG cần duyệt – FR-1.2)
+  FR-4.5 Khóa / mở khóa tài khoản cư dân vi phạm
+================================================ -->
+<main class="container container-cdd">
+  <div class="page-head"><h1>Quản lý cư dân</h1><p>Cư dân tự chọn khu khi đăng ký và dùng được ngay. Ban quản lý chỉ xử lý tài khoản vi phạm.</p></div>
+  <div class="row g-3 mb-4" id="kpis"></div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div class="pill-tabs" id="tabs"></div>
+    <div class="d-flex flex-wrap gap-2">
+      <select class="form-select w-auto" id="areaFilter" style="min-height:44px" aria-label="Lọc khu dân cư"><option value="">Tất cả khu dân cư</option></select>
+      <div class="search-sm"><i class="bi bi-search"></i><input id="search" class="form-control" placeholder="Tìm tên, email, SĐT..." aria-label="Tìm cư dân"></div>
+    </div>
+  </div>
+  <div class="cdd-table table-responsive">
+    <table class="table align-middle"><thead><tr>
+      <th>Cư dân</th><th>Khu dân cư</th><th>Ngày đăng ký</th><th class="text-center">Mã đã nhận</th><th class="text-center">Đã dùng</th><th>Trạng thái</th><th class="text-end">Thao tác</th>
+    </tr></thead><tbody id="rows"></tbody></table>
+  </div>
+  <div class="d-flex justify-content-between align-items-center mt-3 small-2 text-muted-2"><span>Hiển thị <span id="shown"></span> cư dân</span>
+    <ul class="pagination mb-0"><li class="page-item disabled"><a class="page-link" href="#">‹</a></li><li class="page-item active"><a class="page-link" href="#">1</a></li><li class="page-item"><a class="page-link" href="#">2</a></li><li class="page-item"><a class="page-link" href="#">›</a></li></ul></div>
+</main>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  let tab = 'all', q = '', area = '';
+  D.areas.forEach(a => $('areaFilter').insertAdjacentHTML('beforeend', `<option>${a.name}</option>`));
+  function render() {
+    const total = D.areas.reduce((s, a) => s + a.residents, 0), locked = D.residents.filter(r => r.status === 'locked').length;
+    const k = [['Tổng cư dân', total.toLocaleString('vi-VN'), 'ic-blue', 'bi-people'], ['Khu dân cư', D.areas.length, 'ic-orange', 'bi-buildings'], ['Đăng ký tháng này', 132, 'ic-green', 'bi-person-plus'], ['Đang bị khóa', locked, 'ic-gray', 'bi-lock']];
+    $('kpis').innerHTML = k.map(([l, v, c, i]) => `<div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">${l}<span class="ic ${c}"><i class="bi ${i}"></i></span></div><div class="num">${v}</div></div></div>`).join('');
+    const cnt = (s) => s === 'all' ? D.residents.length : D.residents.filter(r => r.status === s).length;
+    $('tabs').innerHTML = [['all', 'Tất cả'], ['active', 'Hoạt động'], ['locked', 'Đã khóa']].map(([s, l]) => `<button class="pill ${s === tab ? 'active' : ''}" data-tab="${s}">${l} <span class="n">${cnt(s)}</span></button>`).join('');
+    const list = D.residents.filter(r => (tab === 'all' || r.status === tab) && (!area || r.area === area) && (r.name + r.email + r.phone).toLowerCase().includes(q.toLowerCase()));
+    $('shown').textContent = list.length;
+    $('rows').innerHTML = list.map((r, i) => `<tr>
+      <td><div class="d-flex align-items-center gap-3"><span class="cdd-avatar" style="background:#E0E7FF;color:var(--primary)">${r.initials}</span><div><div class="fw-semibold">${r.name}</div><div class="small-2 text-muted-2">${r.email} · ${r.phone}</div>
+        ${r.reason ? `<div class="small-2 text-danger">Lý do khóa: ${r.reason}</div>` : ''}</div></div></td>
+      <td class="small-2">${r.area}</td><td class="small-2">${r.joined}</td>
+      <td class="text-center fw-semibold">${r.received}</td><td class="text-center fw-semibold text-success">${r.used}</td>
+      <td>${r.status === 'active' ? '<span class="tag tag-success"><i class="bi bi-check-circle"></i>Hoạt động</span>' : '<span class="tag tag-danger"><i class="bi bi-lock"></i>Đã khóa</span>'}</td>
+      <td class="text-end text-nowrap">${r.status === 'active'
+        ? `<button class="btn btn-sm btn-light text-danger" data-lock="${D.residents.indexOf(r)}"><i class="bi bi-lock"></i>Khóa</button>`
+        : `<button class="btn btn-sm btn-outline-primary" data-unlock="${D.residents.indexOf(r)}"><i class="bi bi-unlock"></i>Mở khóa</button>`}</td></tr>`).join('') || '<tr><td colspan="7" class="text-center text-muted-2 py-5">Không có cư dân nào.</td></tr>';
+  }
+  $('rows').addEventListener('click', async (e) => {
+    const l = e.target.closest('[data-lock]'), u = e.target.closest('[data-unlock]');
+    if (l) { const r = D.residents[l.dataset.lock];
+      const res = await CDD.confirm({ title: `Khóa tài khoản ${r.name}?`, message: 'Cư dân bị khóa sẽ không đăng nhập và nhận mã được nữa.', okText: 'Khóa tài khoản', okClass: 'btn-danger', reasonLabel: 'Lý do khóa', requireReason: true, icon: 'bi-lock', tone: 'danger' });
+      if (res.ok) { r.status = 'locked'; r.reason = res.reason; CDD.toast('Đã khóa tài khoản cư dân'); render(); } }
+    if (u) { const r = D.residents[u.dataset.unlock];
+      const res = await CDD.confirm({ title: `Mở khóa tài khoản ${r.name}?`, message: 'Cư dân sẽ dùng lại được bình thường.', okText: 'Mở khóa', icon: 'bi-unlock' });
+      if (res.ok) { r.status = 'active'; r.reason = ''; CDD.toast('Đã mở khóa tài khoản'); render(); } }
+  });
+  $('tabs').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (b) { tab = b.dataset.tab; render(); } });
+  $('search').addEventListener('input', (e) => { q = e.target.value; render(); });
+  $('areaFilter').addEventListener('change', (e) => { area = e.target.value; render(); });
+  const qa = new URLSearchParams(location.search).get('area'); if (qa) { area = qa; $('areaFilter').value = qa; }
+  render();
+</script>
+</body>
+</html>

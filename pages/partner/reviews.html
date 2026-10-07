@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B-07 Đánh giá từ cư dân – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .bar { height: 8px; border-radius: 8px; background: #F1F5F9; overflow: hidden; flex: 1; }
+    .bar span { display: block; height: 100%; background: #F59E0B; }
+    .reply { background: var(--bg); border-left: 3px solid var(--accent); border-radius: 8px; padding: 12px 14px; margin-top: 10px; font-size: 14px; }
+  </style>
+</head>
+<body data-role="partner" data-active="reviews">
+<div id="cdd-header"></div>
+
+<!-- ============ B-07 · Đánh giá từ cư dân ============
+  FR-7.2 Đối tác xem và phản hồi đánh giá (mỗi đánh giá phản hồi 1 lần, có thể sửa)
+  FR-7.3 Điểm trung bình
+=================================================== -->
+<main class="container container-cdd" style="max-width:960px">
+  <div class="page-head"><h1>Đánh giá từ cư dân</h1><p>Phản hồi đánh giá giúp cửa hàng tạo thiện cảm với cư dân.</p></div>
+  <div class="cdd-card mb-4"><div class="row g-4 align-items-center">
+    <div class="col-md-3 text-center"><div class="display-5 fw-bold">4.8</div><div class="rating fs-6" id="avgStars"></div><div class="small-2 text-muted-2">42 đánh giá</div></div>
+    <div class="col-md-5" id="dist"></div>
+    <div class="col-md-4"><div class="note note-warning"><i class="bi bi-chat-dots"></i><span><b id="nPending"></b> đánh giá chưa phản hồi</span></div></div>
+  </div></div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div class="pill-tabs" id="tabs"><button class="pill active" data-f="all">Tất cả</button><button class="pill" data-f="pending">Chưa phản hồi</button><button class="pill" data-f="done">Đã phản hồi</button></div>
+    <select class="form-select w-auto" id="vSel" style="min-height:44px" aria-label="Lọc theo voucher"><option value="">Tất cả voucher</option></select>
+  </div>
+  <div id="list"></div>
+</main>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  const REVS = [
+    { name: 'Hoàng Giang', initials: 'HG', stars: 5, date: '2 ngày trước', voucher: 'Giảm 30% toàn menu đồ uống', text: 'Cà phê ngon, nhân viên nhiệt tình. Không gian thoáng mát, sẽ quay lại!', reply: 'Cảm ơn bạn đã ủng hộ! Hẹn gặp lại bạn.' },
+    { name: 'Minh Tú', initials: 'MT', stars: 4, date: '3 ngày trước', voucher: 'Mua 1 tặng 1 Latte size M', text: 'Latte ngon nhưng giờ cao điểm phải chờ hơi lâu.' },
+    { name: 'Thanh Hà', initials: 'TH', stars: 5, date: '5 ngày trước', voucher: 'Giảm 30% toàn menu đồ uống', text: 'Combo rất hời, bánh ngon, cà phê đậm vị.' },
+    { name: 'Văn Nam', initials: 'VN', stars: 3, date: '1 tuần trước', voucher: 'Giảm 20% đồ uống cuối tuần', text: 'Quán đông, nhân viên chưa biết cách áp mã nên phải chờ.' },
+  ];
+  [...new Set(REVS.map(r => r.voucher))].forEach(v => $('vSel').insertAdjacentHTML('beforeend', `<option>${v}</option>`));
+  $('avgStars').innerHTML = CDD.stars(4.8);
+  $('dist').innerHTML = [[5, 74], [4, 17], [3, 6], [2, 2], [1, 1]].map(([s, p]) => `<div class="d-flex align-items-center gap-2 small-2 mb-1"><span style="width:32px">${s} <i class="bi bi-star-fill text-warning"></i></span><div class="bar"><span style="width:${p}%"></span></div><span class="text-muted-2" style="width:34px">${p}%</span></div>`).join('');
+  let f = 'all', vf = '', editing = null;
+  function render() {
+    $('nPending').textContent = REVS.filter(r => !r.reply).length;
+    const list = REVS.filter(r => (f === 'all' || (f === 'pending' ? !r.reply : !!r.reply)) && (!vf || r.voucher === vf));
+    $('list').innerHTML = list.map(r => { const i = REVS.indexOf(r); return `<div class="cdd-card">
+      <div class="d-flex gap-3"><span class="cdd-avatar" style="background:#E0E7FF;color:var(--primary)">${r.initials}</span>
+      <div class="flex-fill">
+        <div class="d-flex justify-content-between flex-wrap gap-2"><div><b>${r.name}</b> <span class="tag tag-success ms-1"><i class="bi bi-check2"></i>Đã dùng voucher</span></div><span class="small-2 text-muted-2">${r.date}</span></div>
+        <div class="rating">${CDD.stars(r.stars)}</div>
+        <div class="small-2 text-muted-2"><i class="bi bi-ticket-perforated me-1"></i>${r.voucher}</div>
+        <p class="mt-2 mb-0">${r.text}</p>
+        ${editing === i ? `<div class="mt-3"><label class="form-label small-2" for="rp${i}">Phản hồi của cửa hàng</label><textarea class="form-control" id="rp${i}" rows="2" placeholder="Cảm ơn bạn đã góp ý...">${r.reply || ''}</textarea>
+            <div class="d-flex justify-content-end gap-2 mt-2"><button class="btn btn-sm btn-light" data-cancel>Hủy</button><button class="btn btn-sm btn-accent px-3" data-send="${i}"><i class="bi bi-send"></i>Gửi phản hồi</button></div></div>`
+          : r.reply ? `<div class="reply"><div class="d-flex justify-content-between"><b class="text-accent"><i class="bi bi-shop me-1"></i>Phản hồi của bạn</b><button class="link-btn" data-reply="${i}">Sửa</button></div><div class="mt-1">${r.reply}</div></div>`
+          : `<div class="d-flex justify-content-between align-items-center mt-3"><span class="tag tag-warning">Chờ phản hồi</span><button class="btn btn-sm btn-outline-primary px-3" data-reply="${i}"><i class="bi bi-reply"></i>Phản hồi</button></div>`}
+      </div></div></div>`; }).join('') || '<div class="cdd-card text-center text-muted-2 py-5">Không có đánh giá nào.</div>';
+  }
+  $('list').addEventListener('click', (e) => {
+    const rp = e.target.closest('[data-reply]'), sd = e.target.closest('[data-send]');
+    if (rp) { editing = +rp.dataset.reply; render(); $('rp' + editing).focus(); }
+    if (e.target.closest('[data-cancel]')) { editing = null; render(); }
+    if (sd) { const t = $('rp' + sd.dataset.send).value.trim(); if (!t) return $('rp' + sd.dataset.send).classList.add('is-invalid');
+      REVS[sd.dataset.send].reply = t; editing = null; render(); CDD.toast('Đã gửi phản hồi — cư dân sẽ nhận thông báo'); }
+  });
+  $('tabs').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (!b) return; f = b.dataset.f; document.querySelectorAll('#tabs .pill').forEach(p => p.classList.toggle('active', p === b)); render(); });
+  $('vSel').addEventListener('change', (e) => { vf = e.target.value; render(); });
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B-01 Tổng quan đối tác – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    /* Thao tác nhanh */
+    .qa2 { position: relative; display: flex; align-items: center; gap: 14px; height: 120px; padding: 0 20px; border-radius: 14px; border: 2px solid var(--border); background: #fff; color: var(--text); text-decoration: none; overflow: hidden; transition: transform .2s, box-shadow .2s, border-color .2s; }
+    .qa2:hover { transform: translateY(-4px); box-shadow: 0 14px 28px rgba(37,99,235,.15); border-color: var(--primary); color: var(--text); }
+    .qa-ic { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; background: var(--primary-soft); color: var(--primary); flex-shrink: 0; transition: transform .35s cubic-bezier(.3,1.6,.5,1); }
+    .qa2:hover .qa-ic { transform: rotate(-8deg) scale(1.12); }
+    .qa-txt b { display: block; font-size: 16px; } .qa-txt small { color: var(--muted); font-size: 13px; }
+    .qa-go { margin-left: auto; color: var(--primary); opacity: 0; transform: translateX(-8px); transition: .25s; }
+    .qa2:hover .qa-go { opacity: 1; transform: none; }
+    .qa-tag { position: absolute; top: 10px; right: 12px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); }
+    .qa-tag.green { background: var(--success-soft); color: var(--success); }
+    .qa2.main { border: 0; color: #fff; background: linear-gradient(120deg, #EA580C, #F59E0B, #EA580C); background-size: 200% 100%; animation: grad 6s ease infinite; box-shadow: 0 10px 24px rgba(234,88,12,.3); }
+    .qa2.main .qa-ic { background: rgba(255,255,255,.22); color: #fff; } .qa2.main small { color: rgba(255,255,255,.88); } .qa2.main .qa-go { color: #fff; }
+    .qa2.main .qa-tag { background: rgba(255,255,255,.25); color: #fff; }
+    .qa2.main::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent); transform: skewX(-20deg); animation: shine 4.5s ease-in-out 1s infinite; }
+    .qa2.main:hover { box-shadow: 0 16px 32px rgba(234,88,12,.4); }
+    .qa-spark { position: absolute; right: 16px; bottom: 14px; display: flex; gap: 4px; align-items: flex-end; height: 26px; }
+    .qa-spark i { width: 6px; height: var(--h); border-radius: 3px; background: #BFD3FE; transform-origin: bottom; animation: grow 1.4s ease-in-out infinite alternate; }
+    .qa-spark i:nth-child(2) { animation-delay: .15s; } .qa-spark i:nth-child(3) { animation-delay: .3s; } .qa-spark i:nth-child(4) { animation-delay: .45s; } .qa-spark i:nth-child(5) { animation-delay: .6s; background: var(--primary); }
+    /* Hoạt động trực tiếp */
+    .live { font-size: 11px; font-weight: 700; color: var(--success); background: var(--success-soft); border-radius: 999px; padding: 2px 10px 2px 8px; display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse 1.8s infinite; }
+    #feed .activity { border-radius: 10px; padding-left: 8px; padding-right: 8px; margin: 0 -8px; transition: background-color .2s; }
+    #feed .activity:hover { background: #F8FAFF; }
+    #feed .activity.new { animation: slideIn .6s cubic-bezier(.2,.7,.2,1), flash 2.4s ease; }
+    #feed .activity.new .ic { animation: pop .5s cubic-bezier(.3,1.6,.5,1) .15s both; }
+    .new-tag { font-size: 10px; font-weight: 800; color: #fff; background: var(--accent); border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 2px; }
+    #feed .activity.leaving { animation: fadeOut .4s ease forwards; }
+    /* Cần chú ý */
+    .count-badge { font-size: 12px; font-weight: 800; color: #fff; background: var(--danger); border-radius: 999px; padding: 1px 8px; margin-left: 6px; animation: pulseRed 2s infinite; }
+    .attn { border-radius: 10px; padding-left: 8px; padding-right: 8px; margin: 0 -8px; transition: background-color .2s, transform .2s; }
+    .attn:hover { background: #F8FAFF; transform: translateX(4px); }
+    .attn-btn i { font-size: 11px; transition: transform .2s; } .attn:hover .attn-btn { background: var(--primary); color: #fff; } .attn:hover .attn-btn i { transform: translateX(3px); }
+    .spin-slow i { display: inline-block; animation: flip 3s ease-in-out infinite; }
+    @keyframes grad { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    @keyframes shine { 0% { left: -60%; } 30%, 100% { left: 130%; } }
+    @keyframes grow { from { transform: scaleY(.55); } to { transform: scaleY(1); } }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(22,163,74,.5); } 70% { box-shadow: 0 0 0 8px rgba(22,163,74,0); } 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); } }
+    @keyframes pulseRed { 0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,.45); } 60% { box-shadow: 0 0 0 7px rgba(220,38,38,0); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+    @keyframes flash { 0%, 30% { background: #FFF7ED; } 100% { background: transparent; } }
+    @keyframes pop { from { transform: scale(.4); } to { transform: scale(1); } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateY(8px); } }
+    @keyframes flip { 0%, 40% { transform: rotate(0); } 50%, 90% { transform: rotate(180deg); } 100% { transform: rotate(360deg); } }
+    .no-fx .qa2, .no-fx .qa2 *, .no-fx .qa2::after, .no-fx #feed *, .no-fx .count-badge, .no-fx .spin-slow i { animation: none !important; }
+    @media (max-width: 767.98px) { .qa2 { height: 96px; } }
+    .steps { list-style: none; padding: 0; margin: 0; }
+    .steps li { display: flex; gap: 14px; padding: 14px 0; align-items: flex-start; }
+    .steps li + li { border-top: 1px dashed var(--border); }
+    .steps .dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; flex-shrink: 0; }
+  </style>
+</head>
+<body data-role="partner" data-active="dashboard">
+<div id="cdd-header"></div>
+
+<!-- ============ B-01 · Tổng quan đối tác  /  B-00 · Đối tác chờ duyệt ============
+  FR-4.1: đối tác chưa được duyệt KHÔNG thấy nút "Tạo voucher"
+  Xem trạng thái chờ duyệt: dashboard.html?pending=1
+================================================================================ -->
+<main class="container container-cdd">
+
+  <!-- ===== B-00: Chờ duyệt ===== -->
+  <div id="pendingView" class="d-none">
+    <div class="page-head">
+      <h1>Chào mừng, Sunrise Coffee & Tea!</h1>
+      <p>Hồ sơ cửa hàng của bạn đã được gửi tới Ban quản lý.</p>
+    </div>
+    <div class="note note-warning mb-4 p-3"><i class="bi bi-hourglass-split fs-5"></i>
+      <div><b>Hồ sơ đang chờ Ban quản lý duyệt.</b><br>Bạn sẽ tạo được voucher sau khi hồ sơ được duyệt. Kết quả sẽ được gửi trong mục Thông báo.</div></div>
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="cdd-card h-100">
+          <div class="section-title">Các bước bắt đầu</div>
+          <ul class="steps">
+            <li><span class="dot ic-green"><i class="bi bi-check-lg"></i></span><div><b>Gửi hồ sơ đăng ký</b><div class="small-2 text-muted-2">Đã gửi lúc 09:15 · 20/10/2026</div></div></li>
+            <li><span class="dot ic-amber"><i class="bi bi-hourglass-split"></i></span><div><b>Ban quản lý duyệt hồ sơ</b><div class="small-2 text-muted-2">Đang chờ duyệt — thường trong 1–2 ngày làm việc</div></div></li>
+            <li><span class="dot ic-gray">3</span><div><b class="text-muted-2">Tạo voucher đầu tiên</b><div class="small-2 text-muted-2">Mở khóa sau khi hồ sơ được duyệt</div></div></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="cdd-card h-100">
+          <div class="section-title">Trong lúc chờ</div>
+          <p class="text-muted-2 small-2">Hoàn thiện hồ sơ cửa hàng giúp Ban quản lý duyệt nhanh hơn và cư dân tin tưởng hơn.</p>
+          <div class="row g-3">
+            <div class="col-6"><a href="store-profile.html" class="qa"><i class="bi bi-shop"></i>Cập nhật hồ sơ</a></div>
+            <div class="col-6"><span class="qa disabled"><i class="bi bi-lock"></i>Tạo voucher</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== B-01: Đã duyệt ===== -->
+  <div id="activeView">
+    <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+      <div>
+        <h1>Chào buổi sáng, Sunrise Coffee & Tea!</h1>
+        <p>Hôm nay có <b>5 mã</b> được cư dân sử dụng tại cửa hàng.</p>
+      </div>
+      <span class="tag tag-success py-2 px-3"><i class="bi bi-patch-check-fill"></i>Đối tác đã xác thực · Khu dân cư Sunrise</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Voucher đang chạy<span class="ic ic-blue"><i class="bi bi-ticket-perforated"></i></span></div><div class="num">2</div><div class="sub">1 voucher chờ duyệt</div></div></div>
+      <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Lượt nhận mã<span class="ic ic-orange"><i class="bi bi-download"></i></span></div><div class="num">77</div><div class="sub">Tháng này</div></div></div>
+      <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Lượt đã dùng<span class="ic ic-green"><i class="bi bi-check2-circle"></i></span></div><div class="num">41</div><div class="sub">Đã xác nhận tại quầy</div></div></div>
+      <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Đánh giá TB<span class="ic ic-amber"><i class="bi bi-star"></i></span></div><div class="num">4.8 <span class="rating fs-6"><i class="bi bi-star-fill"></i></span></div><div class="sub">Từ 42 đánh giá</div></div></div>
+    </div>
+
+    <div class="cdd-card mb-4">
+      <div class="section-title">Thao tác nhanh</div>
+      <div class="row g-3">
+        <div class="col-md-4"><a href="create-voucher.html" class="qa2 main"><span class="qa-ic"><i class="bi bi-plus-lg"></i></span>
+          <span class="qa-txt"><b>Tạo voucher mới</b><small>Dán tờ rơi, AI điền sẵn</small></span><i class="bi bi-arrow-right qa-go"></i>
+          <span class="qa-tag"><i class="bi bi-stars"></i>AI</span></a></div>
+        <div class="col-md-4"><a href="confirm-redeem.html" class="qa2"><span class="qa-ic"><i class="bi bi-qr-code-scan"></i></span>
+          <span class="qa-txt"><b>Xác nhận mã</b><small>Quét QR hoặc nhập mã tại quầy</small></span><i class="bi bi-arrow-right qa-go"></i>
+          <span class="qa-tag green">5 hôm nay</span></a></div>
+        <div class="col-md-4"><a href="statistics.html" class="qa2"><span class="qa-ic"><i class="bi bi-bar-chart-line"></i></span>
+          <span class="qa-txt"><b>Xem thống kê</b><small>Lượt nhận & lượt dùng mã</small></span><i class="bi bi-arrow-right qa-go"></i>
+          <span class="qa-spark" aria-hidden="true"><i style="--h:40%"></i><i style="--h:65%"></i><i style="--h:50%"></i><i style="--h:85%"></i><i style="--h:100%"></i></span></a></div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="cdd-card h-100">
+          <div class="d-flex justify-content-between align-items-start"><div class="section-title">Hoạt động gần đây <span class="live"><span class="live-dot"></span>Trực tiếp</span></div><a href="confirm-redeem.html" class="small-2 fw-semibold">Xem tất cả <i class="bi bi-arrow-right"></i></a></div>
+          <div id="feed" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="cdd-card h-100">
+          <div class="section-title">Cần chú ý <span class="count-badge">3</span></div>
+          <div class="activity attn"><span class="ic ic-amber spin-slow"><i class="bi bi-hourglass-split"></i></span><div class="flex-fill"><b>1 voucher chờ duyệt</b><div class="small-2 text-muted-2">Combo bánh + cà phê chỉ 59K</div></div><a href="voucher-list.html?tab=pending" class="btn btn-sm btn-light attn-btn">Xem<i class="bi bi-chevron-right"></i></a></div>
+          <div class="activity attn"><span class="ic" style="background:var(--danger-soft);color:var(--danger)"><i class="bi bi-slash-circle"></i></span><div class="flex-fill"><b>1 voucher bị gỡ</b><div class="small-2 text-muted-2">Tặng topping khi mua 2 ly</div></div><a href="voucher-list.html?tab=removed" class="btn btn-sm btn-light attn-btn">Xem<i class="bi bi-chevron-right"></i></a></div>
+          <div class="activity attn"><span class="ic ic-blue"><i class="bi bi-chat-dots"></i></span><div class="flex-fill"><b>3 đánh giá chưa phản hồi</b><div class="small-2 text-muted-2">Phản hồi giúp tăng uy tín cửa hàng</div></div><a href="reviews.html" class="btn btn-sm btn-light attn-btn">Xem<i class="bi bi-chevron-right"></i></a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script>
+  // Phase 3: đọc partners/{uid}.status từ Firestore ("pending" | "approved")
+  if (new URLSearchParams(location.search).get('fx') === 'off') document.documentElement.classList.add('no-fx');
+  const pending = new URLSearchParams(location.search).get('pending') === '1';
+
+  // ---- Hoạt động gần đây (demo "trực tiếp"; Phase 3: lắng nghe Firestore bằng onSnapshot) ----
+  const TYPES = {
+    used:   ['ic-green', 'bi-check2', (a) => `<b>${a.name}</b> đã dùng mã <span class="text-primary">${a.v}</span>`],
+    saved:  ['ic-blue', 'bi-download', (a) => `<b>${a.name}</b> đã nhận mã <span class="text-primary">${a.v}</span>`],
+    review: ['ic-amber', 'bi-star', (a) => `<b>${a.name}</b> đánh giá ${a.stars} sao <span class="rating">${'<i class="bi bi-star-fill"></i>'.repeat(a.stars)}</span>`],
+  };
+  const feed = [
+    { t: 'used', name: 'Hoàng Giang', v: 'Giảm 30% toàn menu', min: 5 },
+    { t: 'saved', name: 'Minh Tú', v: 'Mua 1 tặng 1 Latte', min: 15 },
+    { t: 'review', name: 'Thanh Hà', stars: 4, min: 60 },
+    { t: 'used', name: 'Văn Nam', v: 'Giảm 30% toàn menu', min: 120 },
+  ];
+  const ago = (m) => m < 1 ? 'Vừa xong' : m < 60 ? `${m} phút trước` : `${Math.floor(m / 60)} giờ trước`;
+  const row = (a, isNew) => { const [c, i, txt] = TYPES[a.t]; return `<div class="activity ${isNew ? 'new' : ''}"><span class="ic ${c}"><i class="bi ${i}"></i></span>
+    <div class="flex-fill">${txt(a)}${isNew ? '<span class="new-tag">MỚI</span>' : ''}</div><span class="small-2 text-muted-2 text-nowrap">${ago(a.min)}</span></div>`; };
+  const drawFeed = (newFirst) => { document.getElementById('feed').innerHTML = feed.map((a, k) => row(a, newFirst && k === 0)).join(''); };
+  drawFeed(false);
+  const INCOMING = [
+    { t: 'saved', name: 'Lan Ngọc', v: 'Giảm 30% toàn menu' }, { t: 'used', name: 'Minh Tú', v: 'Mua 1 tặng 1 Latte' },
+    { t: 'review', name: 'Hoàng Giang', stars: 5 }, { t: 'saved', name: 'Quang Dũng', v: 'Free size up buổi sáng' },
+  ];
+  const noMotion = document.documentElement.classList.contains('no-fx') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!pending && !noMotion) {
+    let k = 0;
+    setInterval(() => {
+      if (document.hidden) return;
+      const last = document.querySelector('#feed .activity:last-child'); if (last) last.classList.add('leaving');
+      setTimeout(() => {
+        feed.forEach(a => a.min += 1);
+        feed.unshift({ ...INCOMING[k++ % INCOMING.length], min: 0 }); feed.length = 4;
+        drawFeed(true);
+      }, 380);
+    }, 7000);
+  }
+  document.getElementById('pendingView').classList.toggle('d-none', !pending);
+  document.getElementById('activeView').classList.toggle('d-none', pending);
+  if (pending) {
+    document.title = 'B-00 Đối tác chờ duyệt – CuDanDeals.vn';
+    // Ẩn các mục chỉ dùng được khi đã duyệt
+    document.querySelectorAll('.cdd-nav a').forEach(a => { if (!/dashboard|store-profile/.test(a.href)) a.classList.add('d-none'); });
+  }
+</script>
+</body>
+</html>

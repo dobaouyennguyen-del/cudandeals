@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>R-02 Chi tiết voucher – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .hero { position: relative; border-radius: 16px; overflow: hidden; aspect-ratio: 16/7; background: #0f172a; }
+    .hero img { width: 100%; height: 100%; object-fit: cover; opacity: .9; }
+    .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgba(15,23,42,.75)); }
+    .hero .cap { position: absolute; left: 24px; bottom: 20px; right: 24px; z-index: 1; color: #fff; }
+    .hero .cap h1 { color: #fff; font-size: 30px; font-weight: 800; margin: 6px 0 0; }
+    .hero .disc { position: absolute; top: 18px; right: 18px; z-index: 1; background: var(--accent); color: #fff; font-weight: 800; padding: 6px 14px; border-radius: 8px; }
+    .gallery img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; }
+    .action-card { position: sticky; top: 88px; }
+    .big-title { font-size: 22px; font-weight: 700; }
+    .cond li { margin-bottom: 6px; }
+    .cond li::marker { color: var(--primary); }
+    .bar { height: 8px; border-radius: 8px; background: #F1F5F9; overflow: hidden; flex: 1; }
+    .bar span { display: block; height: 100%; background: #F59E0B; }
+    .review + .review { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; }
+    .reply { background: var(--bg); border-left: 3px solid var(--accent); border-radius: 8px; padding: 12px 14px; margin-top: 10px; font-size: 14px; }
+    @media (max-width: 991.98px) {
+      .action-card { position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 1020; border-radius: 16px 16px 0 0 !important; }
+      .action-card .hide-sm { display: none; }
+      body { padding-bottom: 96px; }
+      .hero { aspect-ratio: 4/3; }
+      .hero .cap h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body data-role="resident" data-active="explore">
+<div id="cdd-header"></div>
+
+<!-- ============ R-02 · Chi tiết voucher ============
+  FR-3.2 Xem chi tiết · FR-3.3 Lưu · FR-3.4 Nhận mã · FR-7.3 Điểm đánh giá trung bình + bình luận
+  Mở sẵn popup mã (để chụp giao diện): voucher-detail.html?id=v1&code=1
+================================================== -->
+<main class="container container-cdd">
+  <div class="pt-4"><a href="explore.html" class="back-link"><i class="bi bi-arrow-left"></i>Quay lại Khám phá</a></div>
+
+  <div class="hero mb-3">
+    <img id="heroImg" src="" alt="">
+    <span class="disc" id="heroDisc"></span>
+    <div class="cap"><span class="tag tag-accent" id="heroCat"></span><h1 id="heroShop"></h1></div>
+  </div>
+  <div class="row g-2 gallery mb-4" id="gallery"></div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <section class="cdd-card">
+        <div class="d-flex flex-wrap gap-2 mb-2" id="tags"></div>
+        <div class="big-title mb-2" id="title"></div>
+        <div class="d-flex flex-wrap gap-3 small-2">
+          <span><span class="rating" id="rStars"></span> <b id="rAvg"></b> <a href="#reviews">(<span id="rCount"></span> đánh giá)</a></span>
+          <span class="text-muted-2"><i class="bi bi-geo-alt me-1"></i><span id="addr"></span></span>
+        </div>
+      </section>
+
+      <section class="cdd-card">
+        <div class="section-title">Mô tả ưu đãi</div>
+        <p id="desc" class="mb-4"></p>
+        <div class="section-title">Điều kiện sử dụng</div>
+        <ul class="cond mb-3" id="cond"></ul>
+        <div class="note note-info"><i class="bi bi-info-circle"></i><span>Bấm <b>Nhận mã</b> để lấy mã ưu đãi, đưa mã hoặc mã QR cho nhân viên tại quầy để được áp dụng.</span></div>
+      </section>
+
+      <section class="cdd-card">
+        <div class="section-title">Thông tin cửa hàng</div>
+        <div class="row g-3 small-2">
+          <div class="col-md-6"><i class="bi bi-geo-alt text-primary me-2"></i><span id="addr2"></span></div>
+          <div class="col-md-6"><i class="bi bi-telephone text-primary me-2"></i><a href="tel:0909123456">0909 123 456</a></div>
+          <div class="col-md-6"><i class="bi bi-clock text-primary me-2"></i>07:00 – 22:00 hằng ngày</div>
+          <div class="col-md-6"><i class="bi bi-patch-check text-success me-2"></i>Đối tác đã được Ban quản lý xác thực</div>
+        </div>
+      </section>
+
+      <!-- Đánh giá – FR-7.3 -->
+      <section class="cdd-card" id="reviews">
+        <div class="section-title">Đánh giá từ cư dân</div>
+        <div class="row g-4 align-items-center mb-4">
+          <div class="col-sm-4 text-center">
+            <div class="display-5 fw-bold" id="rAvg2"></div>
+            <div class="rating fs-6" id="rStars2"></div>
+            <div class="small-2 text-muted-2"><span id="rCount2"></span> đánh giá</div>
+          </div>
+          <div class="col-sm-8" id="dist"></div>
+        </div>
+        <div id="reviewList"></div>
+        <div class="note note-info mt-4"><i class="bi bi-chat-square-heart"></i><span>Bạn có thể viết đánh giá sau khi đã dùng voucher tại cửa hàng (trong <a href="wallet.html?tab=used">Ví voucher › Đã dùng</a>).</span></div>
+      </section>
+    </div>
+
+    <!-- Thẻ hành động -->
+    <div class="col-lg-4">
+      <div class="cdd-card action-card">
+        <div class="hide-sm">
+          <div class="vcard-shop" id="aShop"></div>
+          <div class="fw-bold fs-5 mb-2" id="aTitle"></div>
+          <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Hạn dùng</span><b id="aEnd"></b></div>
+          <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Còn lại</span><b class="text-accent" id="aLeft"></b></div>
+          <div class="d-flex justify-content-between small-2 mb-3"><span class="text-muted-2">Phạm vi</span><span id="aScope"></span></div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-save" id="saveBtn"><i class="bi bi-bookmark"></i><span>Lưu</span></button>
+          <button class="btn btn-accent flex-fill" id="codeBtn"><i class="bi bi-ticket-perforated"></i>Nhận mã</button>
+          <button class="btn btn-light" title="Chia sẻ" aria-label="Chia sẻ"><i class="bi bi-share"></i></button>
+        </div>
+        <div class="small-2 text-muted-2 mt-2 hide-sm"><i class="bi bi-shield-check me-1"></i>Voucher đã được Ban quản lý duyệt.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  const q = new URLSearchParams(location.search);
+  const v = CDD.findVoucher(q.get('id')) || D.vouchers[0];
+  const cat = D.categories.find(c => c.id === v.cat);
+  const reviews = D.reviews.filter(r => r.voucher === v.id);
+  document.title = `R-02 ${v.title} – CuDanDeals.vn`;
+
+  $('heroImg').src = CDD.IMG + v.img; $('heroImg').alt = v.shop;
+  $('heroDisc').textContent = v.badge; $('heroCat').textContent = cat.name; $('heroShop').textContent = v.shop;
+  const more = ['coffee-front.jpg', 'coffee-drinks.jpg', 'coffee-service.jpg', 'coffee-seating.jpg'];
+  $('gallery').innerHTML = more.map(i => `<div class="col-3"><img src="${CDD.IMG}${i}" alt="Ảnh cửa hàng"></div>`).join('');
+
+  $('tags').innerHTML = CDD.scopeTag(v) + `<span class="tag ${v.daysLeft <= 3 ? 'tag-warning' : 'tag-muted'}"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>`;
+  $('title').textContent = v.title;
+  $('rStars').innerHTML = $('rStars2').innerHTML = CDD.stars(v.rating);
+  $('rAvg').textContent = $('rAvg2').textContent = v.rating.toFixed(1);
+  $('rCount').textContent = $('rCount2').textContent = v.reviews;
+  $('addr').textContent = $('addr2').textContent = v.address;
+  $('desc').textContent = v.desc || v.title + '.';
+  $('cond').innerHTML = (v.conditions || ['Mỗi cư dân 1 mã', 'Hạn dùng đến ' + v.end]).map(c => `<li>${c}</li>`).join('');
+
+  const dist = [72, 18, 6, 3, 1];
+  $('dist').innerHTML = dist.map((p, i) => `<div class="d-flex align-items-center gap-2 small-2 mb-1"><span style="width:34px">${5 - i} <i class="bi bi-star-fill text-warning"></i></span><div class="bar"><span style="width:${p}%"></span></div><span class="text-muted-2" style="width:34px">${p}%</span></div>`).join('');
+  $('reviewList').innerHTML = reviews.map(r => `
+    <div class="review">
+      <div class="d-flex gap-3">
+        <span class="cdd-avatar" style="background:#E0E7FF;color:var(--primary)">${r.initials}</span>
+        <div class="flex-fill">
+          <div class="d-flex justify-content-between"><b>${r.name}</b><span class="small-2 text-muted-2">${r.date}</span></div>
+          <div class="rating">${CDD.stars(r.stars)}</div>
+          <p class="mb-0 mt-1">${r.text}</p>
+          ${r.reply ? `<div class="reply"><b class="text-accent"><i class="bi bi-shop me-1"></i>Phản hồi từ cửa hàng</b><div class="mt-1">${r.reply}</div></div>` : ''}
+        </div>
+      </div>
+    </div>`).join('') || '<p class="text-muted-2">Chưa có đánh giá.</p>';
+
+  $('aShop').textContent = v.shop; $('aTitle').textContent = v.title;
+  $('aEnd').textContent = v.end; $('aLeft').textContent = v.left + ' mã'; $('aScope').innerHTML = CDD.scopeTag(v);
+  $('saveBtn').dataset.save = v.id;
+  if (CDD.isSaved(v.id)) { $('saveBtn').classList.add('saved'); $('saveBtn').innerHTML = '<i class="bi bi-bookmark-fill"></i><span>Đã lưu</span>'; } $('codeBtn').dataset.code = v.id;
+  if (q.get('code') === '1') CDD.showCode(v.id, 'CDD-HG2026-001');
+</script>
+</body>
+</html>

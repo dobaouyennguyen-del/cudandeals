@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A-01 Tổng quan Ban quản lý – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+</head>
+<body data-role="admin" data-active="dashboard">
+<div id="cdd-header"></div>
+
+<!-- ============ A-01 · Tổng quan Ban quản lý ============
+  Điểm vào cho các việc cần xử lý: FR-4.1 duyệt đối tác, FR-4.2 duyệt voucher,
+  FR-4.3 khu dân cư, FR-4.6 ngành hàng
+===================================================== -->
+<main class="container container-cdd">
+  <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div><h1>Xin chào, Ban quản lý!</h1><p>Tổng quan hoạt động CuDanDeals hôm nay.</p></div>
+    <span class="small-2 text-muted-2"><i class="bi bi-calendar3 me-1"></i>Thứ Tư, 21/10/2026</span>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Cư dân<span class="ic ic-blue"><i class="bi bi-people"></i></span></div><div class="num">2.745</div><div class="sub"><span class="text-success fw-semibold">+132</span> tháng này</div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Đối tác hoạt động<span class="ic ic-orange"><i class="bi bi-shop"></i></span></div><div class="num">45</div><div class="sub">3 hồ sơ chờ duyệt</div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Voucher đang chạy<span class="ic ic-green"><i class="bi bi-ticket-perforated"></i></span></div><div class="num">156</div><div class="sub">3 voucher chờ duyệt</div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">Mã đã dùng<span class="ic ic-amber"><i class="bi bi-check2-circle"></i></span></div><div class="num">892</div><div class="sub">30 ngày qua</div></div></div>
+  </div>
+
+  <div class="cdd-card mb-4">
+    <div class="section-title">Việc cần xử lý</div>
+    <div class="row g-3">
+      <div class="col-md-6 col-lg-3"><a href="partners.html?tab=pending" class="qa main"><i class="bi bi-person-check"></i>Duyệt hồ sơ đối tác<span class="tag" style="background:rgba(255,255,255,.25);color:#fff">3 mới</span></a></div>
+      <div class="col-md-6 col-lg-3"><a href="approve-vouchers.html" class="qa main"><i class="bi bi-ticket-detailed"></i>Duyệt voucher<span class="tag" style="background:rgba(255,255,255,.25);color:#fff">3 chờ duyệt</span></a></div>
+      <div class="col-md-6 col-lg-3"><a href="residential-areas.html" class="qa"><i class="bi bi-buildings"></i>Quản lý khu dân cư</a></div>
+      <div class="col-md-6 col-lg-3"><a href="categories.html" class="qa"><i class="bi bi-grid"></i>Quản lý ngành hàng</a></div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7"><div class="cdd-card h-100">
+      <div class="d-flex justify-content-between align-items-start"><div class="section-title">Hoạt động gần đây</div></div>
+      <div class="activity"><span class="ic ic-amber"><i class="bi bi-shop"></i></span><div class="flex-fill"><b>The Pizza House</b> gửi hồ sơ đăng ký đối tác<div class="small-2 text-muted-2">Khu dân cư Sunrise</div></div><a href="partners.html?review=pt3" class="btn btn-sm btn-light-primary">Xem hồ sơ</a></div>
+      <div class="activity"><span class="ic ic-amber"><i class="bi bi-ticket-perforated"></i></span><div class="flex-fill"><b>Sunrise Coffee & Tea</b> gửi voucher mới<div class="small-2 text-muted-2">Combo bánh + cà phê chỉ 59K</div></div><a href="approve-vouchers.html" class="btn btn-sm btn-light-primary">Duyệt</a></div>
+      <div class="activity"><span class="ic ic-green"><i class="bi bi-check2"></i></span><div class="flex-fill"><b>Hoàng Giang</b> dùng mã tại Sunrise Coffee & Tea<div class="small-2 text-muted-2">Giảm 30% toàn menu đồ uống</div></div><span class="small-2 text-muted-2">5 phút trước</span></div>
+      <div class="activity"><span class="ic ic-blue"><i class="bi bi-person-plus"></i></span><div class="flex-fill"><b>12 cư dân mới</b> đăng ký hôm nay<div class="small-2 text-muted-2">Sunrise 8 · Green Park 3 · Riverside 1</div></div><a href="residents.html" class="btn btn-sm btn-light">Xem</a></div>
+    </div></div>
+    <div class="col-lg-5"><div class="cdd-card h-100">
+      <div class="d-flex justify-content-between align-items-start"><div class="section-title">Khu dân cư</div><a href="residential-areas.html" class="small-2 fw-semibold">Quản lý</a></div>
+      <div id="areas"></div>
+      <a href="reports.html" class="btn btn-light-primary w-100 mt-3"><i class="bi bi-bar-chart"></i>Xem báo cáo chi tiết</a>
+    </div></div>
+  </div>
+</main>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  $('areas').innerHTML = D.areas.map(a => `<div class="activity"><span class="ic ic-blue"><i class="bi bi-buildings"></i></span>
+    <div class="flex-fill"><b>${a.name}</b><div class="small-2 text-muted-2">${a.address}</div></div>
+    <div class="text-end"><b>${a.residents.toLocaleString('vi-VN')}</b><div class="small-2 text-muted-2">cư dân</div></div></div>`).join('');
+</script>
+</body>
+</html>

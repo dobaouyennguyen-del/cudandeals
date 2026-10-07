@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B-04 Tạo voucher – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .preview-card { position: sticky; top: 88px; }
+    .vc { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; box-shadow: var(--shadow); }
+    .vc-img { aspect-ratio: 4/3; background: linear-gradient(135deg,#FDE7D7,#FFF7ED); display: grid; place-items: center; color: var(--accent); font-size: 44px; position: relative; }
+    .vc-img .disc { position: absolute; top: 12px; left: 12px; background: var(--accent); color: #fff; font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 6px; }
+    .vc-body { padding: 16px; }
+    .vc-shop { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--muted); text-transform: uppercase; }
+    .vc-title { font-weight: 700; font-size: 16px; margin: 4px 0 10px; }
+    .upload { border: 2px dashed #CBD5E1; border-radius: 12px; background: var(--bg); padding: 28px; text-align: center; color: var(--muted); cursor: pointer; }
+    .upload:hover { border-color: var(--primary); color: var(--primary); }
+    .area-select { display: none; }
+    .area-select.show { display: block; }
+    .ai-filled { animation: flash 1.2s ease; }
+    @keyframes flash { 0% { background: #DBEAFE; } 100% { background: var(--bg); } }
+  </style>
+</head>
+<body data-role="partner" data-active="voucher">
+<div id="cdd-header"></div>
+
+<!-- ============ B-04 · Tạo voucher (AI hỗ trợ) ============
+  FR-2.2 Tạo voucher & chọn phạm vi · FR-2.4 Giới hạn lượt dùng
+  FR-5.1 AI bóc tách thông tin · FR-4.2 Voucher chờ Admin duyệt
+========================================================== -->
+<main class="container container-cdd">
+  <div class="page-head">
+    <a href="voucher-list.html" class="back-link"><i class="bi bi-arrow-left"></i>Quay lại danh sách voucher</a>
+    <h1>Tạo voucher mới</h1>
+    <p>Dán mô tả ưu đãi để AI điền sẵn, hoặc tự nhập thông tin bên dưới.</p>
+  </div>
+
+  <div class="row g-4">
+    <!-- ===== Cột trái: form ===== -->
+    <div class="col-lg-8">
+
+      <!-- AI box (FR-5.1) -->
+      <section class="ai-box mb-4">
+        <h2><i class="bi bi-stars text-primary"></i>Dán mô tả ưu đãi để AI điền sẵn form</h2>
+        <p class="text-muted-2 mb-3 small-2">Ví dụ: nội dung tờ rơi, bài đăng Facebook… AI sẽ tách tên voucher, mức giảm, hạn dùng và điều kiện.</p>
+        <label for="aiInput" class="form-label">Mô tả ưu đãi</label>
+        <textarea id="aiInput" class="form-control" rows="3" placeholder="Dán nội dung tờ rơi hoặc mô tả ưu đãi...">Giảm 30% toàn bộ đồ uống từ 14h–17h hằng ngày cho cư dân Sunrise, áp dụng từ 01/05 đến 31/05/2026, hóa đơn từ 50.000đ, tối đa 150 lượt.</textarea>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3">
+          <span class="small-2 text-muted-2"><i class="bi bi-info-circle me-1"></i>AI chỉ gợi ý — bạn hãy kiểm tra và chỉnh sửa trước khi gửi duyệt.</span>
+          <button type="button" id="aiBtn" class="btn btn-primary px-4"><i class="bi bi-magic"></i>Tự động điền form</button>
+        </div>
+      </section>
+
+      <form id="voucherForm" novalidate>
+        <!-- Thông tin voucher -->
+        <section class="cdd-card">
+          <div class="section-title">Thông tin voucher</div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between"><label for="title" class="form-label">Tên voucher <span class="req">*</span></label><span class="ai-tag d-none" data-ai><i class="bi bi-stars"></i>AI gợi ý</span></div>
+            <input id="title" class="form-control" placeholder="VD: Giảm 30% toàn menu đồ uống" required>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between"><label class="form-label">Loại ưu đãi <span class="req">*</span></label><span class="ai-tag d-none" data-ai><i class="bi bi-stars"></i>AI gợi ý</span></div>
+            <div class="row g-2">
+              <div class="col-4"><label class="choice"><input type="radio" name="type" value="percent" checked><span class="box text-center"><span class="t">Giảm %</span></span></label></div>
+              <div class="col-4"><label class="choice"><input type="radio" name="type" value="fixed"><span class="box text-center"><span class="t">Giảm tiền</span></span></label></div>
+              <div class="col-4"><label class="choice"><input type="radio" name="type" value="gift"><span class="box text-center"><span class="t">Tặng món</span></span></label></div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="category" class="form-label">Ngành hàng <span class="req">*</span></label>
+              <select id="category" class="form-select" required>
+                <option value="">Chọn ngành hàng</option>
+                <option selected>Cà phê & Đồ uống</option>
+                <option>Ẩm thực</option><option>Spa & Làm đẹp</option><option>Thể thao & Gym</option>
+                <option>Giáo dục</option><option>Sửa chữa</option><option>Siêu thị</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex justify-content-between"><label for="value" class="form-label">Mức giảm <span class="req">*</span></label><span class="ai-tag d-none" data-ai><i class="bi bi-stars"></i>AI gợi ý</span></div>
+              <div class="input-group">
+                <input id="value" type="number" class="form-control" placeholder="VD: 30" required>
+                <span class="input-group-text" id="unit">%</span>
+              </div>
+            </div>
+          </div>
+
+<div class="mb-3">
+            <div class="d-flex justify-content-between"><label for="desc" class="form-label">Mô tả chi tiết</label><span class="ai-tag d-none" data-ai><i class="bi bi-stars"></i>AI gợi ý</span></div>
+            <textarea id="desc" class="form-control" rows="3" placeholder="Mô tả ngắn gọn ưu đãi cho cư dân"></textarea>
+          </div>
+
+          <div>
+            <label class="form-label">Ảnh voucher</label>
+            <label class="upload d-block">
+              <input type="file" accept="image/png,image/jpeg" hidden>
+              <i class="bi bi-cloud-arrow-up fs-2 d-block mb-1"></i>
+              <span class="fw-semibold">Kéo thả hoặc bấm để tải ảnh</span>
+              <span class="d-block small-2 mt-1">PNG, JPG tối đa 5MB · nên nén ảnh trước khi tải</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Thời gian & lượt dùng -->
+        <section class="cdd-card">
+          <div class="d-flex justify-content-between align-items-start"><div class="section-title">Thời gian & số lượt</div><span class="ai-tag d-none" data-ai><i class="bi bi-stars"></i>AI gợi ý</span></div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="start" class="form-label">Ngày bắt đầu <span class="req">*</span></label>
+              <input id="start" class="form-control" placeholder="dd/mm/yyyy" required>
+            </div>
+            <div class="col-md-4">
+              <label for="end" class="form-label">Ngày kết thúc <span class="req">*</span></label>
+              <input id="end" class="form-control" placeholder="dd/mm/yyyy" required>
+            </div>
+            <div class="col-md-4">
+              <label for="maxUse" class="form-label">Số lượt dùng tối đa</label>
+              <input id="maxUse" type="number" class="form-control" placeholder="Không giới hạn">
+              <div class="form-text">Hết lượt, voucher tự chuyển “Hết lượt”.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Điều kiện -->
+        <section class="cdd-card">
+          <div class="d-flex justify-content-between align-items-start"><div class="section-title">Điều kiện sử dụng</div><span class="ai-tag d-none" data-ai><i class="bi bi-stars"></i>AI gợi ý</span></div>
+          <textarea id="conditions" class="form-control" rows="3" placeholder="VD: Áp dụng hóa đơn từ 50.000đ · Mỗi cư dân 1 mã/ngày · Không áp dụng cùng khuyến mãi khác"></textarea>
+        </section>
+
+        <!-- Phạm vi áp dụng (FR-2.2) -->
+        <section class="cdd-card">
+          <div class="section-title">Phạm vi áp dụng <span class="req text-danger">*</span></div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="choice"><input type="radio" name="scope" value="public">
+                <span class="box"><span class="t"><i class="bi bi-globe2 me-2"></i>Công khai</span><span class="d d-block">Mọi cư dân trên CuDanDeals đều thấy và nhận được mã.</span></span>
+              </label>
+            </div>
+            <div class="col-md-6">
+              <label class="choice"><input type="radio" name="scope" value="area" checked>
+                <span class="box"><span class="t"><i class="bi bi-buildings me-2"></i>Riêng khu dân cư</span><span class="d d-block">Chỉ cư dân của khu được chọn mới thấy voucher này.</span></span>
+              </label>
+            </div>
+          </div>
+          <div class="area-select show mt-3" id="areaWrap">
+            <label for="area" class="form-label">Khu dân cư áp dụng <span class="req">*</span></label>
+            <select id="area" class="form-select">
+              <option selected>Khu dân cư Sunrise</option>
+              <option>Khu dân cư Green Park</option>
+              <option>Khu dân cư Riverside</option>
+            </select>
+          </div>
+        </section>
+
+        <div class="d-flex flex-wrap justify-content-end align-items-center gap-3 mt-4">
+          <span class="small-2 text-muted-2 me-auto"><i class="bi bi-shield-check me-1"></i>Voucher chỉ hiển thị với cư dân sau khi Ban quản lý duyệt.</span>
+          <a href="voucher-list.html" class="btn btn-light px-4">Hủy</a>
+          <button type="submit" class="btn btn-accent px-4"><i class="bi bi-send"></i>Gửi duyệt</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ===== Cột phải: xem trước ===== -->
+    <div class="col-lg-4">
+      <div class="preview-card">
+        <div class="fw-semibold mb-2"><i class="bi bi-eye me-1"></i>Cư dân sẽ thấy như sau</div>
+        <div class="vc">
+          <div class="vc-img"><span class="disc" id="pvDisc">GIẢM 30%</span><i class="bi bi-cup-hot"></i></div>
+          <div class="vc-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="vc-shop">Sunrise Coffee & Tea</span>
+              <span class="tag tag-primary" id="pvScope">Riêng khu Sunrise</span>
+            </div>
+            <div class="vc-title" id="pvTitle">Tên voucher sẽ hiện ở đây</div>
+            <div class="small-2 text-muted-2"><i class="bi bi-geo-alt me-1"></i>Shophouse S2, Khu dân cư Sunrise</div>
+            <div class="small-2 text-muted-2 mt-1"><i class="bi bi-clock me-1"></i>HSD: <span id="pvEnd">--/--/----</span></div>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-outline-primary btn-sm flex-fill" type="button" disabled><i class="bi bi-bookmark"></i>Lưu</button>
+              <button class="btn btn-accent btn-sm flex-fill" type="button" disabled>Nhận mã</button>
+            </div>
+          </div>
+        </div>
+        <div class="note note-info mt-3"><i class="bi bi-info-circle"></i><span>Sau khi gửi, voucher ở trạng thái <b>Chờ duyệt</b> trong danh sách voucher của bạn.</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script>
+  // ---- Demo giao diện ----
+  // Bản thật: gọi Firebase Cloud Function (giấu API key AI) — KHÔNG gọi API AI trực tiếp từ trình duyệt (NFR-4).
+  const $ = (id) => document.getElementById(id);
+  const UNITS = { percent: '%', fixed: 'đ', gift: 'món' };
+
+  function updatePreview() {
+    const type = document.querySelector('input[name=type]:checked').value;
+    const v = $('value').value;
+    $('unit').textContent = UNITS[type];
+    $('pvTitle').textContent = $('title').value || 'Tên voucher sẽ hiện ở đây';
+    $('pvDisc').textContent = type === 'gift' ? 'TẶNG MÓN' : v ? `GIẢM ${v}${type === 'percent' ? '%' : 'K'}` : 'GIẢM ?';
+    $('pvEnd').textContent = $('end').value || '--/--/----';
+    const area = document.querySelector('input[name=scope]:checked').value === 'area';
+    $('areaWrap').classList.toggle('show', area);
+    $('pvScope').textContent = area ? 'Riêng khu ' + $('area').value.replace('Khu dân cư ', '') : 'Công khai';
+    $('pvScope').className = 'tag ' + (area ? 'tag-primary' : 'tag-muted');
+  }
+  document.querySelectorAll('input, select, textarea').forEach(el => el.addEventListener('input', updatePreview));
+
+  $('aiBtn').addEventListener('click', () => {
+    const btn = $('aiBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>AI đang phân tích...';
+    setTimeout(() => {   // giả lập kết quả trả về từ Cloud Function
+      const r = { title: 'Giảm 30% đồ uống khung giờ 14h–17h', value: 30, start: '01/05/2026', end: '31/05/2026', maxUse: 150,
+        desc: 'Giảm 30% toàn bộ đồ uống từ 14h đến 17h hằng ngày dành cho cư dân.',
+        conditions: 'Áp dụng hóa đơn từ 50.000đ · Khung giờ 14h–17h hằng ngày · Mỗi cư dân 1 mã/ngày' };
+      Object.entries(r).forEach(([k, v]) => { $(k).value = v; $(k).classList.add('ai-filled'); });
+      document.querySelector('input[name=type][value=percent]').checked = true;
+      document.querySelectorAll('[data-ai]').forEach(t => t.classList.remove('d-none'));
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-check2-circle"></i>Đã điền — kiểm tra lại nhé';
+      updatePreview();
+    }, 900);
+  });
+
+  $('voucherForm').addEventListener('submit', (e) => { e.preventDefault(); alert('Demo: voucher đã gửi, trạng thái "Chờ duyệt".'); });
+  updatePreview();
+</script>
+</body>
+</html>

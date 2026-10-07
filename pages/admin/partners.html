@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A-03 Quản lý đối tác – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .oc-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 12px; }
+    .kv2 div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .kv2 span { color: var(--muted); }
+    tr.pending-row { background: #FFFBEB; }
+  </style>
+</head>
+<body data-role="admin" data-active="partners">
+<div id="cdd-header"></div>
+
+<!-- ============ A-03 · Quản lý & duyệt đối tác ============
+  FR-4.1 Duyệt / từ chối hồ sơ đối tác (đối tác chưa duyệt không được tạo voucher)
+  FR-4.4 Khóa / mở khóa tài khoản đối tác vi phạm
+  Mở sẵn hồ sơ: partners.html?review=pt3
+======================================================= -->
+<main class="container container-cdd">
+  <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div><h1>Quản lý đối tác</h1><p>Duyệt hồ sơ cửa hàng mới và quản lý tài khoản đối tác.</p></div>
+  </div>
+  <div class="row g-3 mb-4" id="kpis"></div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <div class="pill-tabs" id="tabs"></div>
+    <div class="d-flex flex-wrap gap-2">
+      <select class="form-select w-auto" id="areaFilter" style="min-height:44px" aria-label="Lọc khu dân cư"><option value="">Tất cả khu dân cư</option></select>
+      <div class="search-sm"><i class="bi bi-search"></i><input id="search" class="form-control" placeholder="Tìm cửa hàng, người đại diện, SĐT..." aria-label="Tìm đối tác"></div>
+    </div>
+  </div>
+  <div class="cdd-table table-responsive">
+    <table class="table align-middle"><thead><tr>
+      <th>Cửa hàng</th><th>Ngành hàng</th><th>Khu dân cư</th><th class="text-center">Voucher</th><th class="text-center">Đánh giá</th><th>Trạng thái</th><th class="text-end">Thao tác</th>
+    </tr></thead><tbody id="rows"></tbody></table>
+  </div>
+</main>
+
+<!-- Hồ sơ đối tác (offcanvas) -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="profile" aria-labelledby="pfTitle" style="width:440px">
+  <div class="offcanvas-header border-bottom"><h2 class="h5 fw-bold mb-0" id="pfTitle">Hồ sơ đối tác</h2><button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button></div>
+  <div class="offcanvas-body" id="pfBody"></div>
+  <div class="p-3 border-top d-flex gap-2" id="pfActions"></div>
+</div>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  const ST = { pending: ['Chờ duyệt', 'tag-warning', 'bi-hourglass-split'], approved: ['Đang hoạt động', 'tag-success', 'bi-check-circle'], locked: ['Đã khóa', 'tag-danger', 'bi-lock'], rejected: ['Từ chối', 'tag-muted', 'bi-x-circle'] };
+  let tab = new URLSearchParams(location.search).get('tab') || 'all', q = '', area = '';
+  D.areas.forEach(a => $('areaFilter').insertAdjacentHTML('beforeend', `<option>${a.name}</option>`));
+  const n = (s) => D.partners.filter(p => p.status === s).length;
+
+  function kpis() {
+    const k = [['Tổng đối tác', D.partners.length, 'ic-blue', 'bi-shop'], ['Đang hoạt động', n('approved'), 'ic-green', 'bi-check-circle'], ['Chờ duyệt hồ sơ', n('pending'), 'ic-amber', 'bi-hourglass-split'], ['Đã khóa', n('locked'), 'ic-gray', 'bi-lock']];
+    $('kpis').innerHTML = k.map(([l, v, c, i]) => `<div class="col-6 col-lg-3"><div class="cdd-card kpi"><div class="top">${l}<span class="ic ${c}"><i class="bi ${i}"></i></span></div><div class="num">${v}</div></div></div>`).join('');
+  }
+  function actions(p) {
+    if (p.status === 'pending') return `<button class="btn btn-sm btn-light-primary" data-view="${p.id}">Xem hồ sơ</button>
+      <button class="btn btn-sm btn-success" data-act="approve" data-id="${p.id}"><i class="bi bi-check-lg"></i>Duyệt</button>
+      <button class="btn btn-sm btn-light text-danger" data-act="reject" data-id="${p.id}">Từ chối</button>`;
+    if (p.status === 'approved') return `<button class="btn btn-sm btn-light-primary" data-view="${p.id}">Chi tiết</button>
+      <button class="btn btn-sm btn-light text-danger" data-act="lock" data-id="${p.id}"><i class="bi bi-lock"></i>Khóa</button>`;
+    if (p.status === 'locked') return `<button class="btn btn-sm btn-light-primary" data-view="${p.id}">Chi tiết</button>
+      <button class="btn btn-sm btn-outline-primary" data-act="unlock" data-id="${p.id}"><i class="bi bi-unlock"></i>Mở khóa</button>`;
+    return `<button class="btn btn-sm btn-light-primary" data-view="${p.id}">Chi tiết</button>`;
+  }
+  function render() {
+    kpis();
+    $('tabs').innerHTML = ['all', ...Object.keys(ST)].map(s => `<button class="pill ${s === tab ? 'active' : ''}" data-tab="${s}">${s === 'all' ? 'Tất cả' : ST[s][0]} <span class="n">${s === 'all' ? D.partners.length : n(s)}</span></button>`).join('');
+    const list = D.partners.filter(p => (tab === 'all' || p.status === tab) && (!area || p.area === area) && (p.name + p.owner + p.ownerPhone + p.email).toLowerCase().includes(q.toLowerCase()));
+    $('rows').innerHTML = list.map(p => `<tr class="${p.status === 'pending' ? 'pending-row' : ''}">
+      <td><div class="d-flex align-items-center gap-3"><img class="thumb" src="${CDD.IMG}${p.img}" alt=""><div><div class="fw-semibold">${p.name}</div><div class="small-2 text-muted-2">${p.owner} · Đăng ký ${p.registered}</div>
+        ${p.reason ? `<div class="small-2 text-danger">Lý do: ${p.reason}</div>` : ''}</div></div></td>
+      <td><span class="tag tag-primary">${p.cat}</span></td>
+      <td class="small-2">${p.area}</td>
+      <td class="text-center fw-semibold">${p.vouchers}</td>
+      <td class="text-center">${p.rating ? `<i class="bi bi-star-fill text-warning"></i> ${p.rating}` : '<span class="small-2 text-muted-2">Chưa có</span>'}</td>
+      <td><span class="tag ${ST[p.status][1]}"><i class="bi ${ST[p.status][2]}"></i>${ST[p.status][0]}</span></td>
+      <td class="text-end text-nowrap">${actions(p)}</td></tr>`).join('') || '<tr><td colspan="7" class="text-center text-muted-2 py-5">Không có đối tác nào.</td></tr>';
+  }
+  function view(id) {
+    const p = D.partners.find(x => x.id === id);
+    $('pfTitle').textContent = p.name;
+    $('pfBody').innerHTML = `<img class="oc-img mb-3" src="${CDD.IMG}${p.img}" alt="">
+      <span class="tag ${ST[p.status][1]} mb-3"><i class="bi ${ST[p.status][2]}"></i>${ST[p.status][0]}</span>
+      <div class="small-2 fw-bold text-muted-2 text-uppercase mt-1 mb-1">Cửa hàng</div>
+      <div class="kv2"><div><span>Ngành hàng</span><b>${p.cat}</b></div><div><span>Địa chỉ</span><b class="text-end">${p.address}</b></div>
+      <div><span>Khu dân cư</span><b>${p.area}</b></div><div><span>Hotline cửa hàng</span><b>${p.phone}</b></div><div><span>Ngày đăng ký</span><b>${p.registered}</b></div></div>
+      <div class="small-2 fw-bold text-muted-2 text-uppercase mt-3 mb-1">Người đại diện</div>
+      <div class="kv2"><div><span>Họ tên</span><b>${p.owner}</b></div>
+      <div><span>SĐT liên hệ</span><b><a href="tel:${p.ownerPhone.replace(/\s/g, '')}">${p.ownerPhone}</a></b></div><div><span>Email</span><b>${p.email}</b></div></div>
+      ${p.desc ? `<p class="mt-3 small-2">${p.desc}</p>` : ''}
+      ${p.status === 'pending' ? '<div class="note note-info mt-3"><i class="bi bi-info-circle"></i><span>Gọi người đại diện để xác minh, kiểm tra địa chỉ có nằm gần khu dân cư được hỗ trợ trước khi duyệt.</span></div>' : ''}`;
+    $('pfActions').innerHTML = p.status === 'pending' ? `<button class="btn btn-light text-danger flex-fill" data-act="reject" data-id="${p.id}">Từ chối</button><button class="btn btn-success flex-fill" data-act="approve" data-id="${p.id}"><i class="bi bi-check-lg"></i>Duyệt hồ sơ</button>`
+      : `<button class="btn btn-light flex-fill" data-bs-dismiss="offcanvas">Đóng</button>`;
+    bootstrap.Offcanvas.getOrCreateInstance($('profile')).show();
+  }
+  async function act(kind, id) {
+    const p = D.partners.find(x => x.id === id);
+    const cfg = {
+      approve: { title: `Duyệt hồ sơ "${p.name}"?`, message: 'Đối tác sẽ được phép tạo voucher và nhận thông báo kết quả.', okText: 'Duyệt hồ sơ', okClass: 'btn-success', icon: 'bi-check-lg', tone: 'success', next: 'approved', msg: 'Đã duyệt hồ sơ đối tác' },
+      reject: { title: 'Từ chối hồ sơ đối tác', message: `<b>${p.name}</b> sẽ nhận thông báo kèm lý do.`, okText: 'Từ chối', okClass: 'btn-danger', reasonLabel: 'Lý do từ chối', requireReason: true, icon: 'bi-x-lg', tone: 'danger', next: 'rejected', msg: 'Đã từ chối hồ sơ' },
+      lock: { title: 'Khóa tài khoản đối tác', message: 'Đối tác bị khóa sẽ không tạo/sửa voucher được nữa.', okText: 'Khóa tài khoản', okClass: 'btn-danger', reasonLabel: 'Lý do khóa', requireReason: true, icon: 'bi-lock', tone: 'danger', next: 'locked', msg: 'Đã khóa tài khoản đối tác' },
+      unlock: { title: 'Mở khóa tài khoản?', message: `${p.name} sẽ hoạt động trở lại bình thường.`, okText: 'Mở khóa', okClass: 'btn-primary', icon: 'bi-unlock', next: 'approved', msg: 'Đã mở khóa tài khoản' },
+    }[kind];
+    bootstrap.Offcanvas.getInstance($('profile'))?.hide();
+    const r = await CDD.confirm(cfg);
+    if (r.ok) { p.status = cfg.next; p.reason = r.reason || (cfg.next === 'approved' ? '' : p.reason); CDD.toast(cfg.msg); render(); }
+  }
+  document.addEventListener('click', (e) => {
+    const v = e.target.closest('[data-view]'); if (v) view(v.dataset.view);
+    const a = e.target.closest('[data-act]'); if (a) act(a.dataset.act, a.dataset.id);
+  });
+  $('tabs').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (b) { tab = b.dataset.tab; render(); } });
+  $('search').addEventListener('input', (e) => { q = e.target.value; render(); });
+  $('areaFilter').addEventListener('change', (e) => { area = e.target.value; render(); });
+  render();
+  const rv = new URLSearchParams(location.search).get('review'); if (rv) view(rv);
+</script>
+</body>
+</html>

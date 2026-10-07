@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B-02 Hồ sơ cửa hàng – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .logo-up { display: flex; align-items: center; gap: 20px; }
+    .logo-up img { width: 96px; height: 96px; border-radius: 16px; object-fit: cover; border: 1px solid var(--border); }
+    .gal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .gal .g { position: relative; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; }
+    .gal img { width: 100%; height: 100%; object-fit: cover; }
+    .gal .rm { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(15,23,42,.6); color: #fff; display: grid; place-items: center; font-size: 12px; }
+    .gal .add { border: 2px dashed #CBD5E1; background: var(--bg); color: var(--muted); display: grid; place-items: center; text-align: center; font-size: 13px; cursor: pointer; }
+    .side { position: sticky; top: 88px; }
+    @media (max-width: 575.98px) { .gal { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body data-role="partner" data-active="">
+<div id="cdd-header"></div>
+
+<!-- ============ B-02 · Hồ sơ cửa hàng ============
+  FR-2.1 Đối tác đăng ký & quản lý hồ sơ kinh doanh (tên shop, loại hình, địa chỉ)
+  Thông tin này hiển thị ở trang chi tiết voucher (R-02) cho cư dân
+================================================ -->
+<main class="container container-cdd">
+  <div class="page-head">
+    <a href="dashboard.html" class="back-link"><i class="bi bi-arrow-left"></i>Quay lại Tổng quan</a>
+    <h1>Hồ sơ cửa hàng</h1>
+    <p>Thông tin này hiển thị cho cư dân ở trang chi tiết voucher.</p>
+  </div>
+
+  <div class="row g-4">
+    <form class="col-lg-8" id="storeForm" novalidate>
+      <section class="cdd-card">
+        <div class="section-title">Logo & hình ảnh</div>
+        <div class="logo-up mb-4">
+          <img src="../../assets/img/owner.jpg" alt="Logo cửa hàng">
+          <div>
+            <label class="btn btn-outline-primary btn-sm px-3"><input type="file" accept="image/*" hidden><i class="bi bi-upload"></i>Đổi logo</label>
+            <div class="form-text">PNG/JPG tối đa 5MB, nên dùng ảnh vuông.</div>
+          </div>
+        </div>
+        <label class="form-label">Ảnh cửa hàng <span class="text-muted-2 fw-normal">(tối đa 8 ảnh)</span></label>
+        <div class="gal">
+          <div class="g"><img src="../../assets/img/coffee-front.jpg" alt=""><button type="button" class="rm" aria-label="Xóa ảnh"><i class="bi bi-x-lg"></i></button></div>
+          <div class="g"><img src="../../assets/img/coffee-drinks.jpg" alt=""><button type="button" class="rm" aria-label="Xóa ảnh"><i class="bi bi-x-lg"></i></button></div>
+          <div class="g"><img src="../../assets/img/coffee-service.jpg" alt=""><button type="button" class="rm" aria-label="Xóa ảnh"><i class="bi bi-x-lg"></i></button></div>
+          <label class="g add"><input type="file" accept="image/*" multiple hidden><span><i class="bi bi-plus-lg fs-4 d-block"></i>Thêm ảnh</span></label>
+        </div>
+      </section>
+
+      <section class="cdd-card">
+        <div class="section-title">Thông tin cơ bản</div>
+        <div class="mb-3"><label class="form-label" for="name">Tên cửa hàng <span class="req">*</span></label>
+          <input id="name" class="form-control" value="Sunrise Coffee & Tea" required></div>
+        <div class="mb-3"><label class="form-label" for="cat">Ngành hàng <span class="req">*</span></label>
+          <select id="cat" class="form-select" required></select></div>
+        <div><label class="form-label" for="desc">Mô tả cửa hàng</label>
+          <textarea id="desc" class="form-control" rows="3">Quán cà phê phong cách hiện đại ngay tại shophouse Khu dân cư Sunrise. Không gian thoáng mát, phù hợp làm việc và gặp gỡ bạn bè.</textarea></div>
+      </section>
+
+      <section class="cdd-card">
+        <div class="section-title">Liên hệ & địa chỉ</div>
+        <div class="mb-3"><label class="form-label" for="addr">Địa chỉ cửa hàng <span class="req">*</span></label>
+          <input id="addr" class="form-control" value="Shophouse S2, Khu dân cư Sunrise" required></div>
+        <div class="mb-3"><label class="form-label" for="area">Khu dân cư phục vụ</label>
+          <select id="area" class="form-select"></select>
+          <div class="form-text">Dùng để chọn phạm vi "Riêng khu dân cư" khi tạo voucher.</div></div>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label" for="phone">Số điện thoại <span class="req">*</span></label>
+            <input id="phone" class="form-control" value="0909 123 456" required></div>
+          <div class="col-md-3 col-6"><label class="form-label" for="open">Giờ mở cửa</label>
+            <input id="open" type="time" class="form-control" value="07:00"></div>
+          <div class="col-md-3 col-6"><label class="form-label" for="close">Giờ đóng cửa</label>
+            <input id="close" type="time" class="form-control" value="22:00"></div>
+        </div>
+      </section>
+
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="dashboard.html" class="btn btn-light px-4">Hủy</a>
+        <button type="submit" class="btn btn-accent px-4"><i class="bi bi-floppy"></i>Lưu thay đổi</button>
+      </div>
+    </form>
+
+    <aside class="col-lg-4">
+      <div class="side">
+        <div class="cdd-card">
+          <div class="small-2 fw-bold text-muted-2 text-uppercase mb-2">Trạng thái hồ sơ</div>
+          <span class="tag tag-success py-2 px-3 mb-3"><i class="bi bi-patch-check-fill"></i>Đã được Ban quản lý duyệt</span>
+          <div class="small-2 d-flex justify-content-between mb-1"><span class="text-muted-2">Ngày duyệt</span><b>22/10/2026</b></div>
+          <div class="small-2 d-flex justify-content-between mb-1"><span class="text-muted-2">Voucher đang chạy</span><b>2</b></div>
+          <div class="small-2 d-flex justify-content-between"><span class="text-muted-2">Đánh giá trung bình</span><b>4.8 <i class="bi bi-star-fill text-warning"></i></b></div>
+        </div>
+        <div class="note note-info mt-3"><i class="bi bi-lightbulb"></i><span>Ảnh rõ nét và mô tả đầy đủ giúp cư dân tin tưởng và nhận mã nhiều hơn.</span></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+  $('cat').innerHTML = D.categories.map(c => `<option ${c.id === 'coffee' ? 'selected' : ''}>${c.name}</option>`).join('');
+  $('area').innerHTML = D.areas.map(a => `<option>${a.name}</option>`).join('');
+  document.querySelectorAll('.rm').forEach(b => b.addEventListener('click', () => b.closest('.g').remove()));
+  $('storeForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    let ok = true;
+    e.target.querySelectorAll('[required]').forEach(el => { const bad = !el.value.trim(); el.classList.toggle('is-invalid', bad); if (bad) ok = false; });
+    if (ok) CDD.toast('Đã lưu hồ sơ cửa hàng');
+  });
+</script>
+</body>
+</html>
