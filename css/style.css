@@ -521,3 +521,12 @@ textarea.form-control { min-height: 110px; }
 .search-lg .form-control:hover { border-color: #93B4FD; }
 .search-lg .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,.15), 0 8px 22px rgba(37,99,235,.12); }
 .search-lg .bi-search { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); z-index: 2; color: var(--primary); font-size: 18px; pointer-events: none; }
+
+/* ---------- Voucher đã phát hết mã (FR-2.4, FR-3.4) ---------- */
+.vcard.soldout .vcard-img img { filter: grayscale(.9) brightness(.95); }
+.vcard.soldout .vcard-disc { background: #94A3B8; }
+.vcard.soldout .vcard-disc::after { display: none; }
+.vcard.soldout .vcard-title { color: var(--muted); }
+.vcard-out { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-6deg); z-index: 2; display: inline-flex; gap: 6px; align-items: center;
+  background: rgba(15,23,42,.78); color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; padding: 7px 14px; border-radius: 8px; border: 2px solid rgba(255,255,255,.7); }
+.vcard.soldout .btn[disabled] { opacity: 1; color: var(--muted); background: #F1F5F9; border-color: #E2E8F0; cursor: not-allowed; }

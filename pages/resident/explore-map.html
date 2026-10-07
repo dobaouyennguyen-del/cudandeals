@@ -124,7 +124,7 @@
   });
   const state = { scope: 'all', q: '', quick: new Set(), cats: new Set(D.categories.map(c => c.id)), sel: 'Sunrise Coffee & Tea' };
   const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').toLowerCase();
-  const vOk = (v) => (state.scope === 'all' || v.scope === state.scope) &&
+  const vOk = (v) => !CDD.isOut(v) && (state.scope === 'all' || v.scope === state.scope) &&
     (!state.q || norm(v.title + ' ' + v.shop).includes(norm(state.q))) &&
     (!state.quick.has('exp3') || v.daysLeft <= 3) && (!state.quick.has('pct30') || v.pct >= 30) && (!state.quick.has('gift') || v.type === 'gift');
   const shopOk = (s) => state.cats.has(s.cat) && (!state.quick.has('near') || minutes(s.name) <= 3) && s.list.some(vOk);

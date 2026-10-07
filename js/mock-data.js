@@ -44,7 +44,16 @@ window.CDD_DATA = {
     { id: 'v12', type: 'percent', pct: 25, total: 50, cond: 'Mua kèm 1 đồ uống', time: '6h30–9h30 sáng', added: 2, shop: 'Morning Bakery & Coffee', cat: 'coffee', img: 'coffee-front.jpg', badge: 'GIẢM 25%', title: 'Giảm 25% bánh ngọt kèm đồ uống buổi sáng', scope: 'public', address: 'Tầng trệt Tòa S4, Sunrise', end: '18/12/2026', daysLeft: 9, left: 20, rating: 4.6, reviews: 39 },
     { id: 'v13', type: 'gift', pct: 40, total: 20, cond: 'Hội viên mới hoặc gia hạn', time: 'Đặt lịch trước', added: 5, shop: 'Sunrise Fitness & Yoga', cat: 'gym', img: 'gym.jpg', badge: 'TẶNG 1 BUỔI PT', title: 'Tặng 1 buổi tập PT cá nhân miễn phí', scope: 'area', address: 'Tầng 3 Tòa S1, Sunrise', end: '31/12/2026', daysLeft: 14, left: 9, rating: 4.6, reviews: 58 },
     { id: 'v14', type: 'percent', pct: 30, total: 40, cond: 'Đặt lịch trước 1 ngày', time: 'Thứ 2 – Thứ 7', added: 11, shop: 'An Nhiên Spa', cat: 'spa', img: 'spa.jpg', badge: 'GIẢM 30%', title: 'Giảm 30% liệu trình chăm sóc da mặt', scope: 'public', address: 'Shophouse S3, Khu dân cư Sunrise', end: '20/12/2026', daysLeft: 11, left: 16, rating: 4.9, reviews: 41 },
+    // v16 đã phát hết lượt (FR-2.4) – cùng voucher "p4 · Hết lượt" bên trang Đối tác
+    { id: 'v16', type: 'percent', pct: 20, total: 60, cond: 'Áp dụng đồ uống size M', time: 'Thứ 7 – Chủ nhật', added: 14, shop: 'Sunrise Coffee & Tea', cat: 'coffee', img: 'coffee-seating.jpg', badge: 'GIẢM 20%', title: 'Giảm 20% đồ uống cuối tuần', scope: 'public', address: 'Shophouse S2, Khu dân cư Sunrise', end: '30/11/2026', daysLeft: 23, left: 0, rating: 4.8, reviews: 61 },
     { id: 'v15', type: 'percent', pct: 10, total: 150, cond: 'Áp dụng rau củ hữu cơ', time: 'Thứ 7 – Chủ nhật', added: 13, shop: 'GreenMart Siêu Thị Sạch', cat: 'market', img: 'minimart.jpg', badge: 'GIẢM 10%', title: 'Giảm 10% rau củ hữu cơ cuối tuần', scope: 'area', address: 'Tầng trệt Tòa S2, Sunrise', end: '27/12/2026', daysLeft: 3, left: 60, rating: 4.7, reviews: 48 },
+  ],
+
+  // Voucher không còn khả dụng (FR-3.2: không cho xem chi tiết) – không hiện ở Khám phá, chỉ còn trong Ví / link cũ
+  // status: expired (hết hạn) | removed (bị Ban quản lý gỡ)
+  offVouchers: [
+    { id: 'v90', status: 'expired', type: 'percent', pct: 20, total: 40, left: 0, cond: 'Chỉ món đá xay', time: 'Cả ngày', shop: 'The Coffee Corner', cat: 'coffee', img: 'coffee-seating.jpg', badge: 'GIẢM 20%', title: 'Giảm 20% các món đá xay tháng 9', scope: 'public', address: 'Shophouse S5, Khu dân cư Sunrise', end: '30/09/2026', daysLeft: 0, rating: 4.4, reviews: 62 },
+    { id: 'v91', status: 'removed', type: 'gift', pct: 15, total: 50, left: 41, cond: 'Mua từ 2 ly', time: 'Cả ngày', shop: 'Sunrise Coffee & Tea', cat: 'coffee', img: 'tea-shop.jpg', badge: 'TẶNG TOPPING', title: 'Tặng topping khi mua 2 ly', scope: 'area', address: 'Shophouse S2, Khu dân cư Sunrise', end: '31/10/2026', daysLeft: 24, rating: 4.8, reviews: 0 },
   ],
 
   // reviews – FR-7.1, FR-7.2, FR-7.3

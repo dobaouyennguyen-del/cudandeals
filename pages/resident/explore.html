@@ -238,6 +238,7 @@
     const by = { new: (a, b) => a.added - b.added, discount: (a, b) => b.pct - a.pct, end: (a, b) => a.daysLeft - b.daysLeft,
                  rating: (a, b) => b.rating - a.rating, popular: (a, b) => (b.total - b.left) - (a.total - a.left) }[state.sort];
     list.sort(by);
+    list = [...list.filter(v => !CDD.isOut(v)), ...list.filter(CDD.isOut)];   // voucher đã hết mã luôn xếp cuối
 
     syncInputs();
     chips = activeList();

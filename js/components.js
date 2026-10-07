@@ -15,7 +15,8 @@ window.CDD = (function () {
     ? `<span class="tag tag-primary"><i class="bi bi-buildings"></i>Riêng khu Sunrise</span>`
     : `<span class="tag tag-muted"><i class="bi bi-globe2"></i>Công khai</span>`;
 
-  const findVoucher = (id) => (D.vouchers || []).find(v => v.id === id);
+  const findVoucher = (id) => (D.vouchers || []).find(v => v.id === id) || (D.offVouchers || []).find(v => v.id === id);
+  const isOut = (v) => v.total && v.left <= 0;          // đã phát hết lượt (FR-2.4)
 
   /* ---------- Thẻ voucher (R-01, P-01) ----------
      - Rê chuột: thẻ phóng to, ngăn kéo tóm tắt (điều kiện, khung giờ, hạn dùng, số người đã nhận) trượt ra dưới thẻ
@@ -24,8 +25,9 @@ window.CDD = (function () {
   function voucherCard(v, opt = {}) {
     const isSaved = saved.has(v.id);
     const link = opt.guest ? ROOT + 'login.html?next=deal' : `${ROOT}pages/resident/voucher-detail.html?id=${v.id}`;
-    const urgent = v.daysLeft <= 3;
-    const ratio = v.total ? Math.max(4, Math.round(v.left / v.total * 100)) : 0;
+    const out = isOut(v);
+    const urgent = !out && v.daysLeft <= 3;
+    const ratio = v.total ? (v.left <= 0 ? 0 : Math.max(4, Math.round(v.left / v.total * 100))) : 0;
     const low = v.total && v.left / v.total <= 0.2;
     // Ngăn kéo tóm tắt: trượt ra dưới thẻ khi rê chuột (không che ảnh)
     const more = v.cond ? `
@@ -37,12 +39,13 @@ window.CDD = (function () {
       </div>` : '';
     const delay = ((parseInt(v.id.replace(/\D/g, '')) || 0) * 0.9 % 5).toFixed(1);   // so le ánh sáng trên nhãn giảm giá
     return `
-    <article class="vcard${v.hot ? ' hot' : ''}">
+    <article class="vcard${v.hot && !out ? ' hot' : ''}${out ? ' soldout' : ''}">
       <a href="${link}" class="vcard-img">
         <img src="${IMG}${v.img}" alt="${v.shop}" loading="lazy">
         <span class="vcard-disc" style="--d:${delay}s">${v.badge}</span>
         ${v.hot ? '<span class="vcard-hot">Nổi bật</span>' : ''}
         <span class="vcard-scope">${scopeTag(v)}</span>
+        ${out ? '<span class="vcard-out"><i class="bi bi-slash-circle"></i>Đã hết mã</span>' : ''}
       </a>
       <div class="vcard-body">
         <div class="vcard-shop text-truncate mb-1">${v.shop}</div>
@@ -50,15 +53,16 @@ window.CDD = (function () {
         <div class="vcard-meta"><span class="rating">${stars(v.rating)}</span> ${v.rating} <span class="text-muted-2">(${v.reviews})</span></div>
         <div class="vcard-meta text-muted-2"><i class="bi bi-geo-alt"></i>${v.address}</div>
         ${v.cond ? `<div class="vcard-meta vcard-cond text-muted-2"><i class="bi bi-receipt"></i>${v.cond} · ${v.time}</div>` : ''}
-        <div class="vcard-meta vcard-due">${urgent
+        <div class="vcard-meta vcard-due">${out ? `<span class="text-muted-2 fw-semibold"><i class="bi bi-slash-circle"></i>Đã phát hết ${v.total} mã</span>` : urgent
           ? `<span class="text-accent fw-semibold d-inline-flex align-items-center"><span class="pulse-dot"></span>Còn ${v.daysLeft} ngày</span>`
           : `<span class="text-muted-2"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>`}
-          <span class="ms-auto ${low ? 'text-accent fw-semibold' : 'text-muted-2'}">Còn ${v.left}${v.total ? '/' + v.total : ''} mã</span></div>
+          ${out ? '' : `<span class="ms-auto ${low ? 'text-accent fw-semibold' : 'text-muted-2'}">Còn ${v.left}${v.total ? '/' + v.total : ''} mã</span>`}</div>
         ${v.total ? `<div class="vstock${low ? ' low' : ''}" role="progressbar" aria-label="Số mã còn lại" aria-valuenow="${v.left}" aria-valuemin="0" aria-valuemax="${v.total}"><span style="--w:${ratio}%"></span></div>` : ''}
         ${opt.guest ? '' : `        <div class="d-flex gap-2 mt-3">
           <button class="btn btn-sm btn-save ${isSaved ? 'saved' : ''}" data-save="${v.id}" title="Lưu để xem sau">
             <i class="bi ${isSaved ? 'bi-bookmark-fill' : 'bi-bookmark'}"></i><span>${isSaved ? 'Đã lưu' : 'Lưu'}</span></button>
-          <button class="btn btn-sm btn-accent flex-fill" data-code="${v.id}"><i class="bi bi-ticket-perforated"></i>Nhận mã</button>
+          ${out ? `<button class="btn btn-sm btn-light flex-fill" disabled aria-disabled="true"><i class="bi bi-slash-circle"></i>Đã hết mã</button>`
+                : `<button class="btn btn-sm btn-accent flex-fill" data-code="${v.id}"><i class="bi bi-ticket-perforated"></i>Nhận mã</button>`}
         </div>`}
       </div>${more}
     </article>`;
@@ -98,6 +102,7 @@ window.CDD = (function () {
 
   function showCode(id, code, opt = {}) {
     const v = findVoucher(id) || {};
+    if (!code && isOut(v)) { toast('Voucher này đã phát hết mã'); return; }   // FR-3.4: không cho nhận khi hết lượt
     const fresh = opt.fresh ?? !code;
     code = code || `CDD-HG2026-${String(30 + (Math.random() * 900 | 0)).padStart(3, '0')}`;
     const st = stubOf(v), money = (n) => n.toLocaleString('vi-VN') + 'đ';
@@ -276,5 +281,5 @@ window.CDD = (function () {
     input._pw = { warn() { box.classList.add('warn'); input.classList.add('is-invalid'); update(); } };
     return input._pw;
   }
-  return { stars, scopeTag, voucherCard, showCode, stubOf, estSave, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, pwOk, pwMeter, IMG, ROOT, D };
+  return { stars, scopeTag, voucherCard, isOut, showCode, stubOf, estSave, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, pwOk, pwMeter, IMG, ROOT, D };
 })();

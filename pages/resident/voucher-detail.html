@@ -56,6 +56,14 @@
     .mini-map { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
     .walk-box { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: #FFF7ED; border-radius: 12px; padding: 12px 14px; }
     .walk-box .big { font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; }
+    /* Voucher không còn khả dụng (FR-3.2) & đã hết mã (FR-2.4) */
+    .is-unavail .hero, .is-unavail #gallery, .is-unavail main > .row.g-4 { display: none !important; }
+    .ua-card { max-width: 640px; margin: 8px auto 0; text-align: center; padding: 32px 24px; }
+    .ua-img { position: relative; width: min(420px, 100%); aspect-ratio: 16 / 9; margin: 0 auto; border-radius: 14px; overflow: hidden; }
+    .ua-img img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) brightness(.9); }
+    .ua-badge { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-6deg); background: rgba(15,23,42,.8); color: #fff; font-weight: 800; letter-spacing: .05em; padding: 8px 16px; border-radius: 8px; border: 2px solid rgba(255,255,255,.75); white-space: nowrap; }
+    .hero .disc.out { background: #64748B; }
+    .hero .disc.out::after { display: none; }
     .cond li { margin-bottom: 6px; }
     .cond li::marker { color: var(--primary); }
     .bar { height: 8px; border-radius: 8px; background: #F1F5F9; overflow: hidden; flex: 1; }
@@ -90,11 +98,14 @@
 <!-- ============ R-02 · Chi tiết voucher ============
   FR-3.2 Xem chi tiết · FR-3.3 Lưu · FR-3.4 Nhận mã · FR-7.3 Điểm đánh giá trung bình + bình luận
   Mở sẵn popup mã (để chụp giao diện): voucher-detail.html?id=v1&code=1 · mở từ Ví: &from=wallet (nút quay lại về Ví)
+  Trạng thái: hết mã ?id=v16 (FR-2.4) · hết hạn ?id=v90, bị gỡ ?id=v91 (FR-3.2: không hiện chi tiết)
   Vị trí trong khu + đường đi bộ + Chỉ đường (FR-3.6, sơ đồ dùng chung js/map.js)
   Hiệu ứng: ảnh lớn phóng chậm, dải ảnh chạy ngang (bấm để xem lớn), thanh số mã, đếm ngược khi còn ≤ 3 ngày, băng chuyền ưu đãi khác
 ================================================== -->
 <main class="container container-cdd">
   <div class="pt-4"><a href="explore.html" class="back-link" id="back"><i class="bi bi-arrow-left"></i>Quay lại Khám phá</a></div>
+  <!-- FR-3.2: voucher hết hạn / bị gỡ → không cho xem chi tiết -->
+  <div class="d-none" id="unavail"></div>
 
   <div class="hero mb-3">
     <img id="heroImg" src="" alt="">
@@ -318,7 +329,8 @@
   }
 
   // ---- Ưu đãi khác (băng chuyền ngang) ----
-  const related = D.vouchers.filter(o => o.id !== v.id).sort((a, b) => (b.cat === v.cat) - (a.cat === v.cat) || b.rating - a.rating).slice(0, 8);
+  const related = D.vouchers.filter(o => o.id !== v.id && !CDD.isOut(o))   // không gợi ý voucher đã hết mã
+   .sort((a, b) => (b.cat === v.cat) - (a.cat === v.cat) || b.rating - a.rating).slice(0, 8);
   const track = $('related');
   track.innerHTML = related.map(o => `<div class="car-item">${CDD.voucherCard(o)}</div>`).join('');
   const step = () => (track.querySelector('.car-item')?.offsetWidth || 0) + 24;
@@ -329,6 +341,37 @@
   $('carPrev').onclick = () => go(-1); $('carNext').onclick = () => go(1);
   $('saveBtn').dataset.save = v.id;
   if (CDD.isSaved(v.id)) { $('saveBtn').classList.add('saved'); $('saveBtn').innerHTML = '<i class="bi bi-bookmark-fill"></i><span>Đã lưu</span>'; } $('codeBtn').dataset.code = v.id;
+  // ---- FR-2.4 / FR-3.4: voucher đã phát hết mã → vẫn xem được nhưng không cho nhận ----
+  if (CDD.isOut(v)) {
+    const b = $('codeBtn');
+    b.disabled = true; b.removeAttribute('data-code'); b.classList.remove('btn-accent', 'glow'); b.classList.add('btn-light');
+    b.innerHTML = '<i class="bi bi-slash-circle"></i>Đã hết mã';
+    $('aLeft').textContent = 'Đã hết mã'; $('aLeft').className = 'text-muted-2';
+    $('aBar').innerHTML = '<div class="vstock"><span style="--w:0%"></span></div>';
+    $('aHurry').classList.add('d-none'); $('cdWrap').classList.add('d-none');
+    $('aHurry').insertAdjacentHTML('afterend', `<div class="note note-warning small-2 mt-2 mb-0"><i class="bi bi-info-circle"></i><span>Voucher đã phát hết <b>${v.total}</b> mã. Xem các ưu đãi khác ở cuối trang.</span></div>`);
+    $('heroDisc').textContent = 'ĐÃ HẾT MÃ'; $('heroDisc').classList.add('out');
+  }
+
+  // ---- FR-3.2: voucher hết hạn / bị gỡ → không hiện chi tiết, gợi ý ưu đãi khác ----
+  if (v.status === 'expired' || v.status === 'removed') {
+    const exp = v.status === 'expired';
+    document.body.classList.add('is-unavail');
+    document.title = 'Voucher không còn khả dụng – CuDanDeals.vn';
+    $('unavail').innerHTML = `<div class="cdd-card ua-card">
+      <div class="ua-img"><img src="${CDD.IMG}${v.img}" alt="${v.shop}"><span class="ua-badge"><i class="bi ${exp ? 'bi-hourglass-bottom' : 'bi-x-octagon'} me-1"></i>${exp ? 'ĐÃ HẾT HẠN' : 'ĐÃ BỊ GỠ'}</span></div>
+      <h1 class="h4 fw-bold mt-4 mb-2">Voucher không còn khả dụng</h1>
+      <p class="mb-1"><b>${v.title}</b></p>
+      <p class="small-2 text-muted-2 mb-3">${v.shop} · ${v.address}</p>
+      <p class="text-muted-2">${exp ? `Ưu đãi này đã hết hạn ngày <b class="text-body">${v.end}</b> nên không thể xem chi tiết hay nhận mã nữa.`
+                                   : 'Ưu đãi này đã được Ban quản lý gỡ khỏi hệ thống nên không thể xem chi tiết hay nhận mã nữa.'}</p>
+      <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
+        <a class="btn btn-accent px-4" href="explore.html"><i class="bi bi-compass"></i>Xem ưu đãi khác</a>
+        ${q.get('from') === 'wallet' ? '<a class="btn btn-light px-4" href="wallet.html?tab=expired"><i class="bi bi-wallet2"></i>Về Ví voucher</a>' : ''}
+      </div></div>`;
+    $('unavail').classList.remove('d-none');
+  }
+
   if (q.get('code') === '1') CDD.showCode(v.id, 'CDD-HG2026-001', { fresh: true });   // trạng thái vừa nhận mã (để chụp giao diện)
 </script>
 </body>
