@@ -3,7 +3,8 @@
    Cách dùng: <body data-role="partner" data-active="voucher">
      <div id="cdd-header"></div> ... <div id="cdd-footer"></div>
      <script src="(đường dẫn)/js/layout.js"></script>
-   data-role: public | resident | partner | admin
+   data-role: public | resident | partner | admin | auth
+   (auth = trang Đăng nhập/Đăng ký/Quên mật khẩu: header tối giản, chỉ logo + về trang chủ)
    ========================================================== */
 (function () {
   // Tìm thư mục gốc dự án dựa vào vị trí file layout.js
@@ -52,8 +53,9 @@
   };
 
   const role = document.body.dataset.role || 'public';
+  const isAuth = role === 'auth';
   const active = document.body.dataset.active || '';
-  const sub = { resident: 'ƯU ĐÃI CƯ DÂN', partner: 'KÊNH ĐỐI TÁC', admin: 'BAN QUẢN LÝ', public: 'ƯU ĐÃI CƯ DÂN' }[role];
+  const sub = { resident: 'ƯU ĐÃI CƯ DÂN', partner: 'KÊNH ĐỐI TÁC', admin: 'BAN QUẢN LÝ', public: 'ƯU ĐÃI CƯ DÂN', auth: 'ƯU ĐÃI CƯ DÂN' }[role];
 
   const links = (NAV[role] || []).map(([key, label, href, opt = {}]) =>
     `<a href="${ROOT}${href}" class="${key === active ? 'active' : ''}">${label}` +
@@ -64,7 +66,10 @@
     `<li><a class="dropdown-item${key === active ? ' active' : ''}" href="${ROOT}${href}">${label}</a></li>`).join('');
 
   let right;
-  if (role === 'public') {
+  if (isAuth) {
+    // Trang xác thực: form đã có nút Đăng nhập/Đăng ký → header không lặp lại, chỉ giữ lối quay về
+    right = `<a href="${ROOT}index.html" class="text-decoration-none fw-semibold small" style="color:var(--muted)"><i class="bi bi-arrow-left me-1"></i>Về trang chủ</a>`;
+  } else if (role === 'public') {
     right = `<a href="${ROOT}login.html" class="btn btn-link text-decoration-none fw-semibold" style="color:var(--text)">Đăng nhập</a>
              <a href="${ROOT}register.html" class="btn btn-accent px-4">Đăng ký</a>`;
   } else {
@@ -90,16 +95,16 @@
   <header class="cdd-header">
     <div class="container container-cdd d-flex align-items-center justify-content-between gap-3">
       <div class="d-flex align-items-center gap-2">
-        <div class="dropdown d-lg-none">
+        ${isAuth ? '' : `<div class="dropdown d-lg-none">
           <button class="btn btn-light btn-sm" data-bs-toggle="dropdown" aria-label="Menu"><i class="bi bi-list fs-5"></i></button>
           <ul class="dropdown-menu shadow-sm border-0">${mobileLinks}</ul>
-        </div>
+        </div>`}
         <a href="${ROOT}index.html" class="cdd-logo">
           <span class="cdd-logo-icon"><i class="bi bi-ticket-perforated-fill"></i></span>
           <span><span class="cdd-logo-text">CuDanDeals<span class="vn">.vn</span></span><span class="cdd-logo-sub">${sub}</span></span>
         </a>
       </div>
-      <nav class="cdd-nav">${links}</nav>
+      ${isAuth ? '' : `<nav class="cdd-nav">${links}</nav>`}
       <div class="d-flex align-items-center gap-2">${right}</div>
     </div>
   </header>`;
@@ -141,7 +146,7 @@
           <a href="#"><i class="bi bi-envelope me-2"></i>hotro@cudandeals.vn</a>
         </div>
       </div>
-      <div class="copy">© 2026 CuDanDeals.vn · Đồ án IE104 – Nhóm N13</div>
+      <div class="copy">© 2026 CuDanDeals.vn · Bảo lưu mọi quyền.</div>
     </div>
   </footer>`;
 

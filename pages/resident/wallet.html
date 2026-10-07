@@ -16,10 +16,21 @@
     .stat .lbl { font-size: 13px; color: var(--muted); white-space: nowrap; margin-top: 4px; }
     .witem { display: flex; gap: 16px; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: var(--shadow); }
     .witem + .witem { margin-top: 12px; }
-    .witem img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+    .witem img { object-fit: cover; }
     .witem .ttl { font-weight: 700; }
+    /* Bấm vào cả dòng để mở chi tiết voucher */
+    .witem[data-href] { cursor: pointer; transition: translate .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s, border-color .25s; }
+    .witem[data-href]:hover { translate: 0 -3px; box-shadow: 0 12px 24px rgba(37,99,235,.12); border-color: #BFD3FE; }
+    .witem .thumb { width: 96px; height: 72px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+    .witem .thumb img { width: 100%; height: 100%; transition: transform .4s ease; }
+    .witem[data-href]:hover .thumb img { transform: scale(1.08); }
+    .witem[data-href]:hover .ttl { color: var(--primary) !important; }
+    .witem .go { color: var(--muted); font-size: 18px; transition: translate .25s, color .25s; }
+    .witem[data-href]:hover .go { translate: 4px 0; color: var(--primary); }
+    .witem[data-href]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     .witem.expired { opacity: .6; }
     .witem.expired img { filter: grayscale(1); }
+    .tag .pulse-dot { width: 7px; height: 7px; margin-right: 4px; }
     .code-chip { font-family: 'Courier New', monospace; font-weight: 700; font-size: 13px; background: var(--primary-soft); color: var(--primary); padding: 2px 8px; border-radius: 6px; }
     .my-review { background: var(--bg); border-radius: 8px; padding: 10px 12px; font-size: 14px; margin-top: 10px; }
     .star-pick { font-size: 32px; color: #F59E0B; cursor: pointer; display: flex; gap: 6px; justify-content: center; }
@@ -115,7 +126,9 @@
       act = `<button class="btn btn-sm btn-light" data-save="${v.id}"><i class="bi bi-bookmark-x"></i><span>Bỏ lưu</span></button>
              <button class="btn btn-sm btn-accent" data-code="${v.id}"><i class="bi bi-ticket-perforated"></i>Nhận mã</button>`;
     } else if (tab === 'unused') {
-      tag = `<span class="tag ${v.daysLeft <= 3 ? 'tag-warning' : 'tag-accent'}"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>`;
+      tag = v.daysLeft <= 3
+        ? `<span class="tag tag-warning"><span class="pulse-dot"></span>Còn ${v.daysLeft} ngày</span>`
+        : `<span class="tag tag-accent"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>`;
       info = `Mã: <span class="code-chip">${w.code}</span> · HSD ${v.end}`;
       act = `<button class="btn btn-sm btn-accent px-3" onclick="CDD.showCode('${v.id}','${w.code}')"><i class="bi bi-qr-code"></i>Xem mã</button>`;
     } else if (tab === 'used') {
@@ -129,16 +142,17 @@
       info = `Mã: <span class="code-chip">${w.code}</span>`;
       act = '';
     }
-    return `<div class="witem ${tab === 'expired' ? 'expired' : ''}">
-      <img src="${CDD.IMG}${v.img}" alt="${v.shop}">
+    const href = `voucher-detail.html?id=${v.id}&from=wallet`;
+    return `<div class="witem ${tab === 'expired' ? 'expired' : ''}" data-href="${href}" role="link" tabindex="0" aria-label="Xem chi tiết ${v.title}">
+      <div class="thumb"><img src="${CDD.IMG}${v.img}" alt="${v.shop}"></div>
       <div class="flex-fill">
         <div class="d-flex flex-wrap gap-2 align-items-center mb-1">${tag}${CDD.scopeTag(v)}</div>
         <div class="vcard-shop">${v.shop}</div>
-        <a class="ttl text-decoration-none text-reset" href="voucher-detail.html?id=${v.id}">${v.title}</a>
+        <a class="ttl text-decoration-none text-reset" href="${href}">${v.title}</a>
         <div class="small-2 text-muted-2 mt-1">${info}</div>
         ${w.review ? `<div class="my-review"><span class="rating">${CDD.stars(w.review.stars)}</span> “${w.review.text}” <a href="my-reviews.html" class="ms-1">Xem / Sửa</a></div>` : ''}
       </div>
-      <div class="act d-flex gap-2 flex-shrink-0">${act}</div>
+      <div class="act d-flex gap-2 flex-shrink-0 align-items-center">${act}<i class="bi bi-chevron-right go d-none d-sm-inline" aria-hidden="true"></i></div>
     </div>`;
   }
 
@@ -147,6 +161,12 @@
     $('list').innerHTML = WALLET[tab].map(w => item(tab, w)).join('');
   }
   $('tabs').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (b) show(b.dataset.tab); });
+  // Bấm vào dòng (trừ nút / liên kết bên trong) → mở chi tiết voucher (R-02)
+  $('list').addEventListener('click', (e) => {
+    const it = e.target.closest('.witem[data-href]'); if (!it || e.target.closest('button, a, .my-review')) return;
+    location.href = it.dataset.href;
+  });
+  $('list').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('.witem[data-href]')) location.href = e.target.dataset.href; });
 
   // ---- Popup đánh giá ----
   const TXT = ['', 'Rất tệ', 'Chưa hài lòng', 'Bình thường', 'Hài lòng', 'Cực kỳ hài lòng'];

@@ -62,7 +62,7 @@
     <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Đóng"></button>
     <h2 class="h5 fw-bold mb-3" id="pwTitle"><i class="bi bi-key text-primary me-2"></i>Đổi mật khẩu</h2>
     <div class="mb-3"><label class="form-label" for="pw0">Mật khẩu hiện tại</label><input id="pw0" type="password" class="form-control" required></div>
-    <div class="mb-3"><label class="form-label" for="pw1">Mật khẩu mới</label><input id="pw1" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" required></div>
+    <div class="mb-3"><label class="form-label" for="pw1">Mật khẩu mới</label><input id="pw1" type="password" class="form-control" placeholder="Tối thiểu 8 ký tự, có chữ và số" required></div>
     <div class="mb-3"><label class="form-label" for="pw2">Nhập lại mật khẩu mới</label><input id="pw2" type="password" class="form-control" required><div class="invalid-feedback">Mật khẩu nhập lại không khớp.</div></div>
     <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-primary px-4">Cập nhật</button></div>
   </form>
@@ -100,9 +100,12 @@
     ['fName', 'fPhone'].forEach(id => { const bad = $(id).required && !$(id).value.trim(); $(id).classList.toggle('is-invalid', bad); if (bad) ok = false; });
     if (ok) { $('pName').textContent = $('fName').value; CDD.toast('Đã lưu thông tin tài khoản'); }
   });
+  CDD.pwMeter($('pw1'));
   $('pwForm').addEventListener('submit', (e) => {
-    e.preventDefault(); const bad = !$('pw1').value || $('pw1').value !== $('pw2').value; $('pw2').classList.toggle('is-invalid', bad);
-    if (!bad) { bootstrap.Modal.getInstance($('pwModal')).hide(); CDD.toast('Đã đổi mật khẩu'); }
+    e.preventDefault();
+    const weak = !CDD.pwOk($('pw1').value); if (weak) $('pw1')._pw.warn();
+    const diff = $('pw1').value !== $('pw2').value; $('pw2').classList.toggle('is-invalid', diff);
+    if (!weak && !diff) { bootstrap.Modal.getInstance($('pwModal')).hide(); CDD.toast('Đã đổi mật khẩu'); }
   });
   if (new URLSearchParams(location.search).get('pw')) bootstrap.Modal.getOrCreateInstance($('pwModal')).show();
 </script>

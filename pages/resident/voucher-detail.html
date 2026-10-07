@@ -10,28 +10,74 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../../css/style.css" />
   <style>
+    /* Ảnh lớn: phóng chậm (Ken Burns), đổi ảnh mờ dần khi bấm ảnh trong dải ảnh */
     .hero { position: relative; border-radius: 16px; overflow: hidden; aspect-ratio: 16/7; background: #0f172a; }
-    .hero img { width: 100%; height: 100%; object-fit: cover; opacity: .9; }
-    .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgba(15,23,42,.75)); }
-    .hero .cap { position: absolute; left: 24px; bottom: 20px; right: 24px; z-index: 1; color: #fff; }
+    .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .92; transition: opacity .6s ease; animation: kb 16s ease-in-out infinite alternate; }
+    .hero img.out { opacity: 0; }
+    @keyframes kb { from { transform: scale(1); } to { transform: scale(1.08) translate(-1%, -1%); } }
+    .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgba(15,23,42,.78)); }
+    .hero .cap { position: absolute; left: 24px; bottom: 20px; right: 24px; z-index: 1; color: #fff; animation: capIn .7s .1s cubic-bezier(.2,.7,.2,1) both; }
     .hero .cap h1 { color: #fff; font-size: 30px; font-weight: 800; margin: 6px 0 0; }
-    .hero .disc { position: absolute; top: 18px; right: 18px; z-index: 1; background: var(--accent); color: #fff; font-weight: 800; padding: 6px 14px; border-radius: 8px; }
-    .gallery img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; }
+    @keyframes capIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    .hero .disc { position: absolute; top: 18px; right: 18px; z-index: 1; background: var(--accent); color: #fff; font-weight: 800; padding: 6px 14px; border-radius: 8px; overflow: hidden; animation: pop .5s .3s cubic-bezier(.3,1.6,.5,1) both; }
+    .hero .disc::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 25%, rgba(255,255,255,.6) 50%, transparent 75%); transform: translateX(-130%); animation: discShine 5s ease-in-out 1s infinite; }
+    .hero .hot { position: absolute; top: 18px; left: 18px; z-index: 1; color: #fff; font-weight: 700; font-size: 13px; padding: 5px 10px; border-radius: 8px; background: linear-gradient(110deg, #7C3AED 40%, #B794F6 50%, #7C3AED 60%); background-size: 260% 100%; animation: vShine 3.2s linear infinite; }
+    @keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+    /* Dải ảnh chạy ngang (dừng khi rê chuột), bấm ảnh để xem lớn */
+    .strip { position: relative; overflow: hidden; border-radius: 12px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+    .strip-track { display: flex; gap: 12px; width: max-content; animation: marquee var(--dur, 40s) linear infinite; }
+    .strip:hover .strip-track { animation-play-state: paused; }
+    .strip button { flex: none; width: 260px; aspect-ratio: 4/3; border: 0; padding: 0; border-radius: 10px; overflow: hidden; background: #F1F5F9; position: relative; }
+    .strip button img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+    .strip button:hover img { transform: scale(1.08); }
+    .strip button.on::after { content: ''; position: absolute; inset: 0; border: 3px solid var(--accent); border-radius: 10px; }
+    @keyframes marquee { to { transform: translateX(calc(-50% - 6px)); } }
+    .gallery-static { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .gallery-static button { border: 0; padding: 0; border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; }
+    .gallery-static img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; } .gallery-static button:hover img { transform: scale(1.06); }
+    /* Thông tin nhanh */
+    .vinfo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+    .vinfo > div { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; transition: transform .2s, border-color .2s; }
+    .vinfo > div:hover { transform: translateY(-3px); border-color: #BFD3FE; }
+    .vinfo .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: #FFF1E7; color: var(--accent); margin-bottom: 8px; }
+    .vinfo .k { font-size: 12px; color: var(--muted); } .vinfo .val { font-weight: 700; font-size: 14px; line-height: 1.3; }
+    @media (max-width: 767.98px) { .vinfo { grid-template-columns: 1fr 1fr; } }
+    /* Thẻ hành động */
     .action-card { position: sticky; top: 88px; }
     .big-title { font-size: 22px; font-weight: 700; }
+    .stock-big .vstock { height: 8px; margin-top: 6px; }
+    .stock-big .vstock span { animation: vGrow 1.1s .4s cubic-bezier(.2,.7,.2,1) both; }
+    .countdown { display: flex; gap: 6px; margin-top: 4px; }
+    .countdown span { background: #FEF2F2; color: #DC2626; border-radius: 8px; padding: 6px 0; min-width: 46px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .countdown small { display: block; font-size: 10px; font-weight: 600; opacity: .8; }
+    .glow { animation: glow 2.6s ease-in-out infinite; }
+    @keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(234,88,12,.45); } 50% { box-shadow: 0 0 0 8px rgba(234,88,12,0); } }
     .cond li { margin-bottom: 6px; }
     .cond li::marker { color: var(--primary); }
     .bar { height: 8px; border-radius: 8px; background: #F1F5F9; overflow: hidden; flex: 1; }
-    .bar span { display: block; height: 100%; background: #F59E0B; }
+    .bar span { display: block; height: 100%; background: #F59E0B; transition: width 1s .2s cubic-bezier(.2,.7,.2,1); }
+    .fx .reveal:not(.in) .bar span { width: 0 !important; }
     .review + .review { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; }
     .reply { background: var(--bg); border-left: 3px solid var(--accent); border-radius: 8px; padding: 12px 14px; margin-top: 10px; font-size: 14px; }
+    /* Ưu đãi khác: băng chuyền ngang */
+    .car-wrap { position: relative; }
+    .car-track { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 14px 6px 22px; scrollbar-width: none; }
+    .car-track::-webkit-scrollbar { display: none; }
+    .car-item { flex: 0 0 calc((100% - 72px) / 4); scroll-snap-align: start; }
+    .car-btn { position: absolute; top: 38%; z-index: 6; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: #fff; color: var(--text); box-shadow: var(--shadow-hover); display: grid; place-items: center; font-size: 18px; transition: transform .15s, background-color .15s; }
+    .car-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: scale(1.06); }
+    .car-btn.prev { left: -18px; } .car-btn.next { right: -18px; }
+    @media (max-width: 1199.98px) { .car-item { flex-basis: calc((100% - 48px) / 3); } }
+    @media (max-width: 767.98px) { .car-item { flex-basis: calc((100% - 24px) / 2); } }
+    @media (max-width: 575.98px) { .car-item { flex-basis: 82%; } .car-btn { display: none; } .strip button { width: 200px; } }
     @media (max-width: 991.98px) {
       .action-card { position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 1020; border-radius: 16px 16px 0 0 !important; }
       .action-card .hide-sm { display: none; }
-      body { padding-bottom: 96px; }
+      body { padding-bottom: 110px; }
       .hero { aspect-ratio: 4/3; }
       .hero .cap h1 { font-size: 22px; }
     }
+    @media (prefers-reduced-motion: reduce) { .strip-track { animation: none; } }
   </style>
 </head>
 <body data-role="resident" data-active="explore">
@@ -39,17 +85,19 @@
 
 <!-- ============ R-02 · Chi tiết voucher ============
   FR-3.2 Xem chi tiết · FR-3.3 Lưu · FR-3.4 Nhận mã · FR-7.3 Điểm đánh giá trung bình + bình luận
-  Mở sẵn popup mã (để chụp giao diện): voucher-detail.html?id=v1&code=1
+  Mở sẵn popup mã (để chụp giao diện): voucher-detail.html?id=v1&code=1 · mở từ Ví: &from=wallet (nút quay lại về Ví)
+  Hiệu ứng: ảnh lớn phóng chậm, dải ảnh chạy ngang (bấm để xem lớn), thanh số mã, đếm ngược khi còn ≤ 3 ngày, băng chuyền ưu đãi khác
 ================================================== -->
 <main class="container container-cdd">
-  <div class="pt-4"><a href="explore.html" class="back-link"><i class="bi bi-arrow-left"></i>Quay lại Khám phá</a></div>
+  <div class="pt-4"><a href="explore.html" class="back-link" id="back"><i class="bi bi-arrow-left"></i>Quay lại Khám phá</a></div>
 
   <div class="hero mb-3">
     <img id="heroImg" src="" alt="">
+    <span class="hot d-none" id="heroHot"><i class="bi bi-fire me-1"></i>Nổi bật</span>
     <span class="disc" id="heroDisc"></span>
     <div class="cap"><span class="tag tag-accent" id="heroCat"></span><h1 id="heroShop"></h1></div>
   </div>
-  <div class="row g-2 gallery mb-4" id="gallery"></div>
+  <div class="mb-4" id="gallery"></div>
 
   <div class="row g-4">
     <div class="col-lg-8">
@@ -60,6 +108,7 @@
           <span><span class="rating" id="rStars"></span> <b id="rAvg"></b> <a href="#reviews">(<span id="rCount"></span> đánh giá)</a></span>
           <span class="text-muted-2"><i class="bi bi-geo-alt me-1"></i><span id="addr"></span></span>
         </div>
+        <div class="vinfo" id="vinfo"></div>
       </section>
 
       <section class="cdd-card">
@@ -103,18 +152,39 @@
           <div class="vcard-shop" id="aShop"></div>
           <div class="fw-bold fs-5 mb-2" id="aTitle"></div>
           <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Hạn dùng</span><b id="aEnd"></b></div>
-          <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Còn lại</span><b class="text-accent" id="aLeft"></b></div>
           <div class="d-flex justify-content-between small-2 mb-3"><span class="text-muted-2">Phạm vi</span><span id="aScope"></span></div>
+          <div class="stock-big mb-3">
+            <div class="d-flex justify-content-between small-2"><span class="text-muted-2"><i class="bi bi-people me-1"></i><b class="text-body" id="aClaimed"></b> người đã nhận</span><b id="aLeft"></b></div>
+            <div id="aBar"></div>
+            <div class="small-2 text-accent fw-semibold mt-1 d-none" id="aHurry"><i class="bi bi-fire me-1"></i>Sắp hết mã – nhanh tay nhé!</div>
+          </div>
+          <div class="mb-3 d-none" id="cdWrap">
+            <div class="small-2 fw-semibold text-danger d-flex align-items-center"><span class="pulse-dot"></span>Ưu đãi kết thúc sau</div>
+            <div class="countdown" id="cd"></div>
+          </div>
         </div>
         <div class="d-flex gap-2">
           <button class="btn btn-save" id="saveBtn"><i class="bi bi-bookmark"></i><span>Lưu</span></button>
-          <button class="btn btn-accent flex-fill" id="codeBtn"><i class="bi bi-ticket-perforated"></i>Nhận mã</button>
+          <button class="btn btn-accent flex-fill glow" id="codeBtn"><i class="bi bi-ticket-perforated"></i>Nhận mã</button>
           <button class="btn btn-light" title="Chia sẻ" aria-label="Chia sẻ"><i class="bi bi-share"></i></button>
         </div>
         <div class="small-2 text-muted-2 mt-2 hide-sm"><i class="bi bi-shield-check me-1"></i>Voucher đã được Ban quản lý duyệt.</div>
       </div>
     </div>
   </div>
+
+  <!-- Ưu đãi khác: cùng ngành hàng trước, sau đó các ưu đãi đánh giá cao -->
+  <section class="mt-5">
+    <div class="d-flex justify-content-between align-items-end mb-1">
+      <div class="section-title mb-0">Ưu đãi khác bạn có thể thích</div>
+      <a href="explore.html" class="small-2 fw-semibold text-decoration-none">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="car-wrap">
+      <button class="car-btn prev" id="carPrev" aria-label="Ưu đãi trước"><i class="bi bi-chevron-left"></i></button>
+      <div class="car-track" id="related"></div>
+      <button class="car-btn next" id="carNext" aria-label="Ưu đãi tiếp theo"><i class="bi bi-chevron-right"></i></button>
+    </div>
+  </section>
 </main>
 
 <div id="cdd-footer"></div>
@@ -134,10 +204,33 @@
 
   $('heroImg').src = CDD.IMG + v.img; $('heroImg').alt = v.shop;
   $('heroDisc').textContent = v.badge; $('heroCat').textContent = cat.name; $('heroShop').textContent = v.shop;
-  const more = ['coffee-front.jpg', 'coffee-drinks.jpg', 'coffee-service.jpg', 'coffee-seating.jpg'];
-  $('gallery').innerHTML = more.map(i => `<div class="col-3"><img src="${CDD.IMG}${i}" alt="Ảnh cửa hàng"></div>`).join('');
+  if (v.hot) $('heroHot').classList.remove('d-none');
+  if (q.get('from') === 'wallet') { $('back').href = 'wallet.html'; $('back').lastChild.textContent = 'Quay lại Ví voucher'; }
 
-  $('tags').innerHTML = CDD.scopeTag(v) + `<span class="tag ${v.daysLeft <= 3 ? 'tag-warning' : 'tag-muted'}"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>`;
+  // ---- Ảnh cửa hàng: ảnh của voucher + ảnh cùng ngành (Phase 3: lấy từ hồ sơ cửa hàng B-02) ----
+  const EXTRA = { coffee: ['coffee-front.jpg', 'coffee-drinks.jpg', 'coffee-service.jpg', 'coffee-seating.jpg', 'coffee-counter.jpg', 'coffee-barista.jpg', 'tea-shop.jpg'] };
+  const pics = [...new Set([v.img, ...D.vouchers.filter(o => o.cat === v.cat).map(o => o.img), ...(EXTRA[v.cat] || [])])];
+  const thumb = (i) => `<button type="button" data-img="${i}" aria-label="Xem ảnh lớn"><img src="${CDD.IMG}${i}" alt="Ảnh ${v.shop}" loading="lazy"></button>`;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches || q.get('fx') === 'off';
+  if (pics.length >= 4 && !still) {
+    // nhân đôi dải ảnh để chạy vòng liền mạch
+    $('gallery').innerHTML = `<div class="strip"><div class="strip-track" style="--dur:${pics.length * 6}s">${[...pics, ...pics].map(thumb).join('')}</div></div>`;
+  } else if (pics.length >= 2) {
+    $('gallery').innerHTML = `<div class="gallery-static">${pics.map(thumb).join('')}</div>`;
+  }
+  const markOn = (img) => document.querySelectorAll('#gallery [data-img]').forEach(b => b.classList.toggle('on', b.dataset.img === img));
+  markOn(v.img);
+  $('gallery').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-img]'); if (!b || $('heroImg').src.endsWith(b.dataset.img)) return;
+    $('heroImg').classList.add('out');
+    setTimeout(() => { $('heroImg').src = CDD.IMG + b.dataset.img; $('heroImg').classList.remove('out'); }, 300);
+    markOn(b.dataset.img);
+    $('heroImg').closest('.hero').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  $('tags').innerHTML = CDD.scopeTag(v) + (v.daysLeft <= 3
+    ? `<span class="tag tag-warning"><span class="pulse-dot" style="width:7px;height:7px;margin-right:4px"></span>Còn ${v.daysLeft} ngày</span>`
+    : `<span class="tag tag-muted"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>`);
   $('title').textContent = v.title;
   $('rStars').innerHTML = $('rStars2').innerHTML = CDD.stars(v.rating);
   $('rAvg').textContent = $('rAvg2').textContent = v.rating.toFixed(1);
@@ -162,7 +255,44 @@
     </div>`).join('') || '<p class="text-muted-2">Chưa có đánh giá.</p>';
 
   $('aShop').textContent = v.shop; $('aTitle').textContent = v.title;
-  $('aEnd').textContent = v.end; $('aLeft').textContent = v.left + ' mã'; $('aScope').innerHTML = CDD.scopeTag(v);
+  $('aEnd').textContent = v.end; $('aScope').innerHTML = CDD.scopeTag(v);
+
+  // ---- Thông tin nhanh + số mã + đếm ngược ----
+  const claimed = v.total ? v.total - v.left : null, low = v.total && v.left / v.total <= 0.2;
+  $('vinfo').innerHTML = [
+    ['bi-receipt', 'Điều kiện', v.cond || 'Mỗi cư dân 1 mã'],
+    ['bi-clock-history', 'Khung giờ', v.time || 'Cả ngày'],
+    ['bi-calendar-event', 'Hạn dùng', v.end],
+    ['bi-people', 'Đã nhận', claimed != null ? `${claimed} người` : '—'],
+  ].map(([ic, k, val]) => `<div><div class="ic"><i class="bi ${ic}"></i></div><div class="k">${k}</div><div class="val">${val}</div></div>`).join('');
+  $('aClaimed').textContent = claimed ?? '—';
+  $('aLeft').textContent = `Còn ${v.left}${v.total ? '/' + v.total : ''} mã`; $('aLeft').className = low ? 'text-accent' : '';
+  if (v.total) {
+    // dùng lại thanh .vstock của thẻ voucher (sọc chạy khi sắp hết mã)
+    $('aBar').innerHTML = `<div class="vstock${low ? ' low' : ''}"><span style="--w:${Math.max(4, Math.round(v.left / v.total * 100))}%"></span></div>`;
+  }
+  $('aHurry').classList.toggle('d-none', !low);
+  if (v.daysLeft <= 3) {
+    const end = new Date(); end.setHours(23, 59, 59, 0); end.setDate(end.getDate() + v.daysLeft - 1);
+    const pad = (n) => String(n).padStart(2, '0');
+    const tick = () => {
+      let t = Math.max(0, Math.floor((end - Date.now()) / 1000));
+      const d = Math.floor(t / 86400); t %= 86400; const h = Math.floor(t / 3600); t %= 3600;
+      $('cd').innerHTML = [[d, 'ngày'], [h, 'giờ'], [Math.floor(t / 60), 'phút'], [t % 60, 'giây']].map(([n, u]) => `<span>${pad(n)}<small>${u}</small></span>`).join('');
+    };
+    tick(); setInterval(tick, 1000); $('cdWrap').classList.remove('d-none');
+  }
+
+  // ---- Ưu đãi khác (băng chuyền ngang) ----
+  const related = D.vouchers.filter(o => o.id !== v.id).sort((a, b) => (b.cat === v.cat) - (a.cat === v.cat) || b.rating - a.rating).slice(0, 8);
+  const track = $('related');
+  track.innerHTML = related.map(o => `<div class="car-item">${CDD.voucherCard(o)}</div>`).join('');
+  const step = () => (track.querySelector('.car-item')?.offsetWidth || 0) + 24;
+  const go = (dir) => {
+    const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 5;
+    if (dir > 0 && atEnd) track.scrollTo({ left: 0 }); else if (dir < 0 && track.scrollLeft <= 5) track.scrollTo({ left: track.scrollWidth }); else track.scrollBy({ left: dir * step() });
+  };
+  $('carPrev').onclick = () => go(-1); $('carNext').onclick = () => go(1);
   $('saveBtn').dataset.save = v.id;
   if (CDD.isSaved(v.id)) { $('saveBtn').classList.add('saved'); $('saveBtn').innerHTML = '<i class="bi bi-bookmark-fill"></i><span>Đã lưu</span>'; } $('codeBtn').dataset.code = v.id;
   if (q.get('code') === '1') CDD.showCode(v.id, 'CDD-HG2026-001');

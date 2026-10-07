@@ -1,0 +1,156 @@
+LINK DAN VAO html.to.design (da kem fx=off)
+Ten frame dat theo cot ben trai.
+
+=== 1. PUBLIC (Khách) ===
+P-01 Trang chu
+https://dobaouyennguyen-del.github.io/cudandeals/index.html?fx=off
+
+P-02 Dang nhap
+https://dobaouyennguyen-del.github.io/cudandeals/login.html?fx=off
+
+P-02b Dang nhap - yeu cau dang nhap
+https://dobaouyennguyen-del.github.io/cudandeals/login.html?next=deal&fx=off
+
+P-02c Dang nhap - Google chua dang ky
+https://dobaouyennguyen-del.github.io/cudandeals/login.html?google=new&fx=off
+
+P-03 Dang ky - buoc 1
+https://dobaouyennguyen-del.github.io/cudandeals/register.html?fx=off
+
+P-03b Dang ky - Cu dan
+https://dobaouyennguyen-del.github.io/cudandeals/register.html?step=2&role=resident&fx=off
+
+P-03c Dang ky - Doi tac
+https://dobaouyennguyen-del.github.io/cudandeals/register.html?step=2&role=partner&fx=off
+
+P-04 Quen mat khau
+https://dobaouyennguyen-del.github.io/cudandeals/forgot-password.html?fx=off
+
+P-04b Quen mat khau - da gui
+https://dobaouyennguyen-del.github.io/cudandeals/forgot-password.html?sent=1&fx=off
+
+
+=== 2. CU DAN ===
+R-01 Kham pha uu dai
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/explore.html?fx=off
+
+R-01b Kham pha - ngan keo tom tat khi re chuot
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/explore.html?hover=v1&fx=off
+
+R-01c Kham pha - dang loc nhanh
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/explore.html?quick=exp3&fx=off
+
+R-01d Bo loc chi tiet (chon Mobile 390)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/explore.html?filter=open&fx=off
+
+R-02 Chi tiet voucher
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/voucher-detail.html?id=v1&fx=off
+
+R-02b Popup ma uu dai
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/voucher-detail.html?id=v1&code=1&fx=off
+
+R-03 Vi voucher - Da luu
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/wallet.html?tab=saved&fx=off
+
+R-03b Vi - Chua dung
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/wallet.html?tab=unused&fx=off
+
+R-03c Vi - Da dung
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/wallet.html?tab=used&fx=off
+
+R-03d Vi - Het han
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/wallet.html?tab=expired&fx=off
+
+R-03e Popup danh gia
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/wallet.html?tab=used&review=1&fx=off
+
+R-04 Danh gia cua toi
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/my-reviews.html?fx=off
+
+
+=== 3. DOI TAC ===
+B-00 Tong quan - cho duyet
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/dashboard.html?pending=1&fx=off
+
+B-01 Tong quan
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/dashboard.html?fx=off
+
+B-02 Ho so cua hang
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/store-profile.html?fx=off
+
+B-03 Danh sach voucher
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/voucher-list.html?fx=off
+
+B-03b Voucher cho duyet
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/voucher-list.html?tab=pending&fx=off
+
+B-04 Tao voucher (AI)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/create-voucher.html?fx=off
+
+B-05 Xac nhan ma
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/confirm-redeem.html?fx=off
+
+B-05b Xac nhan - hop le
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/confirm-redeem.html?result=ok&fx=off
+
+B-05c Xac nhan - khong hop le
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/confirm-redeem.html?result=fail&fx=off
+
+B-06 Thong ke hieu qua
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/statistics.html?fx=off
+
+B-07 Danh gia tu cu dan
+https://dobaouyennguyen-del.github.io/cudandeals/pages/partner/reviews.html?fx=off
+
+
+=== 4. BAN QUAN LY (Admin) ===
+A-01 Tong quan BQL
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/dashboard.html?fx=off
+
+A-02 Quan ly cu dan
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/residents.html?fx=off
+
+A-03 Quan ly doi tac
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/partners.html?fx=off
+
+A-03b Doi tac cho duyet
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/partners.html?tab=pending&fx=off
+
+A-03c Ho so doi tac (duyet)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/partners.html?review=pt3&fx=off
+
+A-04 Duyet / go voucher
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/approve-vouchers.html?fx=off
+
+A-05 Bao cao & thong ke
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/reports.html?fx=off
+
+A-06 Quan ly khu dan cu
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/residential-areas.html?fx=off
+
+A-07 Quan ly nganh hang
+https://dobaouyennguyen-del.github.io/cudandeals/pages/admin/categories.html?fx=off
+
+
+=== 5. DUNG CHUNG ===
+C-01 Tai khoan & mat khau (cu dan)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/common/profile.html?fx=off
+
+C-01b Tai khoan (doi tac)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/common/profile.html?role=partner&fx=off
+
+C-01c Tai khoan (admin)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/common/profile.html?role=admin&fx=off
+
+C-01d Popup doi mat khau
+https://dobaouyennguyen-del.github.io/cudandeals/pages/common/profile.html?pw=1&fx=off
+
+C-02 Thong bao (cu dan)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/common/notifications.html?fx=off
+
+C-02b Thong bao (doi tac)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/common/notifications.html?role=partner&fx=off
+
+C-02c Thong bao (admin)
+https://dobaouyennguyen-del.github.io/cudandeals/pages/common/notifications.html?role=admin&fx=off
+

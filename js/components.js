@@ -17,15 +17,30 @@ window.CDD = (function () {
 
   const findVoucher = (id) => (D.vouchers || []).find(v => v.id === id);
 
-  /* ---------- Thẻ voucher (R-01, P-01) ---------- */
+  /* ---------- Thẻ voucher (R-01, P-01) ----------
+     - Rê chuột: thẻ phóng to, ngăn kéo tóm tắt (điều kiện, khung giờ, hạn dùng, số người đã nhận) trượt ra dưới thẻ
+     - Điện thoại (không có hover): tóm tắt điều kiện hiện thành 1 dòng trong thẻ
+     - Thanh "còn bao nhiêu mã" chạy khi thẻ hiện ra; ≤ 3 ngày: chấm đỏ nhấp nháy "sắp hết hạn" */
   function voucherCard(v, opt = {}) {
     const isSaved = saved.has(v.id);
     const link = opt.guest ? ROOT + 'login.html?next=deal' : `${ROOT}pages/resident/voucher-detail.html?id=${v.id}`;
+    const urgent = v.daysLeft <= 3;
+    const ratio = v.total ? Math.max(4, Math.round(v.left / v.total * 100)) : 0;
+    const low = v.total && v.left / v.total <= 0.2;
+    // Ngăn kéo tóm tắt: trượt ra dưới thẻ khi rê chuột (không che ảnh)
+    const more = v.cond ? `
+      <div class="vcard-more" aria-hidden="true">
+        <div><i class="bi bi-receipt"></i><span>${v.cond}</span></div>
+        <div><i class="bi bi-clock-history"></i><span>${v.time}</span></div>
+        <div><i class="bi bi-calendar-event"></i><span>Đến ${v.end}</span></div>
+        ${v.total ? `<div><i class="bi bi-people"></i><span>${v.total - v.left} người đã nhận</span></div>` : ''}
+      </div>` : '';
+    const delay = ((parseInt(v.id.replace(/\D/g, '')) || 0) * 0.9 % 5).toFixed(1);   // so le ánh sáng trên nhãn giảm giá
     return `
-    <article class="vcard">
+    <article class="vcard${v.hot ? ' hot' : ''}">
       <a href="${link}" class="vcard-img">
         <img src="${IMG}${v.img}" alt="${v.shop}" loading="lazy">
-        <span class="vcard-disc">${v.badge}</span>
+        <span class="vcard-disc" style="--d:${delay}s">${v.badge}</span>
         ${v.hot ? '<span class="vcard-hot">Nổi bật</span>' : ''}
         <span class="vcard-scope">${scopeTag(v)}</span>
       </a>
@@ -34,14 +49,18 @@ window.CDD = (function () {
         <a href="${link}" class="vcard-title">${v.title}</a>
         <div class="vcard-meta"><span class="rating">${stars(v.rating)}</span> ${v.rating} <span class="text-muted-2">(${v.reviews})</span></div>
         <div class="vcard-meta text-muted-2"><i class="bi bi-geo-alt"></i>${v.address}</div>
-        <div class="vcard-meta"><span class="${v.daysLeft <= 3 ? 'text-accent fw-semibold' : 'text-muted-2'}"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>
-          <span class="ms-auto text-muted-2">Còn ${v.left} mã</span></div>
+        ${v.cond ? `<div class="vcard-meta vcard-cond text-muted-2"><i class="bi bi-receipt"></i>${v.cond} · ${v.time}</div>` : ''}
+        <div class="vcard-meta vcard-due">${urgent
+          ? `<span class="text-accent fw-semibold d-inline-flex align-items-center"><span class="pulse-dot"></span>Còn ${v.daysLeft} ngày</span>`
+          : `<span class="text-muted-2"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>`}
+          <span class="ms-auto ${low ? 'text-accent fw-semibold' : 'text-muted-2'}">Còn ${v.left}${v.total ? '/' + v.total : ''} mã</span></div>
+        ${v.total ? `<div class="vstock${low ? ' low' : ''}" role="progressbar" aria-label="Số mã còn lại" aria-valuenow="${v.left}" aria-valuemin="0" aria-valuemax="${v.total}"><span style="--w:${ratio}%"></span></div>` : ''}
         ${opt.guest ? '' : `        <div class="d-flex gap-2 mt-3">
           <button class="btn btn-sm btn-save ${isSaved ? 'saved' : ''}" data-save="${v.id}" title="Lưu để xem sau">
             <i class="bi ${isSaved ? 'bi-bookmark-fill' : 'bi-bookmark'}"></i><span>${isSaved ? 'Đã lưu' : 'Lưu'}</span></button>
           <button class="btn btn-sm btn-accent flex-fill" data-code="${v.id}"><i class="bi bi-ticket-perforated"></i>Nhận mã</button>
         </div>`}
-      </div>
+      </div>${more}
     </article>`;
   }
 
@@ -169,6 +188,7 @@ window.CDD = (function () {
       const id = s.dataset.save, on = !saved.has(id);
       on ? saved.add(id) : saved.delete(id);
       s.classList.toggle('saved', on);
+      s.classList.remove('pop'); void s.offsetWidth; if (on) s.classList.add('pop');   // icon nảy khi lưu
       s.querySelector('i').className = 'bi ' + (on ? 'bi-bookmark-fill' : 'bi-bookmark');
       s.querySelector('span').textContent = on ? 'Đã lưu' : 'Lưu';
       toast(on ? 'Đã lưu voucher vào danh sách đã lưu' : 'Đã bỏ lưu voucher');
@@ -178,5 +198,40 @@ window.CDD = (function () {
   });
 
   const isSaved = (id) => saved.has(id);
-  return { stars, scopeTag, voucherCard, showCode, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, IMG, ROOT, D };
+
+  // ---- Kiểm tra mật khẩu (FR-1.1, FR-1.3): tối thiểu 8 ký tự, có chữ cái và chữ số ----
+  // Không bắt buộc chữ hoa / ký tự đặc biệt (ưu tiên độ dài – theo khuyến nghị NIST SP 800-63B); có thì được tính "Mạnh"
+  const PW_RULES = [
+    ['len', 'Ít nhất 8 ký tự', v => v.length >= 8],
+    ['letter', 'Có chữ cái', v => /[a-zA-ZÀ-ỹ]/.test(v)],
+    ['num', 'Có chữ số', v => /\d/.test(v)],
+  ];
+  const pwOk = (v) => PW_RULES.every(r => r[2](v || ''));
+  function pwLevel(v) {
+    if (!v) return 0;
+    if (!pwOk(v)) return 1;
+    const extra = (v.length >= 12) + (/[^a-zA-Z0-9]/.test(v) || (/[a-z]/.test(v) && /[A-Z]/.test(v)));
+    return extra ? 3 : 2;
+  }
+  function pwMeter(input) {
+    const box = document.createElement('div');
+    box.className = 'pw-meter'; box.dataset.level = 0;
+    box.innerHTML = `<div class="pw-top"><div class="pw-bar"><span></span><span></span><span></span></div><span class="pw-label" aria-live="polite"></span></div>
+      <ul class="pw-rules">${PW_RULES.map(r => `<li data-r="${r[0]}"><i class="bi bi-circle"></i>${r[1]}</li>`).join('')}</ul>`;
+    input.insertAdjacentElement('afterend', box);
+    const update = () => {
+      const v = input.value, lv = pwLevel(v);
+      box.dataset.level = lv;
+      box.querySelector('.pw-label').textContent = ['', 'Yếu', 'Trung bình', 'Mạnh'][lv];
+      box.querySelectorAll('li').forEach((li, i) => {
+        const ok = PW_RULES[i][2](v); li.classList.toggle('ok', ok);
+        li.firstElementChild.className = 'bi ' + (ok ? 'bi-check-circle-fill' : box.classList.contains('warn') ? 'bi-x-circle' : 'bi-circle');
+      });
+      if (pwOk(v)) { box.classList.remove('warn'); input.classList.remove('is-invalid'); }
+    };
+    input.addEventListener('input', update);
+    input._pw = { warn() { box.classList.add('warn'); input.classList.add('is-invalid'); update(); } };
+    return input._pw;
+  }
+  return { stars, scopeTag, voucherCard, showCode, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, pwOk, pwMeter, IMG, ROOT, D };
 })();

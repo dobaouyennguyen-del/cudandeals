@@ -10,44 +10,102 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../../css/style.css" />
   <style>
-    .filter-card { position: sticky; top: 88px; }
+    /* Bộ lọc chi tiết: cột trái trên máy tính, ngăn kéo (offcanvas) trên điện thoại */
+    @media (min-width: 992px) {
+      .filter-card { position: sticky; top: 88px; max-height: calc(100vh - 104px); overflow-y: auto; scrollbar-width: thin; }
+    }
+    @media (max-width: 991.98px) {
+      #filters { width: min(360px, 90vw); }
+      #filters .filter-card { border: 0; box-shadow: none; border-radius: 0; }
+    }
     .area-box { background: var(--primary-soft); border-radius: 10px; padding: 12px 14px; font-weight: 600; color: var(--primary); display: flex; gap: 8px; align-items: center; }
-    .cat-list .form-check { padding: 6px 0 6px 1.8em; }
-    .cat-list .form-check-label { display: flex; gap: 8px; align-items: center; width: 100%; }
+    .f-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 18px 0 8px; }
+    .f-list .form-check { padding: 5px 0 5px 1.8em; margin: 0; }
+    .f-list .form-check-label { display: flex; gap: 8px; align-items: center; width: 100%; }
+    .f-list .cnt { margin-left: auto; font-size: 12px; color: var(--muted); }
+    .f-list .form-check-input:disabled ~ .form-check-label { opacity: .45; }
+    .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+    .seg input { position: absolute; opacity: 0; pointer-events: none; }
+    .seg label { border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; background: #fff; transition: background-color .15s, border-color .15s, color .15s; }
+    .seg label:hover { border-color: var(--primary); color: var(--primary); }
+    .seg input:checked + label { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+    .seg input:focus-visible + label { outline: 2px solid var(--primary); outline-offset: 2px; }
     .search-lg .form-control { padding-left: 48px; background: #fff; }
     .search-lg .bi-search { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    /* Lọc nhanh */
+    .quick { display: flex; gap: 8px; align-items: center; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+    .quick::-webkit-scrollbar { display: none; }
+    .quick .lbl { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+    .qchip { white-space: nowrap; border: 1px dashed #CBD5E1; background: #fff; color: var(--text); border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600; display: inline-flex; gap: 6px; align-items: center; transition: background-color .15s, border-color .15s, color .15s, transform .1s; }
+    .qchip:hover { border-color: var(--accent); color: var(--accent); }
+    .qchip:active { transform: scale(.96); }
+    .qchip.on { background: #FFF1E7; border: 1px solid var(--accent); color: var(--accent); }
+    .qchip .bi-check2 { display: none; } .qchip.on .bi-check2 { display: inline; }
+    /* Kết quả + bộ lọc đang bật */
+    .resbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 34px; }
+    .achip { display: inline-flex; align-items: center; gap: 6px; background: var(--primary-soft); color: var(--primary); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 13px; font-weight: 600; animation: aIn .25s ease both; }
+    .achip button { border: 0; background: rgba(37,99,235,.12); color: var(--primary); width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; padding: 0; }
+    .achip button:hover { background: var(--primary); color: #fff; }
+    @keyframes aIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+    .fbadge { background: var(--accent); color: #fff; font-size: 11px; border-radius: 999px; padding: 1px 7px; }
+    /* Lưới: đổi bộ lọc thì thẻ cũ mờ đi, thẻ mới trượt lên lần lượt */
+    #grid.swap-out > div { opacity: 0; transform: translateY(8px); transition: opacity .18s ease, transform .18s ease; }
+    #grid > .enter { animation: gIn .45s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes gIn { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: none; } }
     .empty { text-align: center; padding: 48px 16px; color: var(--muted); }
+    /* Xem thêm */
+    .more-prog { width: 220px; max-width: 70%; height: 4px; border-radius: 4px; background: var(--border); overflow: hidden; }
+    .more-prog span { display: block; height: 100%; background: var(--primary); border-radius: inherit; transition: width .5s cubic-bezier(.2,.7,.2,1); }
+    #moreBtn .spinner-border { width: 16px; height: 16px; border-width: 2px; }
   </style>
 </head>
 <body data-role="resident" data-active="explore">
 <div id="cdd-header"></div>
 
 <!-- ============ R-01 · Khám phá ưu đãi ============
-  FR-3.1 Danh sách deal công khai + riêng khu của cư dân · FR-3.5 Tìm kiếm theo từ khóa
+  FR-3.1 Danh sách deal công khai + riêng khu của cư dân, phân loại danh mục · FR-3.5 Tìm kiếm theo từ khóa
   FR-3.3 Lưu · FR-3.4 Nhận mã
+  Lọc nhanh (chip phía trên) cho người cần nhanh · Bộ lọc chi tiết (cột trái / ngăn kéo trên điện thoại) cho người cần kỹ
+  Xem thêm: hiện 12 thẻ, bấm "Xem thêm" tải tiếp 12 · ?all=1 hiện hết
+  Trạng thái để chụp: ?hover=v1 (ngăn kéo tóm tắt khi rê chuột) · ?quick=exp3|pct30|gift|rate45 · ?filter=open (điện thoại)
 ================================================== -->
 <main class="container container-cdd">
-  <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
-    <div>
-      <h1>Ưu đãi dành cho bạn</h1>
-      <p>Voucher công khai và voucher riêng của <b>Khu dân cư Sunrise</b>.</p>
-    </div>
+  <div class="page-head">
+    <h1>Ưu đãi dành cho bạn</h1>
+    <p>Voucher công khai và voucher riêng của <b>Khu dân cư Sunrise</b>.</p>
   </div>
 
-  <div class="row g-4">
-    <!-- Bộ lọc -->
+  <div class="row gx-4 gy-0">
+    <!-- Bộ lọc chi tiết -->
     <aside class="col-lg-3">
-      <button class="btn btn-outline-primary w-100 d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-expanded="false" aria-controls="filters"><i class="bi bi-funnel"></i>Bộ lọc ngành hàng</button>
-      <div class="collapse d-lg-block mt-3 mt-lg-0" id="filters">
-      <div class="cdd-card filter-card">
-        <div class="small-2 fw-bold text-muted-2 text-uppercase mb-2">Khu dân cư của bạn</div>
-        <div class="area-box mb-1"><i class="bi bi-buildings"></i>Khu dân cư Sunrise</div>
-        <a href="../common/profile.html" class="small-2">Đổi khu trong hồ sơ</a>
-        <hr>
-        <div class="small-2 fw-bold text-muted-2 text-uppercase mb-2">Ngành hàng</div>
-        <div class="cat-list" id="catList"></div>
-        <button class="btn btn-outline-primary w-100 mt-3" id="clearFilter">Xóa bộ lọc</button>
-      </div>
+      <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="filters" aria-labelledby="filtersLabel">
+        <div class="offcanvas-header border-bottom d-lg-none">
+          <h2 class="h6 fw-bold mb-0" id="filtersLabel"><i class="bi bi-sliders me-2 text-primary"></i>Bộ lọc chi tiết</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filters" aria-label="Đóng"></button>
+        </div>
+        <div class="offcanvas-body d-block p-0">
+          <div class="cdd-card filter-card">
+            <div class="f-title mt-0">Khu dân cư của bạn</div>
+            <div class="area-box mb-1"><i class="bi bi-buildings"></i>Khu dân cư Sunrise</div>
+            <a href="../common/profile.html" class="small-2">Đổi khu trong hồ sơ</a>
+            <hr class="mb-0">
+            <div class="f-title">Ngành hàng</div>
+            <div class="f-list" id="catList"></div>
+            <div class="f-title">Loại ưu đãi</div>
+            <div class="f-list" id="typeList"></div>
+            <div class="f-title">Mức giảm</div>
+            <div class="seg" id="pctSeg"></div>
+            <div class="f-title">Hạn dùng</div>
+            <div class="seg" id="expSeg"></div>
+            <div class="f-title">Đánh giá</div>
+            <div class="seg" id="rateSeg"></div>
+            <button class="btn btn-outline-primary w-100 mt-4 d-none d-lg-inline-flex" id="clearFilter"><i class="bi bi-arrow-counterclockwise"></i>Xóa bộ lọc</button>
+          </div>
+        </div>
+        <div class="d-flex gap-2 p-3 border-top d-lg-none">
+          <button class="btn btn-light" id="clearFilterM">Xóa lọc</button>
+          <button class="btn btn-primary flex-fill" data-bs-dismiss="offcanvas" data-bs-target="#filters">Xem <span id="ocCount">0</span> ưu đãi</button>
+        </div>
       </div>
     </aside>
 
@@ -63,25 +121,41 @@
           <button class="pill" data-scope="area"><i class="bi bi-buildings"></i>Riêng khu Sunrise <span class="n" data-n="area"></span></button>
           <button class="pill" data-scope="public"><i class="bi bi-globe2"></i>Công khai <span class="n" data-n="public"></span></button>
         </div>
-        <select class="form-select w-auto" id="sort" style="min-height:44px" aria-label="Sắp xếp">
-          <option value="new">Mới nhất</option>
-          <option value="end">Sắp hết hạn</option>
-          <option value="rating">Đánh giá cao</option>
-        </select>
+        <div class="d-flex gap-2 ms-auto">
+          <button class="btn btn-outline-primary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filters" aria-controls="filters"><i class="bi bi-sliders"></i>Bộ lọc <span class="fbadge d-none" id="fCount"></span></button>
+          <select class="form-select w-auto" id="sort" style="min-height:44px" aria-label="Sắp xếp">
+            <option value="new">Mới nhất</option>
+            <option value="discount">Giảm nhiều nhất</option>
+            <option value="end">Sắp hết hạn</option>
+            <option value="rating">Đánh giá cao</option>
+            <option value="popular">Nhiều người nhận</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="quick mb-3" id="quick" role="group" aria-label="Lọc nhanh">
+        <span class="lbl"><i class="bi bi-lightning-charge-fill text-accent"></i> Lọc nhanh:</span>
+        <button class="qchip" data-q="exp3"><i class="bi bi-check2"></i><i class="bi bi-hourglass-split"></i>Sắp hết hạn</button>
+        <button class="qchip" data-q="pct30"><i class="bi bi-check2"></i><i class="bi bi-percent"></i>Giảm từ 30%</button>
+        <button class="qchip" data-q="gift"><i class="bi bi-check2"></i><i class="bi bi-gift"></i>Có quà tặng</button>
+        <button class="qchip" data-q="rate45"><i class="bi bi-check2"></i><i class="bi bi-star-fill"></i>Từ 4.5★</button>
+      </div>
+
+      <div class="resbar mb-3">
+        <span class="text-muted-2 small-2 me-1" id="resCount"></span>
+        <span id="activeChips" style="display:contents"></span>
+        <button class="btn btn-link btn-sm p-0 text-decoration-none d-none" id="clearAll" style="min-height:auto">Xóa tất cả</button>
       </div>
 
       <div class="row g-4" id="grid"></div>
-      <div class="empty d-none" id="empty"><i class="bi bi-search fs-1 d-block mb-2"></i>Không tìm thấy ưu đãi phù hợp. Thử từ khóa khác nhé.</div>
-
-      <nav class="d-flex justify-content-center mt-4" aria-label="Phân trang">
-        <ul class="pagination">
-          <li class="page-item disabled"><a class="page-link" href="#">‹</a></li>
-          <li class="page-item active"><a class="page-link" href="#">1</a></li>
-          <li class="page-item"><a class="page-link" href="#">2</a></li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item"><a class="page-link" href="#">›</a></li>
-        </ul>
-      </nav>
+      <div class="empty d-none" id="empty"><i class="bi bi-search fs-1 d-block mb-2"></i>Không có ưu đãi khớp với bộ lọc.
+        <div class="mt-3"><button class="btn btn-outline-primary px-4" id="emptyClear">Xóa bộ lọc</button></div></div>
+      <!-- Xem thêm: mỗi lần 12 thẻ (Phase 3: Firestore limit(12) + startAfter(thẻ cuối)) -->
+      <div class="text-center mt-5 d-none" id="moreBar">
+        <div class="small-2 text-muted-2 mb-2" id="moreTxt"></div>
+        <div class="more-prog mx-auto mb-3"><span id="moreProg"></span></div>
+        <button class="btn btn-outline-primary px-4" id="moreBtn"><i class="bi bi-arrow-down-circle"></i><span id="moreLbl"></span></button>
+      </div>
     </section>
   </div>
 </main>
@@ -95,40 +169,159 @@
 <script src="../../js/components.js"></script>
 <script>
   const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
-  const state = { scope: 'all', cats: new Set(), q: '', sort: 'new' };
+  const qs = new URLSearchParams(location.search);
+  const noMotion = matchMedia('(prefers-reduced-motion: reduce)').matches || qs.get('fx') === 'off';
+  const state = { scope: 'all', cats: new Set(), types: new Set(), pct: 0, exp: 'all', rate: 0, q: '', sort: 'new' };
 
-  $('catList').innerHTML = D.categories.map(c => `
-    <div class="form-check"><input class="form-check-input" type="checkbox" value="${c.id}" id="c-${c.id}">
-      <label class="form-check-label" for="c-${c.id}"><i class="bi ${c.icon} text-muted-2"></i>${c.name}</label></div>`).join('');
+  const TYPES = [['percent', 'Giảm theo %', 'bi-percent'], ['amount', 'Giảm tiền', 'bi-cash-coin'], ['gift', 'Tặng món / Mua 1 tặng 1', 'bi-gift']];
+  const PCTS = [[0, 'Tất cả'], [20, 'Từ 20%'], [30, 'Từ 30%'], [50, 'Từ 50%']];
+  const EXPS = [['all', 'Tất cả'], ['3', 'Sắp hết hạn (≤ 3 ngày)'], ['7', 'Trong 7 ngày']];
+  const RATES = [[0, 'Tất cả'], [4, 'Từ 4★'], [4.5, 'Từ 4.5★']];
+  const count = (fn) => D.vouchers.filter(fn).length;
+
+  // ---- Dựng bộ lọc chi tiết ----
+  const check = (group, val, label, icon, n) => `<div class="form-check"><input class="form-check-input" type="checkbox" data-g="${group}" value="${val}" id="${group}-${val}" ${n ? '' : 'disabled'}>
+      <label class="form-check-label" for="${group}-${val}"><i class="bi ${icon} text-muted-2"></i>${label}<span class="cnt">${n}</span></label></div>`;
+  $('catList').innerHTML = D.categories.map(c => check('cat', c.id, c.name, c.icon, count(v => v.cat === c.id))).join('');
+  $('typeList').innerHTML = TYPES.map(([id, name, icon]) => check('type', id, name, icon, count(v => v.type === id))).join('');
+  const seg = (name, opts) => opts.map(([val, label], i) => `<input type="radio" name="${name}" id="${name}${i}" value="${val}" ${i ? '' : 'checked'}><label for="${name}${i}">${label}</label>`).join('');
+  $('pctSeg').innerHTML = seg('pct', PCTS); $('expSeg').innerHTML = seg('exp', EXPS); $('rateSeg').innerHTML = seg('rate', RATES);
 
   // Bỏ dấu tiếng Việt để tìm kiếm dễ hơn (FR-3.5: so khớp chuỗi, không cần AI)
   const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+  const match = (v) =>
+    (!state.cats.size || state.cats.has(v.cat)) && (!state.types.size || state.types.has(v.type)) &&
+    v.pct >= state.pct && (state.exp === 'all' || v.daysLeft <= +state.exp) && v.rating >= state.rate &&
+    (!state.q || norm(v.title + ' ' + v.shop + ' ' + (v.cond || '')).includes(norm(state.q)));
 
-  function render() {
+  // ---- Lọc nhanh: mỗi chip là lối tắt của một ô trong bộ lọc chi tiết ----
+  const QUICK = {
+    exp3:   { on: () => state.exp === '3',  toggle: (on) => state.exp = on ? 'all' : '3' },
+    pct30:  { on: () => state.pct === 30,   toggle: (on) => state.pct = on ? 0 : 30 },
+    gift:   { on: () => state.types.size === 1 && state.types.has('gift'), toggle: (on) => { state.types.clear(); if (!on) state.types.add('gift'); } },
+    rate45: { on: () => state.rate === 4.5, toggle: (on) => state.rate = on ? 0 : 4.5 },
+  };
+
+  function syncInputs() {
+    document.querySelectorAll('[data-g=cat]').forEach(i => i.checked = state.cats.has(i.value));
+    document.querySelectorAll('[data-g=type]').forEach(i => i.checked = state.types.has(i.value));
+    document.querySelectorAll('[name=pct]').forEach(i => i.checked = +i.value === state.pct);
+    document.querySelectorAll('[name=exp]').forEach(i => i.checked = i.value === state.exp);
+    document.querySelectorAll('[name=rate]').forEach(i => i.checked = +i.value === state.rate);
+    document.querySelectorAll('.qchip').forEach(b => { const on = QUICK[b.dataset.q].on(); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  }
+
+  function activeList() {
+    const a = [];
+    state.cats.forEach(id => a.push([D.categories.find(c => c.id === id).name, () => state.cats.delete(id)]));
+    state.types.forEach(id => a.push([TYPES.find(t => t[0] === id)[1], () => state.types.delete(id)]));
+    if (state.pct) a.push([`Giảm từ ${state.pct}%`, () => state.pct = 0]);
+    if (state.exp !== 'all') a.push([state.exp === '3' ? 'Sắp hết hạn' : 'Hết hạn trong 7 ngày', () => state.exp = 'all']);
+    if (state.rate) a.push([`Từ ${state.rate}★`, () => state.rate = 0]);
+    if (state.q) a.push([`“${state.q}”`, () => { state.q = ''; $('search').value = ''; }]);
+    return a;
+  }
+
+  const PAGE = 12;
+  let swapT = null, chips = [], list = [], shown = qs.get('all') ? 99 : PAGE;
+  function render(animate = !noMotion) {
+    shown = qs.get('all') ? 99 : PAGE;           // đổi bộ lọc / sắp xếp → quay về 12 thẻ đầu
     // FR-3.1: chỉ hiện deal công khai + deal riêng khu của cư dân (dữ liệu mẫu đều thuộc khu Sunrise)
-    let list = D.vouchers.filter(v =>
-      (state.cats.size === 0 || state.cats.has(v.cat)) &&
-      (!state.q || norm(v.title + ' ' + v.shop).includes(norm(state.q))));
+    list = D.vouchers.filter(match);
     ['all', 'area', 'public'].forEach(s => document.querySelector(`[data-n=${s}]`).textContent =
       s === 'all' ? list.length : list.filter(v => v.scope === s).length);
     if (state.scope !== 'all') list = list.filter(v => v.scope === state.scope);
-    if (state.sort === 'end') list.sort((a, b) => a.daysLeft - b.daysLeft);
-    if (state.sort === 'rating') list.sort((a, b) => b.rating - a.rating);
-    $('grid').innerHTML = list.map(v => `<div class="col-md-6 col-xl-4">${CDD.voucherCard(v)}</div>`).join('');
-    $('empty').classList.toggle('d-none', list.length > 0);
+    const by = { new: (a, b) => a.added - b.added, discount: (a, b) => b.pct - a.pct, end: (a, b) => a.daysLeft - b.daysLeft,
+                 rating: (a, b) => b.rating - a.rating, popular: (a, b) => (b.total - b.left) - (a.total - a.left) }[state.sort];
+    list.sort(by);
+
+    syncInputs();
+    chips = activeList();
+    $('activeChips').innerHTML = chips.map(([label], i) => `<span class="achip">${label}<button data-rm="${i}" aria-label="Bỏ lọc ${label}"><i class="bi bi-x-lg"></i></button></span>`).join('');
+    $('clearAll').classList.toggle('d-none', !chips.length);
+    $('resCount').innerHTML = `<b class="text-body">${list.length}</b> ưu đãi${chips.length ? ' · đang lọc:' : ''}`;
+    const nDetail = chips.length - (state.q ? 1 : 0);
+    $('fCount').textContent = nDetail; $('fCount').classList.toggle('d-none', !nDetail);
+    $('ocCount').textContent = list.length;
+
+    const paint = () => {
+      $('grid').innerHTML = cardsHtml(list.slice(0, shown));
+      $('empty').classList.toggle('d-none', list.length > 0);
+      if (animate) enter([...$('grid').children]);
+      moreBar();
+    };
+    clearTimeout(swapT);
+    if (!animate || !$('grid').querySelector('.vcard')) return paint();
+    $('grid').classList.add('swap-out');
+    swapT = setTimeout(() => { $('grid').classList.remove('swap-out'); paint(); }, 180);
   }
 
+  const cardsHtml = (arr) => arr.map(v => `<div class="col-md-6 col-xl-4">${CDD.voucherCard(v)}</div>`).join('');
+  function enter(cols) {            // thẻ mới trượt lên lần lượt (dùng thay cho hiệu ứng hiện dần chung)
+    cols.forEach((col, i) => {
+      col.querySelector('.vcard').classList.add('reveal', 'in');
+      col.style.animationDelay = Math.min(i, 8) * 60 + 'ms'; col.classList.add('enter');
+      col.addEventListener('animationend', () => { col.classList.remove('enter'); col.style.animationDelay = ''; }, { once: true });
+    });
+  }
+  function moreBar() {
+    const n = Math.min(shown, list.length), rest = list.length - n;
+    $('moreBar').classList.toggle('d-none', !list.length);
+    $('moreProg').style.width = (list.length ? n / list.length * 100 : 0) + '%';
+    $('moreTxt').innerHTML = rest ? `Đang xem <b class="text-body">${n}</b>/${list.length} ưu đãi`
+                                  : `<i class="bi bi-check2-circle me-1"></i>Bạn đã xem hết <b class="text-body">${list.length}</b> ưu đãi`;
+    $('moreBtn').classList.toggle('d-none', !rest);
+    $('moreLbl').textContent = `Xem thêm ${Math.min(PAGE, rest)} ưu đãi`;
+  }
+  $('moreBtn').addEventListener('click', () => {
+    const btn = $('moreBtn'), from = shown;
+    btn.disabled = true; btn.firstElementChild.outerHTML = '<span class="spinner-border" role="status" aria-hidden="true"></span>';
+    const tmp = document.createElement('div'); CDD.skeleton(tmp, Math.min(PAGE, list.length - from));
+    const skel = [...tmp.children]; skel.forEach(s => $('grid').appendChild(s));
+    setTimeout(() => {                                       // Phase 3: chờ truy vấn trang tiếp theo
+      skel.forEach(s => s.remove());
+      shown += PAGE;
+      $('grid').insertAdjacentHTML('beforeend', cardsHtml(list.slice(from, shown)));
+      const added = [...$('grid').children].slice(from);
+      noMotion ? added.forEach(c => c.querySelector('.vcard').classList.add('reveal', 'in')) : enter(added);
+      btn.disabled = false; btn.firstElementChild.outerHTML = '<i class="bi bi-arrow-down-circle"></i>';
+      moreBar();
+    }, 600);
+  });
+
+  // ---- Sự kiện ----
   $('scopeTabs').addEventListener('click', (e) => {
     const b = e.target.closest('.pill'); if (!b) return;
     document.querySelectorAll('#scopeTabs .pill').forEach(p => p.classList.toggle('active', p === b));
     state.scope = b.dataset.scope; render();
   });
-  $('catList').addEventListener('change', (e) => { e.target.checked ? state.cats.add(e.target.value) : state.cats.delete(e.target.value); render(); });
-  $('search').addEventListener('input', (e) => { state.q = e.target.value; render(); });
+  $('filters').addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.dataset.g === 'cat') t.checked ? state.cats.add(t.value) : state.cats.delete(t.value);
+    if (t.dataset.g === 'type') t.checked ? state.types.add(t.value) : state.types.delete(t.value);
+    if (t.name === 'pct') state.pct = +t.value;
+    if (t.name === 'exp') state.exp = t.value;
+    if (t.name === 'rate') state.rate = +t.value;
+    render();
+  });
+  $('quick').addEventListener('click', (e) => { const b = e.target.closest('.qchip'); if (!b) return; const q = QUICK[b.dataset.q]; q.toggle(q.on()); render(); });
+  $('activeChips').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (!b) return; chips[+b.dataset.rm][1](); render(); });
+  let typing = null;
+  $('search').addEventListener('input', (e) => { clearTimeout(typing); typing = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 250); });
   $('sort').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
-  $('clearFilter').addEventListener('click', () => { state.cats.clear(); document.querySelectorAll('#catList input').forEach(i => i.checked = false); render(); });
+  const clearAll = () => { state.cats.clear(); state.types.clear(); state.pct = 0; state.exp = 'all'; state.rate = 0; state.q = ''; $('search').value = ''; render(); };
+  ['clearFilter', 'clearFilterM', 'clearAll', 'emptyClear'].forEach(id => $(id).addEventListener('click', clearAll));
+
+  // ---- Trạng thái mở sẵn (để chụp giao diện) ----
+  if (QUICK[qs.get('quick')]) QUICK[qs.get('quick')].toggle(false);
+  if (qs.get('filter') === 'open' && innerWidth < 992) bootstrap.Offcanvas.getOrCreateInstance($('filters')).show();
+
   // Khung chờ tải trong lúc lấy dữ liệu (Phase 3: thay setTimeout bằng truy vấn Firestore)
-  CDD.skeleton($('grid'), 6); setTimeout(render, 500);
+  CDD.skeleton($('grid'), 6);
+  setTimeout(() => {
+    render(false);
+    const h = qs.get('hover'); if (h) { const c = document.querySelector(`[data-save="${h}"]`); c && c.closest('.vcard').classList.add('is-hover'); }
+  }, 500);
 </script>
 </body>
 </html>

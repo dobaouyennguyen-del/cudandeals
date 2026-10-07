@@ -31,22 +31,23 @@
   </div>
 
   <div class="cdd-card mb-4">
-    <div class="section-title">Việc cần xử lý</div>
+    <div class="section-title">Việc cần xử lý <span class="count-badge">6</span></div>
     <div class="row g-3">
-      <div class="col-md-6 col-lg-3"><a href="partners.html?tab=pending" class="qa main"><i class="bi bi-person-check"></i>Duyệt hồ sơ đối tác<span class="tag" style="background:rgba(255,255,255,.25);color:#fff">3 mới</span></a></div>
-      <div class="col-md-6 col-lg-3"><a href="approve-vouchers.html" class="qa main"><i class="bi bi-ticket-detailed"></i>Duyệt voucher<span class="tag" style="background:rgba(255,255,255,.25);color:#fff">3 chờ duyệt</span></a></div>
-      <div class="col-md-6 col-lg-3"><a href="residential-areas.html" class="qa"><i class="bi bi-buildings"></i>Quản lý khu dân cư</a></div>
-      <div class="col-md-6 col-lg-3"><a href="categories.html" class="qa"><i class="bi bi-grid"></i>Quản lý ngành hàng</a></div>
+      <div class="col-md-6 col-lg-3"><a href="partners.html?tab=pending" class="qa2 main"><span class="qa-ic"><i class="bi bi-person-check"></i></span>
+        <span class="qa-txt"><b>Duyệt đối tác</b><small>Hồ sơ cửa hàng mới</small></span><i class="bi bi-arrow-right qa-go"></i><span class="qa-tag">3 mới</span></a></div>
+      <div class="col-md-6 col-lg-3"><a href="approve-vouchers.html" class="qa2"><span class="qa-ic" style="background:var(--warning-soft);color:var(--warning)"><i class="bi bi-ticket-detailed"></i></span>
+        <span class="qa-txt"><b>Duyệt voucher</b><small>Trước khi hiện cho cư dân</small></span><i class="bi bi-arrow-right qa-go"></i><span class="qa-tag" style="background:var(--warning-soft);color:var(--warning)">3 chờ</span></a></div>
+      <div class="col-md-6 col-lg-3"><a href="residential-areas.html" class="qa2"><span class="qa-ic"><i class="bi bi-buildings"></i></span>
+        <span class="qa-txt"><b>Khu dân cư</b><small>Thêm, sửa danh sách khu</small></span><i class="bi bi-arrow-right qa-go"></i><span class="qa-tag">3 khu</span></a></div>
+      <div class="col-md-6 col-lg-3"><a href="categories.html" class="qa2"><span class="qa-ic" style="background:var(--accent-soft);color:var(--accent)"><i class="bi bi-grid"></i></span>
+        <span class="qa-txt"><b>Ngành hàng</b><small>Danh mục cho đối tác</small></span><i class="bi bi-arrow-right qa-go"></i><span class="qa-tag" style="background:var(--accent-soft);color:var(--accent)">7 ngành</span></a></div>
     </div>
   </div>
 
   <div class="row g-4">
     <div class="col-lg-7"><div class="cdd-card h-100">
-      <div class="d-flex justify-content-between align-items-start"><div class="section-title">Hoạt động gần đây</div></div>
-      <div class="activity"><span class="ic ic-amber"><i class="bi bi-shop"></i></span><div class="flex-fill"><b>The Pizza House</b> gửi hồ sơ đăng ký đối tác<div class="small-2 text-muted-2">Khu dân cư Sunrise</div></div><a href="partners.html?review=pt3" class="btn btn-sm btn-light-primary">Xem hồ sơ</a></div>
-      <div class="activity"><span class="ic ic-amber"><i class="bi bi-ticket-perforated"></i></span><div class="flex-fill"><b>Sunrise Coffee & Tea</b> gửi voucher mới<div class="small-2 text-muted-2">Combo bánh + cà phê chỉ 59K</div></div><a href="approve-vouchers.html" class="btn btn-sm btn-light-primary">Duyệt</a></div>
-      <div class="activity"><span class="ic ic-green"><i class="bi bi-check2"></i></span><div class="flex-fill"><b>Hoàng Giang</b> dùng mã tại Sunrise Coffee & Tea<div class="small-2 text-muted-2">Giảm 30% toàn menu đồ uống</div></div><span class="small-2 text-muted-2">5 phút trước</span></div>
-      <div class="activity"><span class="ic ic-blue"><i class="bi bi-person-plus"></i></span><div class="flex-fill"><b>12 cư dân mới</b> đăng ký hôm nay<div class="small-2 text-muted-2">Sunrise 8 · Green Park 3 · Riverside 1</div></div><a href="residents.html" class="btn btn-sm btn-light">Xem</a></div>
+      <div class="d-flex justify-content-between align-items-start"><div class="section-title">Hoạt động gần đây <span class="live"><span class="live-dot"></span>Trực tiếp</span></div></div>
+      <div id="feed" aria-live="polite"></div>
     </div></div>
     <div class="col-lg-5"><div class="cdd-card h-100">
       <div class="d-flex justify-content-between align-items-start"><div class="section-title">Khu dân cư</div><a href="residential-areas.html" class="small-2 fw-semibold">Quản lý</a></div>
@@ -63,9 +64,49 @@
 <script src="../../js/components.js"></script>
 <script>
   const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
-  $('areas').innerHTML = D.areas.map(a => `<div class="activity"><span class="ic ic-blue"><i class="bi bi-buildings"></i></span>
-    <div class="flex-fill"><b>${a.name}</b><div class="small-2 text-muted-2">${a.address}</div></div>
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('fx') === 'off') document.documentElement.classList.add('no-fx');
+  const noMotion = document.documentElement.classList.contains('no-fx') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Khu dân cư: thanh tỷ lệ cư dân chạy dần ----
+  const maxR = Math.max(...D.areas.map(a => a.residents));
+  $('areas').innerHTML = D.areas.map(a => `<div class="activity attn"><span class="ic ic-blue"><i class="bi bi-buildings"></i></span>
+    <div class="flex-fill"><b>${a.name}</b><div class="small-2 text-muted-2">${a.address}</div>
+      <div class="area-bar"><span data-w="${Math.round(a.residents / maxR * 100)}"></span></div></div>
     <div class="text-end"><b>${a.residents.toLocaleString('vi-VN')}</b><div class="small-2 text-muted-2">cư dân</div></div></div>`).join('');
+  const fillBars = () => document.querySelectorAll('.area-bar span').forEach(b => b.style.width = b.dataset.w + '%');
+  if (noMotion) fillBars(); else setTimeout(fillBars, 500);
+
+  // ---- Hoạt động gần đây (demo "trực tiếp"; Phase 3: onSnapshot trên Firestore) ----
+  const T = {
+    partner: ['ic-amber', 'bi-shop', (a) => `<b>${a.who}</b> gửi hồ sơ đăng ký đối tác<div class="small-2 text-muted-2">${a.sub}</div>`, (a) => `<a href="partners.html?review=${a.id}" class="btn btn-sm btn-light-primary">Xem hồ sơ</a>`],
+    voucher: ['ic-amber', 'bi-ticket-perforated', (a) => `<b>${a.who}</b> gửi voucher mới<div class="small-2 text-muted-2">${a.sub}</div>`, () => `<a href="approve-vouchers.html" class="btn btn-sm btn-light-primary">Duyệt</a>`],
+    used:    ['ic-green', 'bi-check2', (a) => `<b>${a.who}</b> dùng mã tại ${a.shop}<div class="small-2 text-muted-2">${a.sub}</div>`, null],
+    resident:['ic-blue', 'bi-person-plus', (a) => `<b>${a.who}</b> đăng ký cư dân<div class="small-2 text-muted-2">${a.sub}</div>`, () => `<a href="residents.html" class="btn btn-sm btn-light">Xem</a>`],
+  };
+  const feed = [
+    { t: 'partner', who: 'The Pizza House', sub: 'Khu dân cư Sunrise', id: 'pt3', min: 3 },
+    { t: 'voucher', who: 'Sunrise Coffee & Tea', sub: 'Combo bánh + cà phê chỉ 59K', min: 12 },
+    { t: 'used', who: 'Hoàng Giang', shop: 'Sunrise Coffee & Tea', sub: 'Giảm 30% toàn menu đồ uống', min: 25 },
+    { t: 'resident', who: '12 cư dân mới', sub: 'Sunrise 8 · Green Park 3 · Riverside 1', min: 60 },
+  ];
+  const INCOMING = [
+    { t: 'used', who: 'Minh Tú', shop: 'Tiệm Bánh Mì Artisan', sub: 'Tặng 1 bánh sừng bò' },
+    { t: 'resident', who: 'Lan Ngọc', sub: 'Khu dân cư Riverside' },
+    { t: 'partner', who: 'Mini Mart 24h', sub: 'Khu dân cư Green Park', id: 'pt5' },
+    { t: 'voucher', who: 'An Nhiên Spa', sub: 'Gội đầu dưỡng sinh chỉ 99K' },
+  ];
+  const ago = (m) => m < 1 ? 'Vừa xong' : m < 60 ? `${m} phút trước` : `${Math.floor(m / 60)} giờ trước`;
+  const row = (a, isNew) => { const [c, i, txt, act] = T[a.t]; return `<div class="activity ${isNew ? 'new' : ''}"><span class="ic ${c}"><i class="bi ${i}"></i></span>
+    <div class="flex-fill">${isNew ? txt(a).replace('<div class="small-2', '<span class="new-tag">MỚI</span><div class="small-2') : txt(a)}</div>
+    <div class="text-end"><div class="small-2 text-muted-2 text-nowrap mb-1">${ago(a.min)}</div>${act ? act(a) : ''}</div></div>`; };
+  const drawFeed = (n) => { $('feed').innerHTML = feed.map((a, k) => row(a, n && k === 0)).join(''); };
+  drawFeed(false);
+  if (!noMotion) { let k = 0;
+    setInterval(() => { if (document.hidden) return;
+      const last = document.querySelector('#feed .activity:last-child'); if (last) last.classList.add('leaving');
+      setTimeout(() => { feed.forEach(a => a.min += 1); feed.unshift({ ...INCOMING[k++ % INCOMING.length], min: 0 }); feed.length = 4; drawFeed(true); }, 380);
+    }, 7000); }
 </script>
 </body>
 </html>

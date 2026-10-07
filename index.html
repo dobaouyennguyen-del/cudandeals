@@ -53,9 +53,14 @@
     .chip-cat.active { background: var(--primary); border-color: var(--primary); color: #fff; }
     /* Băng chuyền ưu đãi (trượt ngang) */
     .car-wrap { position: relative; }
-    .car-track { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 6px 4px 18px; scrollbar-width: none; }
+    .car-track { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 14px 6px 22px; scrollbar-width: none; }
     .car-track::-webkit-scrollbar { display: none; }
     .car-item { flex: 0 0 calc((100% - 48px) / 3); scroll-snap-align: start; }
+    /* Đổi ngành hàng: thẻ cũ trượt ra, thẻ mới trượt vào lần lượt */
+    .car-track.swap-out .car-item { opacity: 0; transform: translateX(-24px) scale(.98); transition: opacity .22s ease, transform .22s ease; }
+    .car-item.enter { animation: carIn .5s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes carIn { from { opacity: 0; transform: translateX(48px) scale(.97); } to { opacity: 1; transform: none; } }
+    .car-empty { flex: 1; text-align: center; color: var(--muted); padding: 40px 0; }
     .car-btn { position: absolute; top: 38%; z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: #fff; color: var(--text); box-shadow: var(--shadow-hover); display: grid; place-items: center; font-size: 18px; transition: transform .15s, background-color .15s; }
     .car-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: scale(1.06); }
     .car-btn.prev { left: -18px; } .car-btn.next { right: -18px; }
@@ -207,16 +212,30 @@
 
   // ---- Ưu đãi nổi bật: băng chuyền trượt ngang, tự chạy, lọc theo ngành hàng ----
   // Khách chưa đăng nhập: thẻ chỉ để xem, không có nút Lưu / Nhận mã
+  const FEAT = D.vouchers.slice(0, 9);   // trang chủ chỉ giới thiệu 9 ưu đãi nổi bật
   const track = $('featured'), GAP = () => parseFloat(getComputedStyle(track).columnGap) || 24;
   let cat = 'all', timer = null, paused = false;
   $('cats').innerHTML = `<button class="chip-cat active" data-cat="all"><i class="bi bi-grid"></i>Tất cả</button>` +
-    D.categories.filter(c => D.vouchers.some(v => v.cat === c.id)).map(c => `<button class="chip-cat" data-cat="${c.id}"><i class="bi ${c.icon}"></i>${c.name}</button>`).join('');
+    D.categories.filter(c => FEAT.some(v => v.cat === c.id)).map(c => `<button class="chip-cat" data-cat="${c.id}"><i class="bi ${c.icon}"></i>${c.name}</button>`).join('');
   const step = () => { const it = track.querySelector('.car-item'); return it ? it.offsetWidth + GAP() : 0; };
   const visible = () => Math.max(1, Math.round(track.clientWidth / step()));
-  function renderCarousel() {
-    const list = D.vouchers.filter(v => cat === 'all' || v.cat === cat);
-    track.innerHTML = list.map(v => `<div class="car-item">${CDD.voucherCard(v, { guest: true })}</div>`).join('');
-    track.scrollTo({ left: 0, behavior: 'auto' }); drawDots();
+  let swapT = null;
+  function renderCarousel(animate) {
+    const list = FEAT.filter(v => cat === 'all' || v.cat === cat);
+    const paint = () => {
+      track.innerHTML = list.map(v => `<div class="car-item">${CDD.voucherCard(v, { guest: true })}</div>`).join('');
+      track.scrollTo({ left: 0, behavior: 'instant' });
+      if (animate) [...track.children].forEach((it, i) => {
+        const card = it.querySelector('.vcard'); if (card) card.classList.add('reveal', 'in');   // bỏ hiệu ứng hiện dần chung, dùng hiệu ứng trượt riêng
+        it.style.animationDelay = Math.min(i, 4) * 80 + 'ms'; it.classList.add('enter');
+        it.addEventListener('animationend', () => { it.classList.remove('enter'); it.style.animationDelay = ''; }, { once: true });
+      });
+      drawDots();
+    };
+    clearTimeout(swapT);
+    if (!animate || !track.children.length) return paint();
+    track.classList.add('swap-out');
+    swapT = setTimeout(() => { track.classList.remove('swap-out'); paint(); }, 220);
   }
   function drawDots() {
     const n = Math.max(1, track.children.length - visible() + 1);
@@ -238,7 +257,7 @@
   track.addEventListener('scroll', () => requestAnimationFrame(updateDots), { passive: true });
   track.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') go(1); if (e.key === 'ArrowLeft') go(-1); });
   $('cats').onclick = (e) => { const b = e.target.closest('.chip-cat'); if (!b) return;
-    cat = b.dataset.cat; document.querySelectorAll('.chip-cat').forEach(c => c.classList.toggle('active', c === b)); renderCarousel(); };
+    cat = b.dataset.cat; document.querySelectorAll('.chip-cat').forEach(c => c.classList.toggle('active', c === b)); renderCarousel(!noMotion); };
   // Tự chạy mỗi 3,5 giây; dừng khi rê chuột / chạm / focus. Không tự chạy nếu bật "giảm chuyển động" hoặc ?fx=off
   const noMotion = matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchParams(location.search).get('fx') === 'off';
   ['mouseenter', 'focusin', 'touchstart'].forEach(ev => $('carousel').addEventListener(ev, () => paused = true, { passive: true }));
