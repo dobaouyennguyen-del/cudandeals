@@ -64,15 +64,21 @@
 
 <!-- ============ R-01 · Khám phá ưu đãi ============
   FR-3.1 Danh sách deal công khai + riêng khu của cư dân, phân loại danh mục · FR-3.5 Tìm kiếm theo từ khóa
-  FR-3.3 Lưu · FR-3.4 Nhận mã
+  FR-3.3 Lưu · FR-3.4 Nhận mã · Chuyển chế độ: Danh sách (trang này) | Bản đồ (explore-map.html, FR-3.6)
   Lọc nhanh (chip phía trên) cho người cần nhanh · Bộ lọc chi tiết (cột trái / ngăn kéo trên điện thoại) cho người cần kỹ
   Xem thêm: hiện 12 thẻ, bấm "Xem thêm" tải tiếp 12 · ?all=1 hiện hết
   Trạng thái để chụp: ?hover=v1 (ngăn kéo tóm tắt khi rê chuột) · ?quick=exp3|pct30|gift|rate45 · ?filter=open (điện thoại)
 ================================================== -->
 <main class="container container-cdd">
-  <div class="page-head">
-    <h1>Ưu đãi dành cho bạn</h1>
-    <p>Voucher công khai và voucher riêng của <b>Khu dân cư Sunrise</b>.</p>
+  <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+      <h1>Ưu đãi dành cho bạn</h1>
+      <p>Voucher công khai và voucher riêng của <b>Khu dân cư Sunrise</b>.</p>
+    </div>
+    <div class="view-toggle" role="tablist" aria-label="Chế độ xem">
+      <a href="explore.html" id="toList" role="tab" aria-selected="true" class="on"><i class="bi bi-grid-3x3-gap"></i>Danh sách</a>
+      <a href="explore-map.html" id="toMap" role="tab" aria-selected="false"><i class="bi bi-map"></i>Bản đồ</a>
+    </div>
   </div>
 
   <div class="row gx-4 gy-0">
@@ -311,6 +317,15 @@
   $('sort').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
   const clearAll = () => { state.cats.clear(); state.types.clear(); state.pct = 0; state.exp = 'all'; state.rate = 0; state.q = ''; $('search').value = ''; render(); };
   ['clearFilter', 'clearFilterM', 'clearAll', 'emptyClear'].forEach(id => $(id).addEventListener('click', clearAll));
+
+  // ---- Chuyển sang Bản đồ: mang theo từ khóa & phạm vi đang chọn ----
+  $('toMap').addEventListener('click', (e) => {
+    e.preventDefault(); const p = new URLSearchParams();
+    if (state.q) p.set('q', state.q); if (state.scope !== 'all') p.set('scope', state.scope);
+    location.href = 'explore-map.html' + (p.toString() ? '?' + p : '');
+  });
+  if (qs.get('q')) { state.q = qs.get('q'); $('search').value = state.q; }
+  if (['area', 'public'].includes(qs.get('scope'))) { state.scope = qs.get('scope'); document.querySelectorAll('#scopeTabs .pill').forEach(p => p.classList.toggle('active', p.dataset.scope === state.scope)); }
 
   // ---- Trạng thái mở sẵn (để chụp giao diện) ----
   if (QUICK[qs.get('quick')]) QUICK[qs.get('quick')].toggle(false);

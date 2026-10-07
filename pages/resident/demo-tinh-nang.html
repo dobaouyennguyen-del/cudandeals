@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>[Demo] 3 tính năng mới – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/style.css" />
+  <style>
+    .demo-note { background: #FFF7ED; border: 1px dashed #FDBA74; color: #9A3412; border-radius: 10px; padding: 8px 14px; font-size: 13px; }
+    .demo-sec { margin-top: 40px; }
+    .demo-sec h2 { font-size: 20px; font-weight: 800; display: flex; gap: 10px; align-items: center; }
+    .demo-sec h2 .no { width: 30px; height: 30px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; font-size: 15px; }
+
+    /* ================= 1. THẺ VOUCHER HÌNH TẤM VÉ ================= */
+    /* Khoét 2 cặp lỗ tròn hai bên (dưới ảnh & trên cuống vé) bằng mask; bóng đổ đặt ở lớp bọc để không bị mask cắt */
+    .tk-wrap { filter: drop-shadow(0 4px 10px rgba(15,23,42,.10)); transition: filter .3s, translate .3s cubic-bezier(.2,.7,.2,1); height: 100%; }
+    .tk-wrap:hover { filter: drop-shadow(0 16px 24px rgba(37,99,235,.20)); translate: 0 -6px; }
+    .tk { --c1: 170px; --c2: 66px; --r: 11px; position: relative; background: #fff; border-radius: 16px; height: 100%; display: flex; flex-direction: column;
+      -webkit-mask: radial-gradient(circle at 0 var(--c1), #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at 100% var(--c1), #0000 var(--r), #000 calc(var(--r) + .5px)),
+                    radial-gradient(circle at 0 calc(100% - var(--c2)), #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at 100% calc(100% - var(--c2)), #0000 var(--r), #000 calc(var(--r) + .5px));
+      -webkit-mask-composite: source-in, source-in, source-in;
+      mask: radial-gradient(circle at 0 var(--c1), #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at 100% var(--c1), #0000 var(--r), #000 calc(var(--r) + .5px)),
+            radial-gradient(circle at 0 calc(100% - var(--c2)), #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at 100% calc(100% - var(--c2)), #0000 var(--r), #000 calc(var(--r) + .5px));
+      mask-composite: intersect; }
+    .tk-img { position: relative; height: var(--c1); overflow: hidden; border-radius: 16px 16px 0 0; display: block; }
+    .tk-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+    .tk-wrap:hover .tk-img img { transform: scale(1.07); }
+    .tk-disc { position: absolute; top: 12px; right: 12px; background: var(--accent); color: #fff; font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 6px; }
+    .tk-scope { position: absolute; left: 12px; bottom: 12px; }
+    .tk-scope .tag { background: rgba(255,255,255,.95); }
+    .tk-body { padding: 14px 18px 12px; flex: 1; display: flex; flex-direction: column; }
+    .tk-body .shop { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+    .tk-body .ttl { font-weight: 700; font-size: 16px; color: var(--text); text-decoration: none; line-height: 1.35; margin: 2px 0 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 43px; }
+    .tk-wrap:hover .ttl { color: var(--primary); }
+    .tk-meta { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; margin-top: 3px; }
+    /* Cuống vé (phần sẽ được xé khi nhận mã) */
+    .tk-stub { position: relative; height: var(--c2); display: flex; align-items: center; gap: 10px; padding: 0 18px; background: linear-gradient(#FFFBF5, #FFF7ED); border-radius: 0 0 16px 16px; }
+    .tk-stub::before { content: ''; position: absolute; top: 0; left: 16px; right: 16px; border-top: 2px dashed #E2E8F0; }
+    .tk-stub .left { font-size: 12px; color: var(--muted); line-height: 1.3; }
+    .tk-stub .left b { color: var(--accent); font-size: 14px; display: block; }
+    .tk-stub.done { background: linear-gradient(#F0FDF4, #DCFCE7); animation: fadeUp .5s ease both; }
+    .tk-stub.done .left b { color: var(--success); }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    /* Mảnh cuống bị xé (bản sao bay ra ngoài) */
+    .tear-fly { position: fixed; z-index: 1090; pointer-events: none; border-radius: 0 0 16px 16px; transform-origin: 8% 0; animation: tear .9s cubic-bezier(.45,0,.8,.4) forwards; }
+    @keyframes tear { 0% { transform: none; } 18% { transform: rotate(-2deg); } 35% { transform: rotate(5deg) translateY(6px); opacity: 1; } 100% { transform: translate(40px, 260px) rotate(24deg); opacity: 0; } }
+    .tk-wrap.shake { animation: shake .3s ease; }
+    @keyframes shake { 25% { translate: -2px 0; } 75% { translate: 2px 0; } }
+
+    /* Vé nằm ngang (dùng cho Ví voucher) */
+    .tkh-wrap { filter: drop-shadow(0 4px 10px rgba(15,23,42,.10)); }
+    .tkh-wrap + .tkh-wrap { margin-top: 14px; }
+    .tkh { --x: 128px; --r: 11px; display: flex; min-height: 112px; background: #fff; border-radius: 14px;
+      -webkit-mask: radial-gradient(circle at var(--x) 0, #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at var(--x) 100%, #0000 var(--r), #000 calc(var(--r) + .5px));
+      -webkit-mask-composite: source-in; mask: radial-gradient(circle at var(--x) 0, #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at var(--x) 100%, #0000 var(--r), #000 calc(var(--r) + .5px)); mask-composite: intersect; }
+    .tkh-stub { width: var(--x); flex: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-radius: 14px 0 0 14px; position: relative; padding: 10px;
+      background: linear-gradient(150deg, #F97316, #EA580C 60%, #C2410C); }
+    .tkh-stub::after { content: ''; position: absolute; right: 0; top: 14px; bottom: 14px; border-right: 2px dashed rgba(255,255,255,.6); }
+    .tkh-stub .big { font-size: 30px; font-weight: 800; line-height: 1; }
+    .tkh-stub .sm { font-size: 11px; font-weight: 700; letter-spacing: .06em; opacity: .9; margin-top: 4px; }
+    .tkh-stub.blue { background: linear-gradient(150deg, #3B82F6, #2563EB 60%, #1D4ED8); }
+    .tkh-stub.green { background: linear-gradient(150deg, #22C55E, #16A34A 60%, #15803D); }
+    .tkh-body { flex: 1; padding: 14px 18px; display: flex; gap: 14px; align-items: center; min-width: 0; }
+    .code-chip { font-family: 'Courier New', monospace; font-weight: 700; font-size: 13px; background: var(--primary-soft); color: var(--primary); padding: 2px 8px; border-radius: 6px; }
+
+    /* ================= 2. KHOẢNH KHẮC NHẬN MÃ ================= */
+    .confetti { position: fixed; z-index: 1095; width: 8px; height: 12px; border-radius: 2px; pointer-events: none; animation: conf 1.1s cubic-bezier(.2,.6,.4,1) forwards; }
+    @keyframes conf { 0% { transform: translate(0, 0) rotate(0); opacity: 1; } 55% { transform: translate(calc(var(--dx) * .75), var(--up)) rotate(calc(var(--r) * .6)); opacity: 1; } 100% { transform: translate(var(--dx), var(--down)) rotate(var(--r)); opacity: 0; } }
+    .claim-ov { position: fixed; inset: 0; z-index: 1080; background: rgba(15,23,42,.55); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 16px; animation: ovIn .25s ease both; }
+    .claim-ov.closing { animation: ovOut .25s ease forwards; }
+    @keyframes ovIn { from { opacity: 0; } } @keyframes ovOut { to { opacity: 0; } }
+    .claim-card { width: min(560px, 100%); animation: cardIn .6s cubic-bezier(.3,1.4,.5,1) both; }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(60px) scale(.85) rotate(-3deg); } to { opacity: 1; transform: none; } }
+    .claim-head { text-align: center; color: #fff; margin-bottom: 14px; }
+    .claim-head .ok { width: 58px; height: 58px; border-radius: 50%; background: #22C55E; display: inline-grid; place-items: center; font-size: 30px; box-shadow: 0 0 0 0 rgba(34,197,94,.6); animation: okPop .5s .2s cubic-bezier(.3,1.6,.5,1) both, okRing 1.6s .7s ease-out 2; }
+    @keyframes okPop { from { transform: scale(0); } } @keyframes okRing { to { box-shadow: 0 0 0 22px rgba(34,197,94,0); } }
+    .claim-head h3 { color: #fff; font-weight: 800; margin: 10px 0 2px; font-size: 22px; }
+    .claim-tk { --x: 150px; min-height: 210px; }
+    .claim-tk .tkh-stub { width: var(--x); }
+    .claim-tk .tkh-body { flex-direction: column; align-items: stretch; gap: 8px; position: relative; }
+    .slot { font-family: 'Courier New', monospace; font-weight: 800; font-size: 22px; letter-spacing: 1px; color: var(--primary); background: var(--primary-soft); border-radius: 10px; padding: 8px 12px; text-align: center; white-space: nowrap; overflow: hidden; }
+    .slot span { display: inline-block; min-width: .62em; }
+    .slot span.lock { animation: lockIn .25s ease; }
+    @keyframes lockIn { from { transform: translateY(-40%); opacity: .3; } }
+    .qr-box { display: flex; gap: 12px; align-items: center; opacity: 0; transform: translateY(8px); transition: opacity .4s, transform .4s; }
+    .qr-box.show { opacity: 1; transform: none; }
+    .qr-box .qr { width: 84px; height: 84px; flex: none; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 4px; display: grid; place-items: center; }
+    .qr-box .qr img, .qr-box .qr canvas { width: 74px !important; height: 74px !important; }
+    .stamp { position: absolute; left: 50%; bottom: 16px; translate: -50% 0; white-space: nowrap; color: #fff; border: 3px solid #fff; border-radius: 8px; padding: 2px 10px; font-weight: 800; font-size: 14px; letter-spacing: .08em; transform: rotate(-12deg); opacity: 0; }
+    .stamp.slam { animation: slam .45s cubic-bezier(.3,1.6,.5,1) forwards; }
+    @keyframes slam { 0% { opacity: 0; transform: rotate(-12deg) scale(2.6); } 100% { opacity: .9; transform: rotate(-12deg) scale(1); } }
+    .save-hint { background: #ECFDF5; color: #047857; border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 600; }
+
+    /* ================= 3. BẠN ĐÃ TIẾT KIỆM ĐƯỢC ================= */
+    .save-hero { position: relative; overflow: hidden; border-radius: 18px; color: #fff; padding: 26px 28px; background: linear-gradient(135deg, #059669 0%, #0D9488 45%, #2563EB 100%); }
+    .save-hero::before { content: ''; position: absolute; width: 260px; height: 260px; right: -60px; top: -90px; border-radius: 50%; background: rgba(255,255,255,.08); }
+    .save-hero::after { content: ''; position: absolute; width: 180px; height: 180px; right: 120px; bottom: -110px; border-radius: 50%; background: rgba(255,255,255,.06); }
+    .save-hero .lbl { opacity: .9; font-weight: 600; }
+    .save-hero .amt { font-size: 46px; font-weight: 800; line-height: 1.1; letter-spacing: -.5px; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 12px; }
+    .coin { width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FDE68A, #F59E0B 60%, #D97706); display: grid; place-items: center; color: #92400E; font-size: 20px; font-weight: 800; box-shadow: inset 0 -3px 0 rgba(0,0,0,.15); animation: coinSpin 3.5s ease-in-out infinite; }
+    @keyframes coinSpin { 0%, 70%, 100% { transform: rotateY(0); } 85% { transform: rotateY(180deg); } }
+    .save-hero .pillw { display: inline-flex; gap: 6px; align-items: center; background: rgba(255,255,255,.16); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600; margin: 4px 6px 0 0; }
+    .ms { margin-top: 18px; position: relative; z-index: 1; }
+    .ms-bar { height: 10px; border-radius: 10px; background: rgba(255,255,255,.22); overflow: hidden; }
+    .ms-bar span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #FDE68A, #FBBF24); transition: width 1.4s .3s cubic-bezier(.2,.7,.2,1); }
+    .months { display: flex; align-items: flex-end; gap: 10px; height: 150px; position: relative; z-index: 1; }
+    .months .m { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+    .months .b { width: 100%; max-width: 34px; border-radius: 8px 8px 4px 4px; background: rgba(255,255,255,.32); height: 0; transition: height 1s cubic-bezier(.2,.7,.2,1); }
+    .months .m.cur .b { background: #FDE68A; box-shadow: 0 0 18px rgba(253,230,138,.6); }
+    .months .v { font-size: 11px; font-weight: 700; opacity: 0; transition: opacity .4s 1s; }
+    .months .t { font-size: 12px; opacity: .85; }
+    .months.go .v { opacity: .95; }
+    .catrow + .catrow { margin-top: 12px; }
+    .catbar { height: 8px; border-radius: 8px; background: #EEF2F6; overflow: hidden; margin-top: 4px; }
+    .catbar span { display: block; height: 100%; width: 0; border-radius: inherit; transition: width 1s cubic-bezier(.2,.7,.2,1); }
+    .recent { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+    .recent + .recent { border-top: 1px solid var(--border); }
+    .recent img { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex: none; }
+    .recent .amt { margin-left: auto; color: var(--success); font-weight: 800; white-space: nowrap; }
+    @media (max-width: 767.98px) { .save-hero .amt { font-size: 36px; } .claim-tk { --x: 110px; } .claim-tk .tkh-stub .big { font-size: 24px; } .slot { font-size: 17px; } .stamp { font-size: 11px; padding: 2px 6px; letter-spacing: .04em; } }
+    @media (prefers-reduced-motion: reduce) { .confetti, .tear-fly { display: none; } }
+  </style>
+</head>
+<body data-role="resident" data-active="">
+<div id="cdd-header"></div>
+
+<!-- ============ [DEMO] 3 tính năng tạo điểm khác biệt ============
+  1. Thẻ voucher hình "tấm vé" (dọc cho Khám phá, ngang cho Ví)
+  2. Khoảnh khắc nhận mã: xé cuống vé + pháo giấy + mã hiện từng ký tự + đóng dấu "ĐÃ NHẬN"
+  3. "Bạn đã tiết kiệm được" (đặt đầu trang Ví voucher)
+  Trang mô phỏng để nhóm xem thử, CHƯA gắn vào các trang chính.
+================================================================ -->
+<main class="container container-cdd pb-5">
+  <div class="page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+      <h1>Demo 3 tính năng mới</h1>
+      <p>Xem thử trước khi quyết định gắn vào trang chính.</p>
+    </div>
+    <span class="demo-note"><i class="bi bi-flask me-1"></i>Trang mô phỏng · không ảnh hưởng các trang khác</span>
+  </div>
+
+  <!-- 1 + 2 -->
+  <section class="demo-sec mt-0">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-1">
+      <h2 class="mb-0"><span class="no">1</span>Thẻ voucher hình "tấm vé"</h2>
+      <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="cmp"><label class="form-check-label small-2 fw-semibold" for="cmp">So sánh với thẻ hiện tại</label></div>
+    </div>
+    <p class="text-muted-2 small-2 mb-3">Mép khoét tròn 2 bên + đường răng cưa, khớp với icon vé trong logo. Phần dưới đường răng cưa là <b>cuống vé</b>.
+      <span class="text-accent fw-semibold"><i class="bi bi-hand-index"></i> Bấm "Nhận mã" để xem tính năng 2.</span></p>
+    <div class="row g-4" id="tickets"></div>
+
+    <h6 class="fw-bold mt-5 mb-3">Dạng vé nằm ngang – dùng cho Ví voucher</h6>
+    <div id="hTickets"></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="demo-sec">
+    <h2 class="mb-1"><span class="no">3</span>"Bạn đã tiết kiệm được"</h2>
+    <p class="text-muted-2 small-2 mb-3">Đặt ở đầu trang <b>Ví voucher</b>. Con số chạy lên khi mở trang.
+      <button class="btn btn-link btn-sm p-0 align-baseline" id="replay" style="min-height:auto">Chạy lại hiệu ứng</button></p>
+    <div class="save-hero">
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-7 position-relative" style="z-index:1">
+          <div class="lbl">Tháng 10/2026 bạn đã tiết kiệm</div>
+          <div class="amt"><span class="coin">đ</span><span id="saveAmt">0đ</span></div>
+          <div>
+            <span class="pillw"><i class="bi bi-ticket-perforated"></i>6 lần dùng mã tại cửa hàng</span>
+            <span class="pillw"><i class="bi bi-cup-hot"></i>≈ 8 ly cà phê sữa đá</span>
+            <span class="pillw"><i class="bi bi-graph-up-arrow"></i>+36% so với tháng 9</span>
+          </div>
+          <div class="ms">
+            <div class="d-flex justify-content-between small fw-semibold mb-1"><span><i class="bi bi-trophy me-1"></i>Mốc tiếp theo: 300.000đ</span><span>Còn 55.000đ</span></div>
+            <div class="ms-bar"><span id="msBar"></span></div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="small fw-semibold mb-2 position-relative" style="z-index:1;opacity:.9">6 tháng gần đây</div>
+          <div class="months" id="months"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-lg-5">
+        <div class="cdd-card h-100">
+          <div class="section-title">Tiết kiệm theo ngành hàng</div>
+          <div id="cats"></div>
+          <div class="small-2 text-muted-2 mt-3"><i class="bi bi-infinity me-1"></i>Tổng cộng từ khi tham gia: <b class="text-body">1.180.000đ</b></div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="cdd-card h-100">
+          <div class="section-title">Lần tiết kiệm gần đây</div>
+          <div id="recent"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/mock-data.js"></script>
+<script src="../../js/components.js"></script>
+<script>
+  const D = window.CDD_DATA, $ = (id) => document.getElementById(id), V = (id) => CDD.findVoucher(id);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchParams(location.search).get('fx') === 'off';
+  const money = (n) => Math.round(n).toLocaleString('vi-VN') + 'đ';
+  // Ước tính số tiền tiết kiệm của 1 mã (Phase 3: lấy từ hóa đơn nhân viên nhập khi xác nhận mã ở B-05)
+  const EST = { v1: 19500, v4: 82500, v10: 45000, v2: 35000, v6: 50000 };
+
+  /* ---------- 1. Vé dọc ---------- */
+  const ticket = (v) => `
+    <div class="col-md-6 col-xl-4"><div class="tk-wrap" data-id="${v.id}"><article class="tk">
+      <a class="tk-img" href="voucher-detail.html?id=${v.id}"><img src="${CDD.IMG}${v.img}" alt="${v.shop}"><span class="tk-disc">${v.badge}</span><span class="tk-scope">${CDD.scopeTag(v)}</span></a>
+      <div class="tk-body">
+        <div class="shop text-truncate">${v.shop}</div>
+        <a class="ttl" href="voucher-detail.html?id=${v.id}">${v.title}</a>
+        <div class="tk-meta"><span class="rating">${CDD.stars(v.rating)}</span><span class="text-body">${v.rating}</span>(${v.reviews})</div>
+        <div class="tk-meta"><i class="bi bi-geo-alt"></i>${v.address}</div>
+        <div class="tk-meta"><i class="bi bi-receipt"></i>${v.cond} · ${v.time}</div>
+      </div>
+      <div class="tk-stub">
+        <div class="left flex-fill">${v.daysLeft <= 3 ? `<b class="d-flex align-items-center"><span class="pulse-dot"></span>Còn ${v.daysLeft} ngày</b>` : `<b>Còn ${v.daysLeft} ngày</b>`}Còn ${v.left}/${v.total} mã</div>
+        <button class="btn btn-sm btn-save" data-save="${v.id}" title="Lưu"><i class="bi bi-bookmark"></i><span class="visually-hidden">Lưu</span></button>
+        <button class="btn btn-sm btn-accent px-3 claim" data-claim="${v.id}"><i class="bi bi-ticket-perforated"></i>Nhận mã</button>
+      </div>
+    </article></div></div>`;
+  const DEMO = ['v1', 'v4', 'v10'].map(V);
+  const drawTickets = () => {
+    $('tickets').innerHTML = $('cmp').checked
+      ? DEMO.map(v => `<div class="col-md-6 col-xl-4">${CDD.voucherCard(v)}</div>`).join('')
+      : DEMO.map(ticket).join('');
+  };
+  $('cmp').addEventListener('change', drawTickets); drawTickets();
+
+  /* ---------- Vé ngang (Ví) ---------- */
+  const hRows = [
+    { v: 'v1', big: '30%', sm: 'GIẢM', cls: '', code: 'CDD-HG2026-001' },
+    { v: 'v6', big: '50K', sm: 'GIẢM TIỀN', cls: 'blue', code: 'CDD-HG2026-018' },
+    { v: 'v8', big: '1+1', sm: 'MUA 1 TẶNG 1', cls: 'green', code: 'CDD-HG2026-005', used: true },
+  ];
+  $('hTickets').innerHTML = hRows.map(r => { const v = V(r.v); return `
+    <div class="tkh-wrap"><div class="tkh">
+      <div class="tkh-stub ${r.cls}"><div class="big">${r.big}</div><div class="sm">${r.sm}</div></div>
+      <div class="tkh-body">
+        <img src="${CDD.IMG}${v.img}" alt="" class="d-none d-sm-block" style="width:72px;height:72px;border-radius:10px;object-fit:cover">
+        <div class="flex-fill" style="min-width:0">
+          <div class="vcard-shop text-truncate">${v.shop}</div>
+          <div class="fw-bold text-truncate">${v.title}</div>
+          <div class="small-2 text-muted-2 mt-1">Mã: <span class="code-chip">${r.code}</span> · HSD ${v.end}</div>
+        </div>
+        ${r.used ? '<span class="tag tag-success py-2 px-3 flex-none"><i class="bi bi-check2-circle"></i>Đã dùng</span>'
+                 : '<button class="btn btn-sm btn-accent px-3 flex-none"><i class="bi bi-qr-code"></i>Xem mã</button>'}
+      </div>
+    </div></div>`; }).join('');
+
+  /* ---------- 2. Khoảnh khắc nhận mã ---------- */
+  function confetti(x, y) {
+    if (still) return;
+    const C = ['#2563EB', '#EA580C', '#F59E0B', '#16A34A', '#DB2777', '#60A5FA'];
+    for (let i = 0; i < 46; i++) {
+      const s = document.createElement('i'); s.className = 'confetti';
+      const a = Math.random() * Math.PI * 2, d = 80 + Math.random() * 160;
+      s.style.cssText = `left:${x}px;top:${y}px;background:${C[i % C.length]};--dx:${Math.cos(a) * d}px;--up:${-60 - Math.random() * 150}px;--down:${120 + Math.random() * 160}px;--r:${(Math.random() - .5) * 900}deg;animation-delay:${Math.random() * 80}ms;${i % 3 ? '' : 'border-radius:50%;width:8px;height:8px;'}`;
+      document.body.appendChild(s); setTimeout(() => s.remove(), 1400);
+    }
+  }
+  function tearStub(stub) {
+    if (still) return;
+    const r = stub.getBoundingClientRect(), fly = stub.cloneNode(true);
+    fly.classList.add('tear-fly'); Object.assign(fly.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+    document.body.appendChild(fly); setTimeout(() => fly.remove(), 1000);
+  }
+  function slotCode(el, code, done) {
+    el.innerHTML = [...code].map(ch => `<span>${ch === '-' ? '-' : ''}</span>`).join('');
+    const spans = [...el.children], POOL = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+    if (still) { spans.forEach((s, i) => s.textContent = code[i]); return done(); }
+    let i = 0;
+    const roll = setInterval(() => spans.forEach((s, k) => { if (k >= i && code[k] !== '-') s.textContent = POOL[Math.random() * POOL.length | 0]; }), 45);
+    const lock = setInterval(() => {
+      spans[i].textContent = code[i]; spans[i].classList.add('lock'); i++;
+      if (i >= code.length) { clearInterval(roll); clearInterval(lock); done(); }
+    }, 55);
+  }
+  function openClaim(v, code) {
+    const big = v.type === 'gift' ? (/MUA 1/.test(v.badge) ? '1+1' : 'QUÀ') : v.badge.replace('GIẢM ', '');
+    const ov = document.createElement('div'); ov.className = 'claim-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+    ov.innerHTML = `<div class="claim-card">
+      <div class="claim-head"><div class="ok"><i class="bi bi-check-lg"></i></div><h3>Đã nhận mã!</h3><div class="small" style="opacity:.85">Mã đã được lưu vào Ví voucher của bạn</div></div>
+      <div class="tkh-wrap"><div class="tkh claim-tk">
+        <div class="tkh-stub"><div class="big">${big}</div><div class="sm">${v.type === 'gift' ? 'TẶNG' : 'GIẢM'}</div><div class="sm mt-2 mb-4" style="opacity:.8">HSD ${v.end}</div><span class="stamp" id="stamp">ĐÃ NHẬN</span></div>
+        <div class="tkh-body">
+          <div><div class="vcard-shop">${v.shop}</div><div class="fw-bold">${v.title}</div></div>
+          <div class="small-2 text-muted-2">Mã ưu đãi của bạn</div>
+          <div class="slot" id="slot"></div>
+          <div class="qr-box" id="qrBox"><div class="qr" id="qr"></div>
+            <div class="small-2 text-muted-2">Đưa <b class="text-body">mã</b> hoặc <b class="text-body">QR</b> cho nhân viên tại quầy. Mỗi mã dùng 1 lần.</div></div>
+        </div>
+      </div></div>
+      <div class="save-hint mt-3 text-center" style="opacity:0;transition:opacity .4s" id="hint"><i class="bi bi-piggy-bank me-1"></i>Dùng mã này bạn tiết kiệm khoảng <b>${money(EST[v.id] || 30000)}</b> – sẽ cộng vào "Bạn đã tiết kiệm được"</div>
+      <div class="d-flex gap-2 justify-content-center mt-3">
+        <a class="btn btn-light px-4" href="wallet.html?tab=unused"><i class="bi bi-wallet2"></i>Xem trong Ví</a>
+        <button class="btn btn-accent px-4" id="closeClaim">Xong</button>
+      </div></div>`;
+    document.body.appendChild(ov);
+    const close = () => { ov.classList.add('closing'); setTimeout(() => ov.remove(), 250); document.removeEventListener('keydown', esc); };
+    const esc = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', esc);
+    ov.addEventListener('click', (e) => { if (e.target === ov || e.target.id === 'closeClaim') close(); });
+    setTimeout(() => slotCode(ov.querySelector('#slot'), code, () => {
+      ov.querySelector('#stamp').classList.add('slam');
+      if (window.QRCode) new QRCode(ov.querySelector('#qr'), { text: code, width: 74, height: 74 }); else ov.querySelector('#qr').innerHTML = '<i class="bi bi-qr-code fs-1"></i>';
+      setTimeout(() => { ov.querySelector('#qrBox').classList.add('show'); ov.querySelector('#hint').style.opacity = 1; }, 250);
+      if (navigator.vibrate) navigator.vibrate([20, 40, 30]);
+    }), still ? 0 : 450);
+    ov.querySelector('#closeClaim').focus();
+  }
+  $('tickets').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-claim]'); if (!b) return;
+    const v = V(b.dataset.claim), wrap = b.closest('.tk-wrap'), stub = wrap.querySelector('.tk-stub');
+    if (stub.classList.contains('done')) return openClaim(v, stub.dataset.code);
+    const code = `CDD-HG2026-${String(30 + DEMO.indexOf(v)).padStart(3, '0')}`;
+    b.disabled = true; b.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    setTimeout(() => {
+      const r = b.getBoundingClientRect();
+      wrap.classList.add('shake'); tearStub(stub); confetti(r.left + r.width / 2, r.top + r.height / 2);
+      // cuống vé mới: trạng thái đã nhận
+      stub.classList.add('done'); stub.dataset.code = code;
+      stub.innerHTML = `<div class="left flex-fill"><b><i class="bi bi-check-circle-fill me-1"></i>Đã nhận mã</b>${code}</div>
+        <button class="btn btn-sm btn-success px-3" data-claim="${v.id}"><i class="bi bi-qr-code"></i>Xem mã</button>`;
+      setTimeout(() => { wrap.classList.remove('shake'); openClaim(v, code); }, still ? 0 : 650);
+    }, still ? 0 : 350);
+  });
+
+  /* ---------- 3. Bạn đã tiết kiệm được ---------- */
+  const MONTHS = [['T5', 85000], ['T6', 120000], ['T7', 96000], ['T8', 150000], ['T9', 180000], ['T10', 245000]];
+  const RECENT = [['v1', '18/10', 19500], ['v3', '18/10', 13000], ['v8', '12/10', 45000], ['v2', '09/10', 35000], ['v6', '05/10', 50000], ['v4', '02/10', 82500]];
+  const COLORS = { coffee: '#B45309', food: '#EA580C', spa: '#DB2777', market: '#16A34A', gym: '#2563EB' };
+  const byCat = {}; RECENT.forEach(([id, , a]) => { const c = V(id).cat; byCat[c] = (byCat[c] || 0) + a; });
+  const total = RECENT.reduce((s, r) => s + r[2], 0), maxM = Math.max(...MONTHS.map(m => m[1]));
+  $('months').innerHTML = MONTHS.map(([t, a], i) => `<div class="m${i === MONTHS.length - 1 ? ' cur' : ''}"><span class="v">${Math.round(a / 1000)}K</span><span class="b" data-h="${a / maxM * 100}"></span><span class="t">${t}</span></div>`).join('');
+  $('cats').innerHTML = Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, a]) => { const cat = D.categories.find(x => x.id === c); return `
+    <div class="catrow"><div class="d-flex justify-content-between small-2"><span><i class="bi ${cat.icon} me-1" style="color:${COLORS[c]}"></i><b class="text-body">${cat.name}</b></span><b class="text-body">${money(a)}</b></div>
+    <div class="catbar"><span data-w="${a / total * 100}" style="background:${COLORS[c]}"></span></div></div>`; }).join('');
+  $('recent').innerHTML = RECENT.map(([id, d, a]) => { const v = V(id); return `
+    <div class="recent"><img src="${CDD.IMG}${v.img}" alt=""><div style="min-width:0"><div class="fw-bold small text-truncate">${v.title}</div><div class="small-2 text-muted-2">${v.shop} · ${d}</div></div><span class="amt">−${money(a)}</span></div>`; }).join('');
+
+  function playSavings() {
+    const el = $('saveAmt'), bars = document.querySelectorAll('#months .b'), cb = document.querySelectorAll('#cats .catbar span');
+    $('months').classList.remove('go'); bars.forEach(b => b.style.height = 0); cb.forEach(b => b.style.width = 0); $('msBar').style.width = 0;
+    const show = () => {
+      bars.forEach((b, i) => setTimeout(() => b.style.height = b.dataset.h + '%', i * 90)); $('months').classList.add('go');
+      cb.forEach(b => b.style.width = b.dataset.w + '%'); $('msBar').style.width = (total / 300000 * 100) + '%';
+    };
+    if (still) { el.textContent = money(total); return show(); }
+    requestAnimationFrame(() => requestAnimationFrame(show));
+    const t0 = performance.now(), dur = 1600;
+    (function tick(t) { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 4); el.textContent = money(total * e); if (k < 1) requestAnimationFrame(tick); })(t0);
+  }
+  // chạy khi cuộn tới
+  const io = new IntersectionObserver((en) => { if (en[0].isIntersecting) { playSavings(); io.disconnect(); } }, { threshold: .3 });
+  io.observe(document.querySelector('.save-hero'));
+  $('replay').addEventListener('click', playSavings);
+</script>
+</body>
+</html>

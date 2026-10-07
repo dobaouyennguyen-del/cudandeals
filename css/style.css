@@ -429,3 +429,54 @@ textarea.form-control { min-height: 110px; }
 .pw-rules li { display: inline-flex; align-items: center; gap: 5px; transition: color .2s; }
 .pw-rules li.ok { color: #16A34A; }
 .pw-meter.warn .pw-rules li:not(.ok) { color: #DC2626; }
+
+/* ---------- Chuyển chế độ xem Khám phá: Danh sách | Bản đồ (R-01) ---------- */
+.view-toggle { display: inline-flex; background: #EEF2F6; border-radius: 10px; padding: 4px; gap: 4px; }
+.view-toggle a { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--muted); text-decoration: none; transition: background-color .2s, color .2s, box-shadow .2s; }
+.view-toggle a:hover { color: var(--primary); }
+.view-toggle a.on { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(15,23,42,.12); }
+
+/* ---------- Popup mã ưu đãi dạng "tấm vé" (R-02b, dùng chung mọi nút Nhận mã / Xem mã) ---------- */
+.claim-ov { position: fixed; inset: 0; z-index: 1080; background: rgba(15,23,42,.6); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 16px; overflow-y: auto; animation: clOvIn .25s ease both; }
+.claim-ov.closing { animation: clOvOut .22s ease forwards; }
+@keyframes clOvIn { from { opacity: 0; } } @keyframes clOvOut { to { opacity: 0; } }
+.claim-card { width: min(560px, 100%); animation: clCardIn .6s cubic-bezier(.3,1.4,.5,1) both; }
+@keyframes clCardIn { from { opacity: 0; transform: translateY(60px) scale(.85) rotate(-3deg); } to { opacity: 1; transform: none; } }
+.claim-head { text-align: center; color: #fff; margin-bottom: 14px; }
+.claim-head .ok { width: 58px; height: 58px; border-radius: 50%; background: #22C55E; color: #fff; display: inline-grid; place-items: center; font-size: 30px; box-shadow: 0 0 0 0 rgba(34,197,94,.6); animation: clPop .5s .2s cubic-bezier(.3,1.6,.5,1) both, clRing 1.6s .7s ease-out 2; }
+.claim-head .ok.view { background: var(--accent); font-size: 26px; animation: clPop .5s .1s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes clPop { from { transform: scale(0); } } @keyframes clRing { to { box-shadow: 0 0 0 22px rgba(34,197,94,0); } }
+.claim-head h3 { color: #fff; font-weight: 800; margin: 10px 0 2px; font-size: 22px; }
+.claim-tkw { filter: drop-shadow(0 10px 24px rgba(0,0,0,.25)); }
+.claim-tk { --x: 150px; --r: 11px; display: flex; min-height: 210px; background: #fff; border-radius: 16px;
+  -webkit-mask: radial-gradient(circle at var(--x) 0, #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at var(--x) 100%, #0000 var(--r), #000 calc(var(--r) + .5px));
+  -webkit-mask-composite: source-in;
+  mask: radial-gradient(circle at var(--x) 0, #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at var(--x) 100%, #0000 var(--r), #000 calc(var(--r) + .5px)); mask-composite: intersect; }
+.claim-stub { width: var(--x); flex: none; position: relative; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 12px 10px 48px; border-radius: 16px 0 0 16px; background: linear-gradient(150deg, #F97316, #EA580C 60%, #C2410C); }
+.claim-stub.amount { background: linear-gradient(150deg, #3B82F6, #2563EB 60%, #1D4ED8); }
+.claim-stub.gift { background: linear-gradient(150deg, #22C55E, #16A34A 60%, #15803D); }
+.claim-stub::after { content: ''; position: absolute; right: 0; top: 14px; bottom: 14px; border-right: 2px dashed rgba(255,255,255,.6); }
+.claim-stub .big { font-size: 32px; font-weight: 800; line-height: 1; }
+.claim-stub .sm { font-size: 11px; font-weight: 700; letter-spacing: .06em; margin-top: 5px; }
+.claim-stub .stamp { position: absolute; left: 50%; bottom: 16px; translate: -50% 0; white-space: nowrap; color: #fff; border: 3px solid #fff; border-radius: 8px; padding: 2px 10px; font-weight: 800; font-size: 14px; letter-spacing: .08em; transform: rotate(-12deg); opacity: 0; }
+.claim-stub .stamp.on { opacity: .9; }
+.claim-stub .stamp.slam { animation: clSlam .45s cubic-bezier(.3,1.6,.5,1) forwards; }
+@keyframes clSlam { 0% { opacity: 0; transform: rotate(-12deg) scale(2.6); } 100% { opacity: .9; transform: rotate(-12deg) scale(1); } }
+.claim-body { flex: 1; min-width: 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.slot-wrap { position: relative; }
+.slot { font-family: 'Courier New', monospace; font-weight: 800; font-size: 22px; letter-spacing: 1px; color: var(--primary); background: var(--primary-soft); border-radius: 10px; padding: 8px 44px 8px 12px; text-align: center; white-space: nowrap; overflow: hidden; min-height: 46px; }
+.slot span { display: inline-block; min-width: .62em; }
+.slot span.lock { animation: clLock .25s ease; }
+@keyframes clLock { from { transform: translateY(-40%); opacity: .3; } }
+.slot-copy { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border: 0; border-radius: 8px; background: #fff; color: var(--primary); display: grid; place-items: center; }
+.slot-copy:hover { background: var(--primary); color: #fff; }
+.qr-row { display: flex; gap: 12px; align-items: center; opacity: 0; transform: translateY(8px); transition: opacity .4s, transform .4s; }
+.qr-row.show { opacity: 1; transform: none; }
+.qr-row .qr { width: 84px; height: 84px; flex: none; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 4px; display: grid; place-items: center; }
+.qr-row .qr img, .qr-row .qr canvas { width: 74px !important; height: 74px !important; }
+.save-hint { margin-top: 14px; background: #ECFDF5; color: #047857; border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 600; text-align: center; opacity: 0; transition: opacity .4s; }
+.save-hint.show { opacity: 1; }
+@media (max-width: 575.98px) {
+  .claim-tk { --x: 108px; } .claim-stub .big { font-size: 24px; } .claim-stub .stamp { font-size: 11px; padding: 2px 6px; letter-spacing: .04em; }
+  .slot { font-size: 16px; padding-right: 40px; } .claim-head h3 { font-size: 19px; }
+}

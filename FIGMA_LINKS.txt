@@ -43,6 +43,12 @@ https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/explore.html?qui
 R-01d Bo loc chi tiet (chon Mobile 390)
 https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/explore.html?filter=open&fx=off
 
+R-01e Kham pha - che do Ban do
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/explore-map.html?fx=off
+
+R-01f Ban do - chon quan Pho Bo
+https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/explore-map.html?shop=Ph%E1%BB%9F%20B%C3%B2%20Gia%20Truy%E1%BB%81n&fx=off
+
 R-02 Chi tiet voucher
 https://dobaouyennguyen-del.github.io/cudandeals/pages/resident/voucher-detail.html?id=v1&fx=off
 

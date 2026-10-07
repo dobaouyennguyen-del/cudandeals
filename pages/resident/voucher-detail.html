@@ -295,7 +295,7 @@
   $('carPrev').onclick = () => go(-1); $('carNext').onclick = () => go(1);
   $('saveBtn').dataset.save = v.id;
   if (CDD.isSaved(v.id)) { $('saveBtn').classList.add('saved'); $('saveBtn').innerHTML = '<i class="bi bi-bookmark-fill"></i><span>Đã lưu</span>'; } $('codeBtn').dataset.code = v.id;
-  if (q.get('code') === '1') CDD.showCode(v.id, 'CDD-HG2026-001');
+  if (q.get('code') === '1') CDD.showCode(v.id, 'CDD-HG2026-001', { fresh: true });   // trạng thái vừa nhận mã (để chụp giao diện)
 </script>
 </body>
 </html>

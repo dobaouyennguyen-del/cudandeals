@@ -14,34 +14,84 @@
     .stat .ic { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; flex-shrink: 0; }
     .stat .num { font-size: 28px; font-weight: 700; line-height: 1; }
     .stat .lbl { font-size: 13px; color: var(--muted); white-space: nowrap; margin-top: 4px; }
-    .witem { display: flex; gap: 16px; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: var(--shadow); }
-    .witem + .witem { margin-top: 12px; }
-    .witem img { object-fit: cover; }
-    .witem .ttl { font-weight: 700; }
-    /* Bấm vào cả dòng để mở chi tiết voucher */
-    .witem[data-href] { cursor: pointer; transition: translate .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s, border-color .25s; }
-    .witem[data-href]:hover { translate: 0 -3px; box-shadow: 0 12px 24px rgba(37,99,235,.12); border-color: #BFD3FE; }
-    .witem .thumb { width: 96px; height: 72px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
-    .witem .thumb img { width: 100%; height: 100%; transition: transform .4s ease; }
-    .witem[data-href]:hover .thumb img { transform: scale(1.08); }
-    .witem[data-href]:hover .ttl { color: var(--primary) !important; }
-    .witem .go { color: var(--muted); font-size: 18px; transition: translate .25s, color .25s; }
-    .witem[data-href]:hover .go { translate: 4px 0; color: var(--primary); }
-    .witem[data-href]:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-    .witem.expired { opacity: .6; }
-    .witem.expired img { filter: grayscale(1); }
+    /* ---------- Vé nằm ngang: cuống màu bên trái (mức ưu đãi), khoét 2 lỗ tròn ở đường răng cưa ---------- */
+    .tkh-wrap { filter: drop-shadow(0 3px 8px rgba(15,23,42,.09)); transition: filter .25s, translate .25s cubic-bezier(.2,.7,.2,1); }
+    .tkh-wrap + .tkh-wrap { margin-top: 14px; }
+    .tkh-wrap:hover { filter: drop-shadow(0 12px 20px rgba(37,99,235,.18)); translate: 0 -3px; }
+    .tkh { --x: 124px; --r: 11px; display: flex; min-height: 112px; background: #fff; border-radius: 14px; cursor: pointer;
+      -webkit-mask: radial-gradient(circle at var(--x) 0, #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at var(--x) 100%, #0000 var(--r), #000 calc(var(--r) + .5px));
+      -webkit-mask-composite: source-in;
+      mask: radial-gradient(circle at var(--x) 0, #0000 var(--r), #000 calc(var(--r) + .5px)), radial-gradient(circle at var(--x) 100%, #0000 var(--r), #000 calc(var(--r) + .5px));
+      mask-composite: intersect; }
+    .tkh:focus-visible { outline: 3px solid var(--primary); outline-offset: -3px; }
+    .tkh-stub { width: var(--x); flex: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-radius: 14px 0 0 14px; position: relative; padding: 10px 8px;
+      background: linear-gradient(150deg, #F97316, #EA580C 60%, #C2410C); }
+    .tkh-stub::after { content: ''; position: absolute; right: 0; top: 14px; bottom: 14px; border-right: 2px dashed rgba(255,255,255,.6); }
+    .tkh-stub .big { font-size: 28px; font-weight: 800; line-height: 1; }
+    .tkh-stub .sm { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; opacity: .92; margin-top: 5px; line-height: 1.25; }
+    .tkh-stub.amount { background: linear-gradient(150deg, #3B82F6, #2563EB 60%, #1D4ED8); }
+    .tkh-stub.gift { background: linear-gradient(150deg, #22C55E, #16A34A 60%, #15803D); }
+    .tkh-stub.gray { background: linear-gradient(150deg, #CBD5E1, #94A3B8); }
+    .tkh-body { flex: 1; min-width: 0; padding: 14px 18px; display: flex; gap: 16px; align-items: center; }
+    .tkh .thumb { width: 84px; height: 72px; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+    .tkh .thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+    .tkh-wrap:hover .thumb img { transform: scale(1.08); }
+    .tkh .ttl { font-weight: 700; }
+    .tkh-wrap:hover .ttl { color: var(--primary) !important; }
+    .tkh .go { color: var(--muted); font-size: 18px; transition: translate .25s, color .25s; }
+    .tkh-wrap:hover .go { translate: 4px 0; color: var(--primary); }
+    .tkh-wrap.expired { opacity: .65; }
+    .tkh-wrap.expired img { filter: grayscale(1); }
+    .saved-chip { display: inline-flex; align-items: center; gap: 4px; background: #ECFDF5; color: #047857; font-weight: 700; font-size: 12px; border-radius: 999px; padding: 2px 9px; }
+    @media (max-width: 575.98px) {
+      .tkh { --x: 88px; } .tkh-stub .big { font-size: 21px; } .tkh-stub .sm { font-size: 9px; }
+      .tkh-body { flex-wrap: wrap; padding: 12px 14px; gap: 10px; } .tkh .thumb { display: none; }
+      .tkh .act { width: 100%; } .tkh .act .btn { flex: 1; }
+    }
+
+    /* ---------- "Bạn đã tiết kiệm được" ---------- */
+    .save-hero { position: relative; overflow: hidden; border-radius: 18px; color: #fff; padding: 24px 28px; background: linear-gradient(135deg, #059669 0%, #0D9488 45%, #2563EB 100%); }
+    .save-hero::before { content: ''; position: absolute; width: 260px; height: 260px; right: -60px; top: -90px; border-radius: 50%; background: rgba(255,255,255,.08); }
+    .save-hero::after { content: ''; position: absolute; width: 180px; height: 180px; right: 140px; bottom: -110px; border-radius: 50%; background: rgba(255,255,255,.06); }
+    .save-hero > .row { position: relative; z-index: 1; }
+    .save-hero .lbl { opacity: .92; font-weight: 600; }
+    .save-hero .amt { font-size: 44px; font-weight: 800; line-height: 1.1; letter-spacing: -.5px; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 12px; }
+    .coin { width: 42px; height: 42px; flex: none; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FDE68A, #F59E0B 60%, #D97706); display: grid; place-items: center; color: #92400E; font-size: 19px; font-weight: 800; box-shadow: inset 0 -3px 0 rgba(0,0,0,.15); animation: coinSpin 3.5s ease-in-out infinite; }
+    @keyframes coinSpin { 0%, 70%, 100% { transform: rotateY(0); } 85% { transform: rotateY(180deg); } }
+    .pillw { display: inline-flex; gap: 6px; align-items: center; background: rgba(255,255,255,.16); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600; margin: 6px 6px 0 0; }
+    .ms-bar { height: 10px; border-radius: 10px; background: rgba(255,255,255,.22); overflow: hidden; }
+    .ms-bar span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #FDE68A, #FBBF24); transition: width 1.4s .3s cubic-bezier(.2,.7,.2,1); }
+    .months { display: flex; align-items: flex-end; gap: 10px; height: 140px; }
+    .months .m { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+    .months .b { width: 100%; max-width: 32px; border-radius: 8px 8px 4px 4px; background: rgba(255,255,255,.32); height: 0; transition: height 1s cubic-bezier(.2,.7,.2,1); }
+    .months .m.cur .b { background: #FDE68A; box-shadow: 0 0 18px rgba(253,230,138,.6); }
+    .months .v { font-size: 11px; font-weight: 700; opacity: 0; transition: opacity .4s 1s; }
+    .months .t { font-size: 12px; opacity: .85; }
+    .months.go .v { opacity: .95; }
+    .btn-glass { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+    .btn-glass:hover { background: rgba(255,255,255,.28); color: #fff; }
+    .btn-glass .bi-chevron-down { transition: transform .25s; } .btn-glass[aria-expanded="true"] .bi-chevron-down { transform: rotate(180deg); }
+    .catrow + .catrow { margin-top: 12px; }
+    .catbar { height: 8px; border-radius: 8px; background: #EEF2F6; overflow: hidden; margin-top: 4px; }
+    .catbar span { display: block; height: 100%; width: 0; border-radius: inherit; transition: width 1s cubic-bezier(.2,.7,.2,1); }
+    .recent { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+    .recent + .recent { border-top: 1px solid var(--border); }
+    .recent img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex: none; }
+    .recent .amt { margin-left: auto; color: var(--success); font-weight: 800; white-space: nowrap; }
+    @media (max-width: 767.98px) { .save-hero { padding: 20px; } .save-hero .amt { font-size: 34px; } }
     .tag .pulse-dot { width: 7px; height: 7px; margin-right: 4px; }
     .code-chip { font-family: 'Courier New', monospace; font-weight: 700; font-size: 13px; background: var(--primary-soft); color: var(--primary); padding: 2px 8px; border-radius: 6px; }
     .my-review { background: var(--bg); border-radius: 8px; padding: 10px 12px; font-size: 14px; margin-top: 10px; }
     .star-pick { font-size: 32px; color: #F59E0B; cursor: pointer; display: flex; gap: 6px; justify-content: center; }
-    @media (max-width: 575.98px) { .witem { flex-wrap: wrap; } .witem .act { width: 100%; } .witem .act .btn { width: 100%; } }
   </style>
 </head>
 <body data-role="resident" data-active="wallet">
 <div id="cdd-header"></div>
 
 <!-- ============ R-03 · Ví voucher ============
-  FR-3.3 Danh sách đã lưu · FR-3.4 Mã đã nhận · FR-7.1 Đánh giá sau khi đã redeem
+  FR-3.3 Danh sách đã lưu · FR-3.4 Mã đã nhận · FR-7.1 Đánh giá sau khi đã redeem · FR-3.9 Bạn đã tiết kiệm được
+  Mỗi voucher hiển thị dạng vé nằm ngang (cuống màu: cam = giảm %, xanh dương = giảm tiền, xanh lá = tặng món)
+  Mở sẵn chi tiết tiết kiệm: ?savings=open
   Trạng thái để chụp: wallet.html?tab=saved | ?tab=unused | ?tab=used | ?tab=expired | ?tab=used&review=1
 ============================================== -->
 <main class="container container-cdd">
@@ -50,18 +100,51 @@
     <p>Quản lý voucher đã lưu và mã ưu đãi đã nhận.</p>
   </div>
 
+  <!-- "Bạn đã tiết kiệm được" – FR-3.9 (tính từ số tiền tiết kiệm của các lần dùng mã) -->
+  <section class="save-hero mb-4" id="saveHero">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-7">
+        <div class="lbl">Tháng 10/2026 bạn đã tiết kiệm</div>
+        <div class="amt"><span class="coin" aria-hidden="true">đ</span><span id="saveAmt">0đ</span></div>
+        <div id="savePills"></div>
+        <div class="mt-3">
+          <div class="d-flex justify-content-between small fw-semibold mb-1"><span><i class="bi bi-trophy me-1"></i>Mốc tiếp theo: <span id="msGoal"></span></span><span id="msLeft"></span></div>
+          <div class="ms-bar"><span id="msBar"></span></div>
+        </div>
+        <button class="btn btn-sm btn-glass mt-3 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#saveDetail" aria-expanded="false" aria-controls="saveDetail"><i class="bi bi-bar-chart"></i>Xem chi tiết<i class="bi bi-chevron-down"></i></button>
+      </div>
+      <div class="col-lg-5">
+        <div class="small fw-semibold mb-2" style="opacity:.9">6 tháng gần đây</div>
+        <div class="months" id="months"></div>
+      </div>
+    </div>
+  </section>
+  <div class="collapse" id="saveDetail">
+    <div class="row g-4 mb-4">
+      <div class="col-lg-5"><div class="cdd-card h-100 mb-0">
+        <div class="section-title">Tiết kiệm theo ngành hàng</div>
+        <div id="cats"></div>
+        <div class="small-2 text-muted-2 mt-3"><i class="bi bi-infinity me-1"></i>Tổng cộng 6 tháng: <b class="text-body" id="allTime"></b></div>
+      </div></div>
+      <div class="col-lg-7"><div class="cdd-card h-100 mb-0">
+        <div class="section-title">Lần tiết kiệm trong tháng</div>
+        <div id="recent"></div>
+      </div></div>
+    </div>
+  </div>
+
   <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3"><div class="cdd-card stat"><span class="ic" style="background:var(--primary-soft);color:var(--primary)"><i class="bi bi-bookmark"></i></span><div><div class="num">2</div><div class="lbl">Đã lưu</div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="cdd-card stat"><span class="ic" style="background:var(--accent-soft);color:var(--accent)"><i class="bi bi-ticket-perforated"></i></span><div><div class="num">3</div><div class="lbl">Mã chưa dùng</div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="cdd-card stat"><span class="ic" style="background:var(--success-soft);color:var(--success)"><i class="bi bi-check2-circle"></i></span><div><div class="num">2</div><div class="lbl">Đã dùng</div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="cdd-card stat"><span class="ic" style="background:#F1F5F9;color:var(--muted)"><i class="bi bi-hourglass-bottom"></i></span><div><div class="num">1</div><div class="lbl">Hết hạn</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card stat"><span class="ic" style="background:var(--primary-soft);color:var(--primary)"><i class="bi bi-bookmark"></i></span><div><div class="num" data-count="saved"></div><div class="lbl">Đã lưu</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card stat"><span class="ic" style="background:var(--accent-soft);color:var(--accent)"><i class="bi bi-ticket-perforated"></i></span><div><div class="num" data-count="unused"></div><div class="lbl">Mã chưa dùng</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card stat"><span class="ic" style="background:var(--success-soft);color:var(--success)"><i class="bi bi-check2-circle"></i></span><div><div class="num" data-count="used"></div><div class="lbl">Đã dùng</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="cdd-card stat"><span class="ic" style="background:#F1F5F9;color:var(--muted)"><i class="bi bi-hourglass-bottom"></i></span><div><div class="num" data-count="expired"></div><div class="lbl">Hết hạn</div></div></div></div>
   </div>
 
   <div class="pill-tabs mb-3" id="tabs">
-    <button class="pill" data-tab="saved"><i class="bi bi-bookmark"></i>Đã lưu <span class="n">2</span></button>
-    <button class="pill active" data-tab="unused"><i class="bi bi-ticket-perforated"></i>Mã chưa dùng <span class="n">3</span></button>
-    <button class="pill" data-tab="used"><i class="bi bi-check2-circle"></i>Đã dùng <span class="n">2</span></button>
-    <button class="pill" data-tab="expired"><i class="bi bi-hourglass-bottom"></i>Hết hạn <span class="n">1</span></button>
+    <button class="pill" data-tab="saved"><i class="bi bi-bookmark"></i>Đã lưu <span class="n" data-count="saved"></span></button>
+    <button class="pill active" data-tab="unused"><i class="bi bi-ticket-perforated"></i>Mã chưa dùng <span class="n" data-count="unused"></span></button>
+    <button class="pill" data-tab="used"><i class="bi bi-check2-circle"></i>Đã dùng <span class="n" data-count="used"></span></button>
+    <button class="pill" data-tab="expired"><i class="bi bi-hourglass-bottom"></i>Hết hạn <span class="n" data-count="expired"></span></button>
   </div>
 
   <div id="list"></div>
@@ -107,15 +190,29 @@
 <script src="../../js/mock-data.js"></script>
 <script src="../../js/components.js"></script>
 <script>
-  const $ = (id) => document.getElementById(id);
+  const $ = (id) => document.getElementById(id), D = window.CDD_DATA, q0 = new URLSearchParams(location.search);
   const V = (id) => CDD.findVoucher(id);
   // Dữ liệu mẫu ví (Phase 3: collection savedVouchers / redemptions)
   const WALLET = {
     saved:   [{ v: 'v4' }, { v: 'v6' }],
     unused:  [{ v: 'v1', code: 'CDD-HG2026-001' }, { v: 'v2', code: 'CDD-HG2026-014' }, { v: 'v5', code: 'CDD-HG2026-022' }],
-    used:    [{ v: 'v3', code: 'CDD-HG2026-009', usedAt: '14:30 · 18/10/2026' }, { v: 'v8', code: 'CDD-HG2026-005', usedAt: '12/10/2026', review: { stars: 5, text: 'Trà thơm, nhân viên dễ thương. Sẽ quay lại!' } }],
+    // saved: số tiền tiết kiệm của lần dùng mã (Phase 3: lưu trong redemptions khi đối tác xác nhận mã ở B-05)
+    used:    [{ v: 'v3', code: 'CDD-HG2026-009', usedAt: '14:30 · 18/10/2026', saved: 13000 },
+              { v: 'v8', code: 'CDD-HG2026-005', usedAt: '12/10/2026', saved: 45000, review: { stars: 5, text: 'Trà thơm, nhân viên dễ thương. Sẽ quay lại!' } },
+              { v: 'v7', code: 'CDD-HG2026-012', usedAt: '19:10 · 09/10/2026', saved: 48000 },
+              { v: 'v12', code: 'CDD-HG2026-010', usedAt: '07:45 · 05/10/2026', saved: 22500 },
+              { v: 'v15', code: 'CDD-HG2026-008', usedAt: '04/10/2026', saved: 16500 },
+              { v: 'v13', code: 'CDD-HG2026-006', usedAt: '02/10/2026', saved: 100000 }],
     expired: [{ v: 'v9', code: 'CDD-HG2026-002', expiredAt: '30/09/2026' }],
   };
+
+  // Cuống vé: mức ưu đãi + màu theo loại (giảm % / giảm tiền / tặng món)
+  function stubOf(v) {
+    if (v.type === 'amount') return { big: v.badge.replace('GIẢM ', ''), sm: 'GIẢM TIỀN', cls: 'amount' };
+    if (v.type === 'gift') return /MUA 1 TẶNG 1/.test(v.badge) ? { big: '1+1', sm: 'MUA 1 TẶNG 1', cls: 'gift' } : { big: 'QUÀ', sm: 'TẶNG KÈM', cls: 'gift' };
+    return { big: v.badge.replace('GIẢM ', ''), sm: 'GIẢM', cls: '' };
+  }
+  const money = (n) => Math.round(n).toLocaleString('vi-VN') + 'đ';
 
   function item(tab, w) {
     const v = V(w.v);
@@ -133,7 +230,7 @@
       act = `<button class="btn btn-sm btn-accent px-3" onclick="CDD.showCode('${v.id}','${w.code}')"><i class="bi bi-qr-code"></i>Xem mã</button>`;
     } else if (tab === 'used') {
       tag = `<span class="tag tag-success"><i class="bi bi-check2-circle"></i>Đã dùng lúc ${w.usedAt}</span>`;
-      info = `Mã: <span class="code-chip">${w.code}</span>`;
+      info = `Mã: <span class="code-chip">${w.code}</span>${w.saved ? ` · <span class="saved-chip"><i class="bi bi-piggy-bank"></i>Tiết kiệm ${money(w.saved)}</span>` : ''}`;
       act = w.review
         ? `<span class="tag tag-success py-2 px-3"><i class="bi bi-patch-check"></i>Đã đánh giá</span>`
         : `<button class="btn btn-sm btn-accent px-3" data-review="${v.id}"><i class="bi bi-pencil-square"></i>Viết đánh giá</button>`;
@@ -142,18 +239,21 @@
       info = `Mã: <span class="code-chip">${w.code}</span>`;
       act = '';
     }
-    const href = `voucher-detail.html?id=${v.id}&from=wallet`;
-    return `<div class="witem ${tab === 'expired' ? 'expired' : ''}" data-href="${href}" role="link" tabindex="0" aria-label="Xem chi tiết ${v.title}">
-      <div class="thumb"><img src="${CDD.IMG}${v.img}" alt="${v.shop}"></div>
-      <div class="flex-fill">
-        <div class="d-flex flex-wrap gap-2 align-items-center mb-1">${tag}${CDD.scopeTag(v)}</div>
-        <div class="vcard-shop">${v.shop}</div>
-        <a class="ttl text-decoration-none text-reset" href="${href}">${v.title}</a>
-        <div class="small-2 text-muted-2 mt-1">${info}</div>
-        ${w.review ? `<div class="my-review"><span class="rating">${CDD.stars(w.review.stars)}</span> “${w.review.text}” <a href="my-reviews.html" class="ms-1">Xem / Sửa</a></div>` : ''}
+    const href = `voucher-detail.html?id=${v.id}&from=wallet`, st = stubOf(v);
+    return `<div class="tkh-wrap ${tab === 'expired' ? 'expired' : ''}"><div class="tkh" data-href="${href}" role="link" tabindex="0" aria-label="Xem chi tiết ${v.title}">
+      <div class="tkh-stub ${tab === 'expired' ? 'gray' : st.cls}"><div class="big">${st.big}</div><div class="sm">${st.sm}</div></div>
+      <div class="tkh-body">
+        <div class="thumb"><img src="${CDD.IMG}${v.img}" alt="${v.shop}"></div>
+        <div class="flex-fill" style="min-width:0">
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-1">${tag}${CDD.scopeTag(v)}</div>
+          <div class="vcard-shop text-truncate">${v.shop}</div>
+          <a class="ttl text-decoration-none text-reset" href="${href}">${v.title}</a>
+          <div class="small-2 text-muted-2 mt-1">${info}</div>
+          ${w.review ? `<div class="my-review"><span class="rating">${CDD.stars(w.review.stars)}</span> “${w.review.text}” <a href="my-reviews.html" class="ms-1">Xem / Sửa</a></div>` : ''}
+        </div>
+        <div class="act d-flex gap-2 flex-shrink-0 align-items-center">${act}<i class="bi bi-chevron-right go d-none d-sm-inline" aria-hidden="true"></i></div>
       </div>
-      <div class="act d-flex gap-2 flex-shrink-0 align-items-center">${act}<i class="bi bi-chevron-right go d-none d-sm-inline" aria-hidden="true"></i></div>
-    </div>`;
+    </div></div>`;
   }
 
   function show(tab) {
@@ -163,10 +263,48 @@
   $('tabs').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (b) show(b.dataset.tab); });
   // Bấm vào dòng (trừ nút / liên kết bên trong) → mở chi tiết voucher (R-02)
   $('list').addEventListener('click', (e) => {
-    const it = e.target.closest('.witem[data-href]'); if (!it || e.target.closest('button, a, .my-review')) return;
+    const it = e.target.closest('.tkh[data-href]'); if (!it || e.target.closest('button, a, .my-review')) return;
     location.href = it.dataset.href;
   });
-  $('list').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('.witem[data-href]')) location.href = e.target.dataset.href; });
+  $('list').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('.tkh[data-href]')) location.href = e.target.dataset.href; });
+  // Số lượng ở thẻ thống kê & tab lấy từ dữ liệu ví
+  document.querySelectorAll('[data-count]').forEach(el => el.textContent = WALLET[el.dataset.count].length);
+
+  // ---- FR-3.9 Bạn đã tiết kiệm được (tháng này = tổng "saved" của các lần dùng mã trong tháng) ----
+  const MONTHS = [['T5', 85000], ['T6', 120000], ['T7', 96000], ['T8', 150000], ['T9', 180000]];
+  const thisMonth = WALLET.used.reduce((s, w) => s + (w.saved || 0), 0);
+  MONTHS.push(['T10', thisMonth]);
+  const prev = MONTHS[MONTHS.length - 2][1], goal = Math.ceil((thisMonth + 1) / 100000) * 100000;
+  const growth = Math.round((thisMonth - prev) / prev * 100);
+  $('savePills').innerHTML = `<span class="pillw"><i class="bi bi-ticket-perforated"></i>${WALLET.used.length} lần dùng mã tại cửa hàng</span>
+    <span class="pillw"><i class="bi bi-cup-hot"></i>≈ ${Math.round(thisMonth / 30000)} ly cà phê sữa đá</span>
+    <span class="pillw"><i class="bi ${growth >= 0 ? 'bi-graph-up-arrow' : 'bi-graph-down-arrow'}"></i>${growth >= 0 ? '+' : ''}${growth}% so với tháng 9</span>`;
+  $('msGoal').textContent = money(goal); $('msLeft').textContent = 'Còn ' + money(goal - thisMonth);
+  const maxM = Math.max(...MONTHS.map(m => m[1]));
+  $('months').innerHTML = MONTHS.map(([t, a], i) => `<div class="m${i === MONTHS.length - 1 ? ' cur' : ''}"><span class="v">${Math.round(a / 1000)}K</span><span class="b" data-h="${a / maxM * 100}"></span><span class="t">${t}</span></div>`).join('');
+  $('allTime').textContent = money(MONTHS.reduce((s, m) => s + m[1], 0));
+  const CC = { coffee: '#B45309', food: '#EA580C', spa: '#DB2777', market: '#16A34A', gym: '#2563EB' }, byCat = {};
+  WALLET.used.forEach(w => { const c = V(w.v).cat; byCat[c] = (byCat[c] || 0) + w.saved; });
+  $('cats').innerHTML = Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, a]) => { const cat = D.categories.find(x => x.id === c); return `
+    <div class="catrow"><div class="d-flex justify-content-between small-2"><span><i class="bi ${cat.icon} me-1" style="color:${CC[c]}"></i><b class="text-body">${cat.name}</b></span><b class="text-body">${money(a)}</b></div>
+    <div class="catbar"><span data-w="${a / thisMonth * 100}" style="background:${CC[c]}"></span></div></div>`; }).join('');
+  $('recent').innerHTML = WALLET.used.map(w => { const v = V(w.v); return `
+    <div class="recent"><img src="${CDD.IMG}${v.img}" alt=""><div style="min-width:0"><div class="fw-bold small text-truncate">${v.title}</div><div class="small-2 text-muted-2">${v.shop} · ${w.usedAt.split('· ').pop()}</div></div><span class="amt">−${money(w.saved)}</span></div>`; }).join('');
+
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches || q0.get('fx') === 'off';
+  function playSavings() {
+    const show = () => {
+      document.querySelectorAll('#months .b').forEach((b, i) => setTimeout(() => b.style.height = b.dataset.h + '%', still ? 0 : i * 90));
+      $('months').classList.add('go'); $('msBar').style.width = (thisMonth / goal * 100) + '%';
+    };
+    if (still) { $('saveAmt').textContent = money(thisMonth); return show(); }
+    requestAnimationFrame(() => requestAnimationFrame(show));
+    const t0 = performance.now(), dur = 1600;
+    (function tick(t) { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 4); $('saveAmt').textContent = money(thisMonth * e); if (k < 1) requestAnimationFrame(tick); })(t0);
+  }
+  playSavings();
+  $('saveDetail').addEventListener('shown.bs.collapse', () => document.querySelectorAll('#cats .catbar span').forEach(b => b.style.width = b.dataset.w + '%'));
+  if (q0.get('savings') === 'open') { $('saveDetail').classList.add('show'); document.querySelector('[data-bs-target="#saveDetail"]').setAttribute('aria-expanded', 'true'); document.querySelectorAll('#cats .catbar span').forEach(b => b.style.width = b.dataset.w + '%'); }
 
   // ---- Popup đánh giá ----
   const TXT = ['', 'Rất tệ', 'Chưa hài lòng', 'Bình thường', 'Hài lòng', 'Cực kỳ hài lòng'];

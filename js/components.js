@@ -64,54 +64,97 @@ window.CDD = (function () {
     </article>`;
   }
 
-  /* ---------- Popup mã ưu đãi (R-02b) – FR-3.4, FR-3.7 ---------- */
-  function ensureCodeModal() {
-    if (document.getElementById('codeModal')) return;
-    document.body.insertAdjacentHTML('beforeend', `
-    <div class="modal fade" id="codeModal" tabindex="-1" aria-labelledby="codeModalTitle" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content code-modal">
-          <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Đóng"></button>
-          <div class="text-center">
-            <div class="code-icon"><i class="bi bi-ticket-perforated-fill"></i></div>
-            <h2 id="codeModalTitle" class="h4 fw-bold mb-1">Mã ưu đãi của bạn</h2>
-            <p class="text-muted-2 small-2 mb-3">Mã đã được lưu vào <b>Ví voucher</b></p>
-          </div>
-          <div class="code-box">
-            <div class="vcard-shop" id="cmShop"></div>
-            <div class="fw-bold mb-3" id="cmTitle"></div>
-            <div id="cmQr" class="qr"></div>
-            <div class="code-text"><span id="cmCode">CDD-HG2026-001</span>
-              <button class="btn btn-sm btn-light-primary" id="cmCopy"><i class="bi bi-copy"></i>Sao chép</button></div>
-            <div class="small-2 text-muted-2 mt-2"><i class="bi bi-clock me-1"></i>Hết hạn: <span id="cmEnd"></span></div>
-          </div>
-          <div class="note note-info mt-3"><i class="bi bi-info-circle"></i><span>Đưa mã hoặc mã QR cho nhân viên tại quầy để được áp dụng. Mỗi mã chỉ dùng được <b>1 lần</b>.</span></div>
-          <div class="d-flex gap-2 mt-3">
-            <a href="${ROOT}pages/resident/wallet.html" class="btn btn-outline-primary flex-fill">Xem trong ví</a>
-            <button class="btn btn-primary flex-fill" data-bs-dismiss="modal">Đóng</button>
-          </div>
-        </div>
-      </div>
-    </div>`);
-    document.getElementById('cmCopy').addEventListener('click', (e) => {
-      navigator.clipboard && navigator.clipboard.writeText(document.getElementById('cmCode').textContent);
-      e.currentTarget.innerHTML = '<i class="bi bi-check2"></i>Đã chép';
-    });
+  /* ---------- Popup mã ưu đãi dạng "tấm vé" (R-02b) – FR-3.4, FR-3.7 ----------
+     showCode(id)            → vừa bấm "Nhận mã": "Đã nhận mã!", mã chạy kiểu quay số, đóng dấu ĐÃ NHẬN, gợi ý số tiền tiết kiệm
+     showCode(id, code)      → xem lại mã đã có (Ví voucher › Xem mã): hiện mã ngay, không chạy hiệu ứng
+     showCode(id, code, { fresh: true }) → ép hiện như vừa nhận (dùng để chụp giao diện) */
+  // Cuống vé: mức ưu đãi + màu theo loại (cam giảm %, xanh dương giảm tiền, xanh lá tặng món)
+  function stubOf(v) {
+    if (v.type === 'amount') return { big: v.badge.replace('GIẢM ', ''), sm: 'GIẢM TIỀN', cls: 'amount' };
+    if (v.type === 'gift') return /MUA 1 TẶNG 1/.test(v.badge) ? { big: '1+1', sm: 'TẶNG', cls: 'gift' } : { big: 'QUÀ', sm: 'TẶNG KÈM', cls: 'gift' };
+    return { big: (v.badge || '').replace('GIẢM ', ''), sm: 'GIẢM', cls: '' };
+  }
+  // Ước tính tiền tiết kiệm (Phase 3: số thật lấy từ hóa đơn khi đối tác xác nhận mã – FR-3.9)
+  const BILL = { coffee: 65000, food: 120000, spa: 200000, gym: 400000, market: 160000 };
+  const GIFT = { coffee: 45000, food: 35000, spa: 60000, gym: 100000, market: 30000 };
+  function estSave(v) {
+    if (v.type === 'amount') return (parseInt(v.badge.replace(/\D/g, '')) || 0) * 1000;
+    if (v.type === 'gift') return GIFT[v.cat] || 30000;
+    return Math.round((v.pct || 0) / 100 * (BILL[v.cat] || 100000) / 500) * 500;
+  }
+  const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches || new URLSearchParams(location.search).get('fx') === 'off';
+
+  function rollCode(el, code, done) {                // mã chạy như máy quay số rồi chốt từng ký tự
+    el.innerHTML = [...code].map(ch => `<span>${ch === '-' ? '-' : ''}</span>`).join('');
+    const spans = [...el.children], POOL = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+    if (still()) { spans.forEach((sp, i) => sp.textContent = code[i]); return done(); }
+    let i = 0;
+    const roll = setInterval(() => spans.forEach((sp, k) => { if (k >= i && code[k] !== '-') sp.textContent = POOL[Math.random() * POOL.length | 0]; }), 45);
+    const lock = setInterval(() => {
+      spans[i].textContent = code[i]; spans[i].classList.add('lock'); i++;
+      if (i >= code.length) { clearInterval(roll); clearInterval(lock); done(); }
+    }, 55);
   }
 
-  function showCode(id, code) {
+  function showCode(id, code, opt = {}) {
     const v = findVoucher(id) || {};
-    ensureCodeModal();
-    code = code || 'CDD-' + (v.id || 'X').toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000);
-    document.getElementById('cmShop').textContent = v.shop || '';
-    document.getElementById('cmTitle').textContent = v.title || '';
-    document.getElementById('cmCode').textContent = code;
-    document.getElementById('cmEnd').textContent = v.end || '';
-    document.getElementById('cmCopy').innerHTML = '<i class="bi bi-copy"></i>Sao chép';
-    const qr = document.getElementById('cmQr'); qr.innerHTML = '';
-    if (window.QRCode) new QRCode(qr, { text: code, width: 148, height: 148 });   // qrcode.js (FR-3.7)
-    else qr.innerHTML = '<i class="bi bi-qr-code" style="font-size:120px;line-height:1"></i>';
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('codeModal')).show();
+    const fresh = opt.fresh ?? !code;
+    code = code || `CDD-HG2026-${String(30 + (Math.random() * 900 | 0)).padStart(3, '0')}`;
+    const st = stubOf(v), money = (n) => n.toLocaleString('vi-VN') + 'đ';
+    document.getElementById('claimOv')?.remove();
+    const last = document.activeElement;
+    const ov = document.createElement('div');
+    ov.className = 'claim-ov'; ov.id = 'claimOv';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'claimTitle');
+    ov.innerHTML = `<div class="claim-card">
+      <div class="claim-head">
+        <div class="ok${fresh ? '' : ' view'}"><i class="bi ${fresh ? 'bi-check-lg' : 'bi-ticket-perforated-fill'}"></i></div>
+        <h3 id="claimTitle">${fresh ? 'Đã nhận mã!' : 'Mã ưu đãi của bạn'}</h3>
+        <div class="small" style="opacity:.85">${fresh ? 'Mã đã được lưu vào Ví voucher của bạn' : 'Đưa mã này cho nhân viên tại quầy'}</div>
+      </div>
+      <div class="claim-tkw"><div class="claim-tk">
+        <div class="claim-stub ${st.cls}">
+          <div class="big">${st.big}</div><div class="sm">${st.sm}</div><div class="sm mt-2" style="opacity:.85">HSD ${v.end || ''}</div>
+          <span class="stamp${fresh ? '' : ' on'}">ĐÃ NHẬN</span>
+        </div>
+        <div class="claim-body">
+          <div><div class="vcard-shop">${v.shop || ''}</div><div class="fw-bold">${v.title || ''}</div></div>
+          <div class="small-2 text-muted-2">Mã ưu đãi của bạn</div>
+          <div class="slot-wrap"><div class="slot" aria-live="polite"></div>
+            <button type="button" class="slot-copy" title="Sao chép mã" aria-label="Sao chép mã"><i class="bi bi-copy"></i></button></div>
+          <div class="qr-row${fresh ? '' : ' show'}"><div class="qr"></div>
+            <div class="small-2 text-muted-2">Đưa <b class="text-body">mã</b> hoặc <b class="text-body">QR</b> cho nhân viên tại quầy. Mỗi mã dùng <b class="text-body">1 lần</b>.</div></div>
+        </div>
+      </div></div>
+      ${fresh && v.cat ? `<div class="save-hint"><i class="bi bi-piggy-bank me-1"></i>Dùng mã này bạn tiết kiệm khoảng <b>${money(estSave(v))}</b> – sẽ cộng vào "Bạn đã tiết kiệm được"</div>` : ''}
+      <div class="d-flex gap-2 justify-content-center mt-3">
+        ${/wallet\.html/.test(location.pathname) ? '' : `<a class="btn btn-light px-4" href="${ROOT}pages/resident/wallet.html?tab=unused"><i class="bi bi-wallet2"></i>Xem trong Ví</a>`}
+        <button type="button" class="btn btn-accent px-4 claim-close">${fresh ? 'Xong' : 'Đóng'}</button>
+      </div>
+    </div>`;
+    document.body.appendChild(ov);
+    document.body.style.overflow = 'hidden';
+    const slot = ov.querySelector('.slot'), qrBox = ov.querySelector('.qr');
+    const drawQr = () => { if (window.QRCode) new QRCode(qrBox, { text: code, width: 74, height: 74 }); else qrBox.innerHTML = '<i class="bi bi-qr-code fs-1"></i>'; };   // qrcode.js (FR-3.7)
+    const close = () => {
+      ov.classList.add('closing'); document.removeEventListener('keydown', key);
+      setTimeout(() => { ov.remove(); document.body.style.overflow = ''; last && last.focus && last.focus(); }, 220);
+    };
+    const key = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', key);
+    ov.addEventListener('click', (e) => { if (e.target === ov || e.target.closest('.claim-close')) close(); });
+    ov.querySelector('.slot-copy').addEventListener('click', (e) => {
+      navigator.clipboard && navigator.clipboard.writeText(code);
+      e.currentTarget.innerHTML = '<i class="bi bi-check2"></i>'; toast('Đã sao chép mã ' + code);
+    });
+    if (fresh) {
+      setTimeout(() => rollCode(slot, code, () => {
+        ov.querySelector('.stamp').classList.add('slam'); drawQr();
+        setTimeout(() => { ov.querySelector('.qr-row').classList.add('show'); const h = ov.querySelector('.save-hint'); if (h) h.classList.add('show'); }, 250);
+        if (navigator.vibrate) navigator.vibrate([20, 40, 30]);
+      }), still() ? 0 : 450);
+    } else { slot.innerHTML = [...code].map(ch => `<span>${ch}</span>`).join(''); drawQr(); }
+    ov.querySelector('.claim-close').focus();
     saved.add(id);
   }
 
@@ -233,5 +276,5 @@ window.CDD = (function () {
     input._pw = { warn() { box.classList.add('warn'); input.classList.add('is-invalid'); update(); } };
     return input._pw;
   }
-  return { stars, scopeTag, voucherCard, showCode, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, pwOk, pwMeter, IMG, ROOT, D };
+  return { stars, scopeTag, voucherCard, showCode, stubOf, estSave, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, pwOk, pwMeter, IMG, ROOT, D };
 })();
