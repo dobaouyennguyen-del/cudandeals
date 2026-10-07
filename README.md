@@ -2,6 +2,8 @@
 
 HTML + CSS + JavaScript + **Bootstrap 5** (đúng NFR-6). Dữ liệu hiện là **dữ liệu mẫu** (`js/mock-data.js`) — Phase 3 thay bằng Firebase.
 Mở file `.html` bằng Chrome để xem (cần Internet để tải Bootstrap, icon, font, Chart.js, qrcode.js từ CDN).
+**Tài liệu thiết kế (Link Design – mốc M1):** `design/index.html` – Design Hub gồm màu, chữ, thành phần, sitemap, luồng chính và thư viện toàn bộ màn hình.
+**Ảnh toàn bộ màn hình:** mở `design/capture.html` bằng Chrome (trên GitHub Pages) → *Bắt đầu chụp* → tải file ZIP → kéo ảnh vào Figma.
 **Khi chụp bằng html.to.design:** thêm `fx=off` vào link (VD `index.html?fx=off`, `wallet.html?tab=used&fx=off`) để tắt hiệu ứng hiện dần, tránh phần chưa cuộn tới bị trống.
 
 ## Cấu trúc
@@ -12,6 +14,7 @@ js/mock-data.js      Dữ liệu mẫu (cùng cấu trúc Firestore dự kiến)
 js/components.js     Thẻ voucher, popup mã ưu đãi, hộp xác nhận, toast
 js/charts.js         Cấu hình biểu đồ Chart.js dùng chung
 js/map.js            Sơ đồ khu dân cư + đường đi bộ + link chỉ đường (FR-3.6) dùng chung
+design/              Design Hub (index.html), công cụ chụp màn hình (capture.html), danh sách màn (screens.js)
 assets/img/          Ảnh minh họa đã nén (~70KB/ảnh, NFR-3)
 ```
 

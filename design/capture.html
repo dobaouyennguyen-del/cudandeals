@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chụp ảnh toàn bộ màn hình – CuDanDeals.vn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .cap-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .cap-row:last-child { border-bottom: 0; }
+    .cap-row .code { font-weight: 700; width: 64px; flex: none; }
+    .cap-row .st { margin-left: auto; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .cap-row img { width: 72px; height: 45px; object-fit: cover; object-position: top; border-radius: 6px; border: 1px solid var(--border); cursor: zoom-in; }
+    .prog { height: 10px; border-radius: 10px; background: #EEF2F6; overflow: hidden; }
+    .prog span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width .3s; }
+    #stage { position: fixed; left: -30000px; top: 0; }
+    #stage iframe { border: 0; background: #fff; }
+    .grp-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin: 18px 0 4px; }
+  </style>
+</head>
+<body data-role="auth">
+<div id="cdd-header"></div>
+
+<!-- Công cụ nội bộ của nhóm: mở từng màn trong khung ẩn, chụp thành ảnh JPG (html-to-image) rồi gom vào 1 file ZIP
+     để kéo vào Figma. Phải mở trang này trên cùng tên miền với web (GitHub Pages), không mở bằng file:// -->
+<main class="container container-cdd pb-5">
+  <div class="page-head">
+    <a href="index.html" class="back-link"><i class="bi bi-arrow-left"></i>Về Design Hub</a>
+    <h1>Chụp ảnh toàn bộ màn hình</h1>
+    <p>Tự mở từng màn, chụp cả trang (rộng 1440px) và gom thành 1 file ZIP để kéo vào Figma.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <div class="cdd-card">
+        <div class="section-title">Chọn nội dung</div>
+        <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="optMain" checked><label class="form-check-label" for="optMain">Màn chính <span class="text-muted-2" id="nMain"></span></label></div>
+        <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="optStates" checked><label class="form-check-label" for="optStates">Trạng thái & popup phụ <span class="text-muted-2" id="nStates"></span></label></div>
+        <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="optMobile" checked><label class="form-check-label" for="optMobile">Bản điện thoại 390px <span class="text-muted-2" id="nMobile"></span></label></div>
+        <div class="note note-info mb-3"><i class="bi bi-info-circle"></i><span>Giữ nguyên tab này cho tới khi xong (khoảng 5–7 phút). Có thể làm việc khác ở tab khác.</span></div>
+        <button class="btn btn-accent w-100" id="start"><i class="bi bi-camera"></i>Bắt đầu chụp</button>
+        <div class="mt-4">
+          <div class="d-flex justify-content-between small-2 mb-1"><span id="progTxt">Chưa bắt đầu</span><span id="progPct"></span></div>
+          <div class="prog"><span id="prog"></span></div>
+        </div>
+        <a class="btn btn-primary w-100 mt-3 d-none" id="dl" download="CuDanDeals-man-hinh.zip"><i class="bi bi-file-earmark-zip"></i>Tải file ZIP</a>
+        <div class="small-2 text-muted-2 mt-3">Trong ZIP, ảnh được xếp theo thư mục (1-Public, 2-Cu-dan…), tên ảnh = mã màn. Bấm vào ảnh nhỏ bên phải để xem lớn.</div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="cdd-card"><div class="section-title">Danh sách</div><div id="list"></div></div>
+    </div>
+  </div>
+</main>
+<div id="stage"></div>
+<div id="cdd-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="../js/layout.js"></script>
+<script src="screens.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const ROOT = '../';
+  const H2I = 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js';
+  const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // ---- Danh sách việc cần chụp ----
+  const jobs = [];
+  CDD_SCREENS.forEach(g => g.items.forEach(it => {
+    const folder = slug(g.group);
+    jobs.push({ kind: 'main', folder, code: it.code, name: it.name, path: it.path, width: 1440, mode: 'full' });
+    (it.states || []).forEach(s => jobs.push({ kind: 'states', folder, code: s.code, name: s.name, path: s.path, width: s.width || 1440, mode: s.mode || 'full' }));
+    if (it.mobile) jobs.push({ kind: 'mobile', folder: '6-Mobile', code: it.code + '-m', name: it.name + ' (điện thoại)', path: it.path, width: 390, mode: 'full' });
+  }));
+  jobs.sort((a, b) => (a.kind === 'mobile') - (b.kind === 'mobile'));   // bản điện thoại để cuối, giữ thứ tự nhóm
+  const count = (k) => jobs.filter(j => j.kind === k).length;
+  $('nMain').textContent = `(${count('main')})`; $('nStates').textContent = `(${count('states')})`; $('nMobile').textContent = `(${count('mobile')})`;
+  let lastFolder = null;
+  $('list').innerHTML = jobs.map((j, i) => {
+    const head = j.folder !== lastFolder ? `<div class="grp-title">${j.folder.replace(/-/g, ' ')}</div>` : ''; lastFolder = j.folder;
+    return head + `<div class="cap-row" id="row${i}"><span class="code">${j.code}</span><span>${j.name}${j.width < 1440 ? ' <span class="tag tag-muted">390px</span>' : ''}</span><span class="st text-muted-2" id="st${i}">Chờ</span></div>`;
+  }).join('');
+
+  // ---- Nhúng font Be Vietnam Pro + Bootstrap Icons vào ảnh (để chữ & icon hiện đúng) ----
+  const toData = async (u) => { const b = await (await fetch(u)).blob(); return await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); }); };
+  async function inlineCss(href) {
+    let css = await (await fetch(href)).text();
+    const urls = [...new Set([...css.matchAll(/url\(["']?([^"')]+)["']?\)/g)].map(m => m[1]))];
+    for (const u of urls) css = css.split(u).join(await toData(new URL(u, href).href));
+    return css;
+  }
+  let FONT_CSS = '';
+  async function prepareFonts() {
+    const fonts = await inlineCss('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+    const icons = await inlineCss('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css');
+    FONT_CSS = fonts + '\n' + (icons.match(/@font-face\s*{[^}]*}/g) || []).join('\n');
+  }
+
+  // ---- Chụp 1 màn ----
+  async function shoot(job) {
+    const vh = job.width < 600 ? 844 : 900;
+    const f = document.createElement('iframe');
+    f.style.width = job.width + 'px'; f.style.height = vh + 'px';
+    $('stage').appendChild(f);
+    await new Promise((ok, no) => { f.onload = ok; f.onerror = no; f.src = ROOT + CDD_FX(job.path); });
+    await sleep(2600);                                   // chờ dữ liệu mẫu, biểu đồ, ảnh tải xong
+    const d = f.contentDocument;
+    let H = vh;
+    if (job.mode === 'full') { H = Math.max(d.documentElement.scrollHeight, d.body.scrollHeight, vh); f.style.height = H + 'px'; await sleep(700); H = Math.max(d.documentElement.scrollHeight, H); }
+    await new Promise((ok, no) => { const s = d.createElement('script'); s.src = H2I; s.onload = ok; s.onerror = no; d.head.appendChild(s); });
+    const url = await f.contentWindow.htmlToImage.toJpeg(d.documentElement, {
+      width: job.width, height: H, pixelRatio: job.width < 600 ? 2 : 1, quality: 0.92, backgroundColor: '#F8FAFC', fontEmbedCSS: FONT_CSS,
+    });
+    f.remove();
+    return url;
+  }
+
+  // ---- Chạy tất cả ----
+  $('start').addEventListener('click', async () => {
+    const pick = jobs.map((j, i) => [j, i]).filter(([j]) => (j.kind === 'main' && $('optMain').checked) || (j.kind === 'states' && $('optStates').checked) || (j.kind === 'mobile' && $('optMobile').checked));
+    if (!pick.length) return;
+    $('start').disabled = true; $('dl').classList.add('d-none');
+    $('progTxt').textContent = 'Đang chuẩn bị font chữ…';
+    try { await prepareFonts(); } catch (e) { console.warn('Không nhúng được font', e); }
+    const zip = new JSZip(); let done = 0, fail = 0;
+    for (const [j, i] of pick) {
+      $('st' + i).innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+      $('progTxt').textContent = `Đang chụp ${j.code} – ${j.name}`;
+      try {
+        const url = await shoot(j);
+        zip.file(`${j.folder}/${j.code} ${slug(j.name)}.jpg`, url.split(',')[1], { base64: true });
+        $('st' + i).innerHTML = `<img src="${url}" alt="${j.code}" title="Bấm để xem lớn">`;
+        $('st' + i).querySelector('img').onclick = () => { const w = window.open(); w.document.write(`<img src="${url}" style="width:100%">`); };
+      } catch (e) { fail++; console.error(j.code, e); $('st' + i).innerHTML = '<span class="text-danger">Lỗi</span>'; }
+      done++;
+      $('prog').style.width = (done / pick.length * 100) + '%'; $('progPct').textContent = `${done}/${pick.length}`;
+    }
+    $('progTxt').textContent = 'Đang nén ZIP…';
+    const blob = await zip.generateAsync({ type: 'blob' });
+    $('dl').href = URL.createObjectURL(blob); $('dl').classList.remove('d-none');
+    $('progTxt').textContent = fail ? `Xong – ${fail} màn lỗi (bấm Bắt đầu chụp lại nếu cần)` : 'Xong! Bấm “Tải file ZIP”.';
+    $('start').disabled = false;
+  });
+</script>
+</body>
+</html>
