@@ -52,6 +52,10 @@
     .countdown small { display: block; font-size: 10px; font-weight: 600; opacity: .8; }
     .glow { animation: glow 2.6s ease-in-out infinite; }
     @keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(234,88,12,.45); } 50% { box-shadow: 0 0 0 8px rgba(234,88,12,0); } }
+    /* Sơ đồ nhỏ + chỉ đường (FR-3.6) */
+    .mini-map { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+    .walk-box { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: #FFF7ED; border-radius: 12px; padding: 12px 14px; }
+    .walk-box .big { font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; }
     .cond li { margin-bottom: 6px; }
     .cond li::marker { color: var(--primary); }
     .bar { height: 8px; border-radius: 8px; background: #F1F5F9; overflow: hidden; flex: 1; }
@@ -86,6 +90,7 @@
 <!-- ============ R-02 · Chi tiết voucher ============
   FR-3.2 Xem chi tiết · FR-3.3 Lưu · FR-3.4 Nhận mã · FR-7.3 Điểm đánh giá trung bình + bình luận
   Mở sẵn popup mã (để chụp giao diện): voucher-detail.html?id=v1&code=1 · mở từ Ví: &from=wallet (nút quay lại về Ví)
+  Vị trí trong khu + đường đi bộ + Chỉ đường (FR-3.6, sơ đồ dùng chung js/map.js)
   Hiệu ứng: ảnh lớn phóng chậm, dải ảnh chạy ngang (bấm để xem lớn), thanh số mã, đếm ngược khi còn ≤ 3 ngày, băng chuyền ưu đãi khác
 ================================================== -->
 <main class="container container-cdd">
@@ -119,13 +124,23 @@
         <div class="note note-info"><i class="bi bi-info-circle"></i><span>Bấm <b>Nhận mã</b> để lấy mã ưu đãi, đưa mã hoặc mã QR cho nhân viên tại quầy để được áp dụng.</span></div>
       </section>
 
-      <section class="cdd-card">
+      <section class="cdd-card" id="storeInfo">
         <div class="section-title">Thông tin cửa hàng</div>
         <div class="row g-3 small-2">
           <div class="col-md-6"><i class="bi bi-geo-alt text-primary me-2"></i><span id="addr2"></span></div>
           <div class="col-md-6"><i class="bi bi-telephone text-primary me-2"></i><a href="tel:0909123456">0909 123 456</a></div>
           <div class="col-md-6"><i class="bi bi-clock text-primary me-2"></i>07:00 – 22:00 hằng ngày</div>
           <div class="col-md-6"><i class="bi bi-patch-check text-success me-2"></i>Đối tác đã được Ban quản lý xác thực</div>
+        </div>
+        <!-- Vị trí trong khu & chỉ đường – FR-3.6 -->
+        <div class="d-none" id="routeBox">
+          <div class="mini-map mt-4"><div id="map"></div></div>
+          <div class="walk-box mt-3">
+            <i class="bi bi-person-walking fs-2 text-accent"></i>
+            <div class="flex-fill"><div class="big" id="wMin"></div><div class="small-2 text-muted-2" id="wDist"></div></div>
+            <a class="btn btn-sm btn-light" id="wMap"><i class="bi bi-map"></i>Xem trên bản đồ</a>
+            <a class="btn btn-sm btn-outline-primary" id="wDir" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i>Chỉ đường</a>
+          </div>
         </div>
       </section>
 
@@ -152,7 +167,10 @@
           <div class="vcard-shop" id="aShop"></div>
           <div class="fw-bold fs-5 mb-2" id="aTitle"></div>
           <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Hạn dùng</span><b id="aEnd"></b></div>
-          <div class="d-flex justify-content-between small-2 mb-3"><span class="text-muted-2">Phạm vi</span><span id="aScope"></span></div>
+          <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Phạm vi</span><span id="aScope"></span></div>
+          <div class="d-flex justify-content-between align-items-center small-2 mb-3 d-none" id="aWalk"><span class="text-muted-2">Đi bộ từ nhà bạn</span>
+            <span><i class="bi bi-person-walking text-accent"></i> <b id="aMin"></b> · <a id="aDir" target="_blank" rel="noopener">Chỉ đường</a></span></div>
+          <div class="mb-2"></div>
           <div class="stock-big mb-3">
             <div class="d-flex justify-content-between small-2"><span class="text-muted-2"><i class="bi bi-people me-1"></i><b class="text-body" id="aClaimed"></b> người đã nhận</span><b id="aLeft"></b></div>
             <div id="aBar"></div>
@@ -194,6 +212,7 @@
 <script src="../../js/layout.js"></script>
 <script src="../../js/mock-data.js"></script>
 <script src="../../js/components.js"></script>
+<script src="../../js/map.js"></script>
 <script>
   const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
   const q = new URLSearchParams(location.search);
@@ -281,6 +300,21 @@
       $('cd').innerHTML = [[d, 'ngày'], [h, 'giờ'], [Math.floor(t / 60), 'phút'], [t % 60, 'giây']].map(([n, u]) => `<span>${pad(n)}<small>${u}</small></span>`).join('');
     };
     tick(); setInterval(tick, 1000); $('cdWrap').classList.remove('d-none');
+  }
+
+  // ---- Vị trí trong khu & chỉ đường (FR-3.6) – dùng chung sơ đồ js/map.js ----
+  if (window.CDDMap && CDDMap.has(v.shop)) {
+    CDDMap.mount($('map'));
+    const p = CDDMap.pct(CDDMap.POS[v.shop]);
+    const label = /MUA 1 TẶNG 1/.test(v.badge) ? '1+1' : /^TẶNG/.test(v.badge) ? 'Quà' : v.badge.replace('GIẢM ', '-');
+    $('pins').innerHTML = `<span class="pin sel" style="left:${p.left};top:${p.top};animation-delay:.2s"><span class="tip" style="opacity:1">${v.shop}</span>
+      <span class="bub"><span class="ic" style="background:${CDDMap.COLORS[v.cat]}"><i class="bi ${cat.icon}"></i></span><span class="pct">${label}</span></span></span>`;
+    CDDMap.showRoute(v.shop);
+    const min = CDDMap.minutes(v.shop), dir = CDDMap.directions(v.shop, v.address);
+    $('wMin').textContent = `${min} phút đi bộ`; $('wDist').textContent = `${CDDMap.meters(v.shop)} m từ Tòa S1 (nhà bạn)`;
+    $('wDir').href = $('aDir').href = dir; $('wMap').href = 'explore-map.html?shop=' + encodeURIComponent(v.shop);
+    $('aMin').textContent = `${min} phút`;
+    $('routeBox').classList.remove('d-none'); $('aWalk').classList.remove('d-none');
   }
 
   // ---- Ưu đãi khác (băng chuyền ngang) ----

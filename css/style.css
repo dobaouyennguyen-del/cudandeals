@@ -480,3 +480,35 @@ textarea.form-control { min-height: 110px; }
   .claim-tk { --x: 108px; } .claim-stub .big { font-size: 24px; } .claim-stub .stamp { font-size: 11px; padding: 2px 6px; letter-spacing: .04em; }
   .slot { font-size: 16px; padding-right: 40px; } .claim-head h3 { font-size: 19px; }
 }
+
+/* ---------- Sơ đồ khu dân cư (js/map.js – Khám phá › Bản đồ, Chi tiết voucher) ---------- */
+.map { position: relative; aspect-ratio: 1000 / 620; background: #EAF3EC; user-select: none; }
+.map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map .lbl { font: 600 13px 'Be Vietnam Pro', sans-serif; fill: #475569; }
+.map .lbl-sm { font: 600 11px 'Be Vietnam Pro', sans-serif; fill: #64748B; }
+.tower { transition: fill .3s; }
+#route { stroke: var(--accent); stroke-width: 5; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2 12; animation: walk 1s linear infinite; }
+@keyframes walk { to { stroke-dashoffset: -14; } }
+#routeBg { stroke: #fff; stroke-width: 11; fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+/* Ghim cửa hàng */
+.pin { position: absolute; transform: translate(-50%, -100%); border: 0; background: none; padding: 0 0 9px; z-index: 2; cursor: pointer; animation: drop .5s cubic-bezier(.3,1.5,.5,1) both; transition: opacity .25s, filter .25s; }
+.pin .bub { position: relative; display: inline-flex; align-items: center; gap: 5px; background: #fff; color: var(--text); border-radius: 999px; padding: 4px 9px 4px 4px; font-size: 12px; font-weight: 800; box-shadow: 0 4px 12px rgba(15,23,42,.18); white-space: nowrap; transition: transform .2s cubic-bezier(.3,1.6,.5,1), background-color .2s, color .2s; }
+.pin .bub::after { content: ''; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); border: 7px solid transparent; border-bottom: 0; border-top-color: #fff; transition: border-color .2s; }
+.pin .ic { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; }
+.pin .cnt { position: absolute; top: -7px; right: -7px; background: var(--primary); color: #fff; font-size: 10px; min-width: 18px; height: 18px; border-radius: 9px; display: grid; place-items: center; border: 2px solid #fff; }
+.pin:hover .bub { transform: scale(1.1); }
+.pin.sel { z-index: 4; }
+.pin.sel .bub { background: var(--accent); color: #fff; transform: scale(1.18); }
+.pin.sel .bub::after { border-top-color: var(--accent); }
+.pin.dim { opacity: .25; filter: grayscale(1); pointer-events: none; }
+.pin.urgent::before { content: ''; position: absolute; left: 50%; top: 40%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; background: rgba(239,68,68,.35); animation: ring 1.8s ease-out infinite; z-index: -1; }
+.pin .tip { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); background: #0F172A; color: #fff; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.pin:hover .tip { opacity: 1; }
+@keyframes drop { from { opacity: 0; transform: translate(-50%, -160%); } to { opacity: 1; transform: translate(-50%, -100%); } }
+@keyframes ring { 0% { transform: scale(.6); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+/* Vị trí của bạn */
+.me { position: absolute; transform: translate(-50%, -50%); z-index: 3; pointer-events: none; }
+.me .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--primary); border: 3px solid #fff; box-shadow: 0 2px 6px rgba(37,99,235,.5); position: relative; }
+.me .dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(37,99,235,.35); animation: ring 2s ease-out infinite; z-index: -1; }
+.me .lab { position: absolute; left: 50%; top: 22px; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.walk-tag { position: absolute; transform: translate(-50%, -50%); z-index: 3; background: #fff; color: var(--accent); border: 2px solid var(--accent); font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; box-shadow: 0 4px 10px rgba(234,88,12,.25); transition: left .4s, top .4s; }
