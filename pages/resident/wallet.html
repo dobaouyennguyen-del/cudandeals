@@ -195,7 +195,8 @@
   // Dữ liệu mẫu ví (Phase 3: collection savedVouchers / redemptions)
   const WALLET = {
     saved:   [{ v: 'v4' }, { v: 'v6' }],
-    unused:  [{ v: 'v1', code: 'CDD-HG2026-001' }, { v: 'v2', code: 'CDD-HG2026-014' }, { v: 'v5', code: 'CDD-HG2026-022' }],
+    // holdLeft: số giờ giữ chỗ còn lại (Phase 3: tính từ cột han_giu_cho của bảng ma_uu_dai)
+    unused:  [{ v: 'v1', code: 'CDD-HG2026-001', holdLeft: 36 }, { v: 'v2', code: 'CDD-HG2026-014', holdLeft: 5 }, { v: 'v5', code: 'CDD-HG2026-022', holdLeft: 47 }],
     // saved: số tiền tiết kiệm của lần dùng mã (Phase 3: lưu trong redemptions khi đối tác xác nhận mã ở B-05)
     used:    [{ v: 'v3', code: 'CDD-HG2026-009', usedAt: '14:30 · 18/10/2026', saved: 13000 },
               { v: 'v8', code: 'CDD-HG2026-005', usedAt: '12/10/2026', saved: 45000, review: { stars: 5, text: 'Trà thơm, nhân viên dễ thương. Sẽ quay lại!' } },
@@ -214,6 +215,24 @@
   }
   const money = (n) => Math.round(n).toLocaleString('vi-VN') + 'đ';
 
+  // ---- Giữ chỗ (BR-4) và Trả lại mã (BR-7) ----
+  const holdText = (h) => h >= 24 ? `${Math.floor(h / 24)} ngày ${h % 24} giờ` : `${h} giờ`;
+  const fmtT = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  function refreshCounts() { document.querySelectorAll('[data-count]').forEach(el => el.textContent = WALLET[el.dataset.count].length); }
+  function removeUnused(code) { WALLET.unused = WALLET.unused.filter(x => x.code !== code); refreshCounts(); show('unused'); }
+  function openCode(id, code) {
+    const w = WALLET.unused.find(x => x.code === code);
+    CDD.showCode(id, code, { heldUntil: fmtT(new Date(Date.now() + w.holdLeft * 3600000)), onReturn: (_, c) => removeUnused(c) });
+  }
+  async function returnCode(id, code) {
+    const r = await CDD.confirm({ title: 'Trả lại mã?', message: 'Mã sẽ hết hiệu lực và lượt được trả về cho cư dân khác. Bạn có thể nhận lại sau nếu voucher còn lượt.',
+      okText: 'Trả lại mã', okClass: 'btn-danger', icon: 'bi-arrow-counterclockwise', tone: 'danger' });
+    if (!r.ok) return;
+    // Bản thật: await supabase.rpc('tra_ma', { p_ma_uu_dai_id: ... }) thành công rồi mới cập nhật giao diện
+    CDD.toast('Đã trả lại mã. Lượt được trả về cho voucher.');
+    removeUnused(code);
+  }
+
   function item(tab, w) {
     const v = V(w.v);
     let tag, info, act;
@@ -226,8 +245,9 @@
       tag = v.daysLeft <= 3
         ? `<span class="tag tag-warning"><span class="pulse-dot"></span>Còn ${v.daysLeft} ngày</span>`
         : `<span class="tag tag-accent"><i class="bi bi-clock"></i>Còn ${v.daysLeft} ngày</span>`;
-      info = `Mã: <span class="code-chip">${w.code}</span> · HSD ${v.end}`;
-      act = `<button class="btn btn-sm btn-accent px-3" onclick="CDD.showCode('${v.id}','${w.code}')"><i class="bi bi-qr-code"></i>Xem mã</button>`;
+      info = `Mã: <span class="code-chip">${w.code}</span> · HSD ${v.end} · <span class="${w.holdLeft <= 6 ? 'text-danger fw-semibold' : ''}"><i class="bi bi-hourglass-split me-1"></i>Giữ chỗ còn ${holdText(w.holdLeft)}</span>`;
+      act = `<button class="btn btn-sm btn-accent px-3" onclick="openCode('${v.id}','${w.code}')"><i class="bi bi-qr-code"></i>Xem mã</button>
+             <button class="btn btn-sm btn-light text-danger" onclick="returnCode('${v.id}','${w.code}')"><i class="bi bi-arrow-counterclockwise"></i>Trả lại</button>`;
     } else if (tab === 'used') {
       tag = `<span class="tag tag-success"><i class="bi bi-check2-circle"></i>Đã dùng lúc ${w.usedAt}</span>`;
       info = `Mã: <span class="code-chip">${w.code}</span>${w.saved ? ` · <span class="saved-chip"><i class="bi bi-piggy-bank"></i>Tiết kiệm ${money(w.saved)}</span>` : ''}`;
@@ -268,7 +288,7 @@
   });
   $('list').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('.tkh[data-href]')) location.href = e.target.dataset.href; });
   // Số lượng ở thẻ thống kê & tab lấy từ dữ liệu ví
-  document.querySelectorAll('[data-count]').forEach(el => el.textContent = WALLET[el.dataset.count].length);
+  refreshCounts();
 
   // ---- FR-3.9 Bạn đã tiết kiệm được (tháng này = tổng "saved" của các lần dùng mã trong tháng) ----
   const MONTHS = [['T5', 85000], ['T6', 120000], ['T7', 96000], ['T8', 150000], ['T9', 180000]];

@@ -106,6 +106,10 @@ window.CDD = (function () {
     const fresh = opt.fresh ?? !code;
     code = code || `CDD-HG2026-${String(30 + (Math.random() * 900 | 0)).padStart(3, '0')}`;
     const st = stubOf(v), money = (n) => n.toLocaleString('vi-VN') + 'đ';
+    // Giữ chỗ (BR-4): thời hạn do đối tác đặt (v.holdHours, mặc định 48 giờ). Bản thật: đọc cột han_giu_cho của bảng ma_uu_dai.
+    const fmtT = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    const heldUntil = opt.heldUntil || fmtT(new Date(Date.now() + (v.holdHours || 48) * 3600000));
+    const holdLine = `<div class="small-2 text-muted-2 claim-hold"><i class="bi bi-hourglass-split me-1"></i>Giữ chỗ đến <b class="text-body">${heldUntil}</b>. Quá hạn mà chưa dùng, mã tự hết hiệu lực và lượt được trả về.</div>`;
     document.getElementById('claimOv')?.remove();
     const last = document.activeElement;
     const ov = document.createElement('div');
@@ -129,6 +133,7 @@ window.CDD = (function () {
             <button type="button" class="slot-copy" title="Sao chép mã" aria-label="Sao chép mã"><i class="bi bi-copy"></i></button></div>
           <div class="qr-row${fresh ? '' : ' show'}"><div class="qr"></div>
             <div class="small-2 text-muted-2">Đưa <b class="text-body">mã</b> hoặc <b class="text-body">QR</b> cho nhân viên tại quầy. Mỗi mã dùng <b class="text-body">1 lần</b>.</div></div>
+          ${holdLine}
         </div>
       </div></div>
       ${fresh && v.cat ? `<div class="save-hint"><i class="bi bi-piggy-bank me-1"></i>Dùng mã này bạn tiết kiệm khoảng <b>${money(estSave(v))}</b> – sẽ cộng vào "Bạn đã tiết kiệm được"</div>` : ''}
@@ -136,6 +141,7 @@ window.CDD = (function () {
         ${/wallet\.html/.test(location.pathname) ? '' : `<a class="btn btn-light px-4" href="${ROOT}pages/resident/wallet.html?tab=unused"><i class="bi bi-wallet2"></i>Xem trong Ví</a>`}
         <button type="button" class="btn btn-accent px-4 claim-close">${fresh ? 'Xong' : 'Đóng'}</button>
       </div>
+      <div class="text-center mt-2"><button type="button" class="btn btn-link btn-sm text-danger claim-return"><i class="bi bi-arrow-counterclockwise me-1"></i>Trả lại mã</button></div>
     </div>`;
     document.body.appendChild(ov);
     document.body.style.overflow = 'hidden';
@@ -148,6 +154,16 @@ window.CDD = (function () {
     const key = (e) => { if (e.key === 'Escape') close(); };
     document.addEventListener('keydown', key);
     ov.addEventListener('click', (e) => { if (e.target === ov || e.target.closest('.claim-close')) close(); });
+    // Trả lại mã (BR-7): lớp phủ này nằm trên hộp xác nhận nên đóng trước, hỏi xong mới trả; bấm Hủy thì mở lại mã
+    ov.querySelector('.claim-return').addEventListener('click', async () => {
+      close();
+      const r = await confirmBox({ title: 'Trả lại mã?', message: 'Mã sẽ hết hiệu lực và lượt được trả về cho cư dân khác. Bạn có thể nhận lại sau nếu voucher còn lượt.',
+        okText: 'Trả lại mã', okClass: 'btn-danger', icon: 'bi-arrow-counterclockwise', tone: 'danger' });
+      if (!r.ok) { showCode(id, code, { ...opt, fresh: false, heldUntil }); return; }
+      // Bản thật: await supabase.rpc('tra_ma', { p_ma_uu_dai_id: ... }) thành công rồi mới cập nhật giao diện
+      toast('Đã trả lại mã. Lượt được trả về cho voucher.');
+      if (opt.onReturn) opt.onReturn(id, code);
+    });
     ov.querySelector('.slot-copy').addEventListener('click', (e) => {
       navigator.clipboard && navigator.clipboard.writeText(code);
       e.currentTarget.innerHTML = '<i class="bi bi-check2"></i>'; toast('Đã sao chép mã ' + code);

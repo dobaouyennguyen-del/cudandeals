@@ -126,6 +126,12 @@
               <input id="maxUse" type="number" class="form-control" placeholder="Không giới hạn">
               <div class="form-text">Hết lượt, voucher tự chuyển “Hết lượt”.</div>
             </div>
+            <div class="col-md-4">
+              <label for="holdHours" class="form-label">Thời hạn giữ chỗ (giờ) <span class="req">*</span></label>
+              <input id="holdHours" type="number" class="form-control" min="6" max="72" step="1" value="48" required>
+              <div class="invalid-feedback">Nhập số nguyên từ 6 đến 72.</div>
+              <div class="form-text">Cư dân nhận mã được giữ lượt trong khoảng này; quá hạn mà chưa dùng thì lượt trả về voucher. Mặc định 48 giờ, đặt từ 6 đến 72 giờ.</div>
+            </div>
           </div>
         </section>
 
@@ -182,6 +188,7 @@
             <div class="vc-title" id="pvTitle">Tên voucher sẽ hiện ở đây</div>
             <div class="small-2 text-muted-2"><i class="bi bi-geo-alt me-1"></i>Shophouse S2, Khu dân cư Sunrise</div>
             <div class="small-2 text-muted-2 mt-1"><i class="bi bi-clock me-1"></i>HSD: <span id="pvEnd">--/--/----</span></div>
+            <div class="small-2 text-muted-2"><i class="bi bi-hourglass-split me-1"></i>Giữ chỗ: <span id="pvHold">48</span> giờ</div>
             <div class="d-flex gap-2 mt-3">
               <button class="btn btn-outline-primary btn-sm flex-fill" type="button" disabled><i class="bi bi-bookmark"></i>Lưu</button>
               <button class="btn btn-accent btn-sm flex-fill" type="button" disabled>Nhận mã</button>
@@ -211,6 +218,7 @@
     $('pvTitle').textContent = $('title').value || 'Tên voucher sẽ hiện ở đây';
     $('pvDisc').textContent = type === 'gift' ? 'TẶNG MÓN' : v ? `GIẢM ${v}${type === 'percent' ? '%' : 'K'}` : 'GIẢM ?';
     $('pvEnd').textContent = $('end').value || '--/--/----';
+    $('pvHold').textContent = $('holdHours').value || '--';
     const area = document.querySelector('input[name=scope]:checked').value === 'area';
     $('areaWrap').classList.toggle('show', area);
     $('pvScope').textContent = area ? 'Riêng khu ' + $('area').value.replace('Khu dân cư ', '') : 'Công khai';
@@ -235,7 +243,13 @@
     }, 900);
   });
 
-  $('voucherForm').addEventListener('submit', (e) => { e.preventDefault(); alert('Demo: voucher đã gửi, trạng thái "Chờ duyệt".'); });
+  $('voucherForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    // BR-4: thời hạn giữ chỗ do đối tác đặt, số nguyên từ 6 đến 72 giờ (database cũng kiểm tra lại bằng ràng buộc check)
+    const hold = Number($('holdHours').value);
+    if (!Number.isInteger(hold) || hold < 6 || hold > 72) { $('holdHours').classList.add('is-invalid'); $('holdHours').focus(); return; }
+    $('holdHours').classList.remove('is-invalid');
+    alert('Demo: voucher đã gửi, trạng thái "Chờ duyệt".'); });
   updatePreview();
 </script>
 </body>

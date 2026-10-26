@@ -132,7 +132,7 @@
         <p id="desc" class="mb-4"></p>
         <div class="section-title">Điều kiện sử dụng</div>
         <ul class="cond mb-3" id="cond"></ul>
-        <div class="note note-info"><i class="bi bi-info-circle"></i><span>Bấm <b>Nhận mã</b> để lấy mã ưu đãi, đưa mã hoặc mã QR cho nhân viên tại quầy để được áp dụng.</span></div>
+        <div class="note note-info"><i class="bi bi-info-circle"></i><span>Bấm <b>Nhận mã</b> để giữ chỗ và lấy mã ưu đãi. Mã được giữ trong <b id="holdNote">48 giờ</b>; hãy đưa mã hoặc mã QR cho nhân viên tại quầy trước khi hết hạn giữ chỗ. Không dùng nữa thì bấm <b>Trả lại mã</b> để nhường lượt cho người khác.</span></div>
       </section>
 
       <section class="cdd-card" id="storeInfo">
@@ -179,6 +179,7 @@
           <div class="fw-bold fs-5 mb-2" id="aTitle"></div>
           <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Hạn dùng</span><b id="aEnd"></b></div>
           <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Phạm vi</span><span id="aScope"></span></div>
+          <div class="d-flex justify-content-between small-2 mb-1"><span class="text-muted-2">Giữ chỗ</span><b id="aHold"></b></div>
           <div class="d-flex justify-content-between align-items-center small-2 mb-3 d-none" id="aWalk"><span class="text-muted-2">Đi bộ từ nhà bạn</span>
             <span><i class="bi bi-person-walking text-accent"></i> <b id="aMin"></b> · <a id="aDir" target="_blank" rel="noopener">Chỉ đường</a></span></div>
           <div class="mb-2"></div>
@@ -286,6 +287,9 @@
 
   $('aShop').textContent = v.shop; $('aTitle').textContent = v.title;
   $('aEnd').textContent = v.end; $('aScope').innerHTML = CDD.scopeTag(v);
+  // Thời hạn giữ chỗ do đối tác đặt (BR-4). Bản thật: đọc voucher.thoi_han_giu_cho_gio
+  const holdH = v.holdHours || 48;
+  $('aHold').textContent = holdH + ' giờ sau khi nhận'; $('holdNote').textContent = holdH + ' giờ';
 
   // ---- Thông tin nhanh + số mã + đếm ngược ----
   const claimed = v.total ? v.total - v.left : null, low = v.total && v.left / v.total <= 0.2;
