@@ -110,7 +110,8 @@
 <script src="js/layout.js"></script>
 <script src="js/mock-data.js"></script>
 <script src="js/components.js"></script>
-<script>
+<script type="module">
+  import { supabase } from "./js/supabase-config.js";
   const $ = (id) => document.getElementById(id);
   const D = window.CDD_DATA;
   D.areas.forEach(a => $('rArea').insertAdjacentHTML('beforeend', `<option value="${a.id}">${a.name}</option>`));
@@ -141,8 +142,48 @@
     if (p[0].value && p[0].value !== p[1].value) { p[1].classList.add('is-invalid'); ok = false; }
     return ok;
   }
-  $('formResident').addEventListener('submit', (e) => { e.preventDefault(); if (validate(e.target)) location.href = 'pages/resident/explore.html'; });
-  $('formPartner').addEventListener('submit', (e) => { e.preventDefault(); if (validate(e.target)) location.href = 'pages/partner/dashboard.html?pending=1'; });
+  // Đăng ký cư dân thật qua Supabase Auth.
+  // options.data là thông tin kèm theo; trigger trong database đọc đúng các tên này để tạo hồ sơ ở bảng nguoi_dung.
+  $('formResident').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate(e.target)) return;
+    const { error } = await supabase.auth.signUp({
+      email: $('rEmail').value.trim(),
+      password: $('rPass').value,
+      options: { data: {
+        ho_ten: $('rName').value.trim(),
+        so_dien_thoai: $('rPhone').value.trim(),
+        vai_tro: 'cu_dan',
+        khu_dan_cu_id: $('rArea').value
+      } }
+    });
+    if (error) { alert('Đăng ký chưa được: ' + error.message); return; }
+    location.href = 'pages/resident/explore.html';
+  });
+  // Đăng ký đối tác thật: (1) tạo tài khoản, (2) tạo hồ sơ cửa hàng ở trạng thái chờ duyệt (FR-2.1).
+  $('formPartner').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate(e.target)) return;
+    const sdt = $('pPhone').value.trim();
+    const { data, error } = await supabase.auth.signUp({
+      email: $('pEmail').value.trim(),
+      password: $('pPass').value,
+      options: { data: { ho_ten: $('pOwner').value.trim(), so_dien_thoai: sdt, vai_tro: 'doi_tac' } }
+    });
+    if (error) { alert('Đăng ký chưa được: ' + error.message); return; }
+    if (!data.session) { alert('Tài khoản đã tạo nhưng chưa đăng nhập được. Vui lòng đăng nhập rồi thử lại.'); return; }
+    const { error: shopErr } = await supabase.from('cua_hang').insert({
+      chu_so_huu_id: data.user.id,
+      nganh_hang_id: $('pCat').value,
+      ten_cua_hang: $('pShop').value.trim(),
+      dia_chi: $('pAddr').value.trim(),
+      hotline: $('pHotline').value.trim() || sdt,
+      ten_nguoi_dai_dien: $('pOwner').value.trim(),
+      sdt_nguoi_dai_dien: sdt
+    });
+    if (shopErr) { alert('Tạo tài khoản được nhưng lưu hồ sơ cửa hàng chưa được: ' + shopErr.message); return; }
+    location.href = 'pages/partner/dashboard.html?pending=1';
+  });
 
   // Cho phép mở thẳng bước 2 (để chụp giao diện)
   const q = new URLSearchParams(location.search);

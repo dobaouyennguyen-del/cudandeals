@@ -68,7 +68,8 @@
 <script src="js/layout.js"></script>
 <script src="js/mock-data.js"></script>
 <script src="js/components.js"></script>
-<script>
+<script type="module">
+  import { supabase } from "./js/supabase-config.js";
   const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
   const qs = new URLSearchParams(location.search);
   if (qs.get('next')) $('needLogin').classList.remove('d-none');
@@ -86,13 +87,25 @@
   document.querySelectorAll('.g-acc').forEach(b => b.onclick = () => { bootstrap.Modal.getInstance($('gModal')).hide(); googleResult(b.dataset.mail); });
   if (qs.get('google') === 'new') googleResult('nguyenvana@gmail.com');
   $('eye').onclick = () => { const t = $('pass').type === 'password'; $('pass').type = t ? 'text' : 'password'; $('eye').innerHTML = `<i class="bi ${t ? 'bi-eye-slash' : 'bi-eye'}"></i>`; };
-  $('loginForm').addEventListener('submit', (e) => {
+  // Đăng nhập thật qua Supabase Auth, rồi đọc vai trò từ bảng nguoi_dung để chuyển đúng trang.
+  $('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault(); let ok = true;
     ['email', 'pass'].forEach(id => { const bad = !$(id).value.trim(); $(id).classList.toggle('is-invalid', bad); if (bad) ok = false; });
     if (!ok) return;
-    // Demo: chuyển trang theo vai trò dựa vào email (Phase 3: đọc role từ Firestore)
-    const em = $('email').value.toLowerCase();
-    location.href = em.includes('admin') ? 'pages/admin/dashboard.html' : em.includes('shop') || em.includes('doitac') ? 'pages/partner/dashboard.html' : 'pages/resident/explore.html';
+    const showErr = (msg) => { $('err').textContent = msg; $('err').classList.remove('d-none'); };
+    $('err').classList.add('d-none');
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: $('email').value.trim(),
+      password: $('pass').value
+    });
+    if (error) { showErr('Email hoặc mật khẩu không đúng.'); return; }
+    const { data: hoSo } = await supabase.from('nguoi_dung')
+      .select('vai_tro, trang_thai').eq('user_id', data.user.id).single();
+    if (!hoSo) { await supabase.auth.signOut(); showErr('Không tìm thấy hồ sơ tài khoản.'); return; }
+    if (hoSo.trang_thai === 'bi_khoa') { await supabase.auth.signOut(); showErr('Tài khoản đã bị khóa. Vui lòng liên hệ Ban quản lý.'); return; }
+    location.href = hoSo.vai_tro === 'ban_quan_ly' ? 'pages/admin/dashboard.html'
+                  : hoSo.vai_tro === 'doi_tac' ? 'pages/partner/dashboard.html'
+                  : 'pages/resident/explore.html';
   });
 </script>
 </body>
