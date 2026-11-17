@@ -163,6 +163,10 @@ window.CDD = (function () {
       // Bản thật: await supabase.rpc('tra_ma', { p_ma_uu_dai_id: ... }) thành công rồi mới cập nhật giao diện
       toast('Đã trả lại mã. Lượt được trả về cho voucher.');
       if (opt.onReturn) opt.onReturn(id, code);
+      if (opt.maId && window.CDDApi) {
+           try { await window.CDDApi.traMa(opt.maId); }
+           catch (e) { toast(window.CDDApi.dichLoi(e)); showCode(id, code, { ...opt, fresh: false, heldUntil }); return; }
+         }
     });
     ov.querySelector('.slot-copy').addEventListener('click', (e) => {
       navigator.clipboard && navigator.clipboard.writeText(code);
@@ -299,3 +303,17 @@ window.CDD = (function () {
   }
   return { stars, scopeTag, voucherCard, isOut, showCode, stubOf, estSave, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, pwOk, pwMeter, IMG, ROOT, D };
 })();
+
+// Bấm "Nhận mã": trang đã nối Supabase (có window.CDDApi) thì gọi hàm nhan_ma; trang khác giữ hành vi demo
+async function nhanMaThat(id) {
+  if (!window.CDDApi) { showCode(id); return; }
+  const v = findVoucher(id) || {};
+  if (isOut(v)) { toast('Voucher này đã phát hết mã'); return; }
+  try {
+    const ma = await window.CDDApi.nhanMa(id);
+    // ... tính giờ hết hạn giữ chỗ từ ma.han_giu_cho
+    showCode(id, ma.ma_code, { fresh: true, maId: ma.ma_uu_dai_id, heldUntil: han });
+  } catch (e) {
+    toast(window.CDDApi.dichLoi(e));
+  }
+}
