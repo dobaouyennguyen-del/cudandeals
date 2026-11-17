@@ -171,6 +171,16 @@
 <script src="../../js/layout.js"></script>
 <script src="../../js/mock-data.js"></script>
 <script src="../../js/components.js"></script>
+<script>window.CDD_DATA = { vouchers: [], offVouchers: [], categories: [], reviews: [], areas: [] };</script>
+<script src="../../js/components.js"></script>
+<script type="module">
+  import { taiDuLieuKhamPha } from '../../js/api-cu-dan.js';
+  CDD.skeleton($('grid'), 6);          // khung chờ trong lúc tải
+  try { await taiDuLieuKhamPha(); }
+  catch (e) { /* hiện thông báo lỗi trong lưới */ throw e; }
+  // ... bộ lọc, ô tìm kiếm giữ nguyên
+  render(false);
+</script>
 <script>
   const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
   const qs = new URLSearchParams(location.search);
