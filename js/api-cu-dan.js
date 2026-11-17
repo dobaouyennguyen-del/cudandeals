@@ -50,3 +50,36 @@ export async function traMa(maId) {
   if (error) throw error;
   return data;
 }
+
+const LOI = [
+  ['Ban da giu ma cua voucher nay', 'Bạn đã giữ mã của voucher này. Xem trong Ví voucher.'],
+  ['Voucher da het luot', 'Voucher đã hết lượt nhận.'],
+  ['Voucher hien khong nhan duoc', 'Voucher hiện không nhận được mã.'],
+  ['Ban dang giu toi da 10 ma chua dung', 'Bạn đang giữ tối đa 10 mã chưa dùng. Hãy dùng hoặc trả bớt mã.'],
+  // ... các lỗi còn lại của nhan_ma và tra_ma
+];
+export function dichLoi(err) {
+  const msg = (err && err.message) || '';
+  const t = LOI.find(([khoa]) => msg.includes(khoa));
+  return t ? t[1] : 'Có lỗi xảy ra. Vui lòng thử lại.';
+}
+
+export function chuyenVoucher(r, luot, khu = {}) {
+  const ch = r.cua_hang || {};
+  return {
+    id: r.voucher_id,
+    type: LOAI[r.loai_uu_dai] || 'gift',
+    pct: r.loai_uu_dai === 'giam_phan_tram' ? Number(r.gia_tri) : 0,
+    total: r.so_luot_toi_da,
+    left: luot ?? 0,
+    shop: ch.ten_cua_hang || '',
+    cat: r.nganh_hang_id,
+    badge: nhanGiam(r),
+    title: r.tieu_de,
+    scope: r.pham_vi === 'rieng_khu' ? 'area' : 'public',
+    end: ddmmyyyy(r.ngay_ket_thuc),
+    daysLeft: soNgayCon(r.ngay_ket_thuc),
+    holdHours: r.thoi_han_giu_cho_gio,
+    // ... các trường còn lại (địa chỉ, điều kiện, mô tả)
+  };
+}
