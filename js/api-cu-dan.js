@@ -1,0 +1,52 @@
+// js/api-cu-dan.js
+import { supabase } from './supabase-config.js';
+
+// Trang Khám phá: voucher cư dân được phép thấy (RLS tự lọc khu, trạng thái, thời hạn)
+export async function layDanhSachVoucher() {
+  const { data, error } = await supabase
+    .from('voucher')
+    .select('*, cua_hang(ten_cua_hang, dia_chi)')
+    .order('ngay_ket_thuc');
+  if (error) throw error;
+  return data;
+}
+
+// Số lượt còn lại cho một danh sách voucher
+export async function layLuotConLai(ids) {
+  const { data, error } = await supabase.rpc('luot_con_lai', { p_voucher_ids: ids });
+  if (error) throw error;
+  return data; // [{ voucher_id, luot_con_lai }, ...]
+}
+
+// Trang Chi tiết: đọc một voucher theo id
+export async function layVoucher(voucherId) {
+  const { data, error } = await supabase
+    .from('voucher')
+    .select('*, cua_hang(ten_cua_hang, dia_chi, hotline)')
+    .eq('voucher_id', voucherId)
+    .maybeSingle();
+  if (error) throw error;
+  return data; // null nếu không tồn tại hoặc cư dân không được phép xem
+}
+
+export async function nhanMa(voucherId) {
+  const { data, error } = await supabase.rpc('nhan_ma', { p_voucher_id: voucherId });
+  if (error) throw error;
+  return data;
+}
+
+// Trang Ví: mã của chính người dùng (RLS chỉ trả mã của mình), kèm voucher và cửa hàng
+export async function layMaCuaToi() {
+  const { data, error } = await supabase
+    .from('ma_uu_dai')
+    .select('*, voucher(tieu_de, loai_uu_dai, gia_tri, anh, cua_hang(ten_cua_hang, dia_chi))')
+    .order('ngay_nhan', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function traMa(maId) {
+  const { data, error } = await supabase.rpc('tra_ma', { p_ma_uu_dai_id: maId });
+  if (error) throw error;
+  return data;
+}
