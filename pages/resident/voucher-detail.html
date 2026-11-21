@@ -222,15 +222,21 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="../../js/layout.js"></script>
-<script src="../../js/mock-data.js"></script>
+<script>window.CDD_DATA = { vouchers: [], offVouchers: [], categories: [], reviews: [], areas: [] };</script>
 <script src="../../js/components.js"></script>
 <script src="../../js/map.js"></script>
-<script>
-  const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
+<script type="module">
+  import { taiDuLieuChiTiet } from '../../js/api-cu-dan.js';
+  const $ = (id) => document.getElementById(id);
   const q = new URLSearchParams(location.search);
-  const v = CDD.findVoucher(q.get('id')) || D.vouchers[0];
-  const cat = D.categories.find(c => c.id === v.cat);
-  const reviews = D.reviews.filter(r => r.voucher === v.id);
+  // Mục 5.6: đọc một voucher theo id (phải xong TRƯỚC khi vẽ)
+  let v = null;
+  try { v = await taiDuLieuChiTiet(q.get('id')); }
+  catch (e) { console.error(e); }
+  if (!v) { CDD.toast('Không tìm thấy voucher hoặc bạn không có quyền xem.'); setTimeout(() => location.href = 'explore.html', 1500); throw new Error('Không tìm thấy voucher'); }
+  const D = window.CDD_DATA;
+  const cat = (D.categories || []).find(c => c.id === v.cat) || { name: '', icon: 'bi-tag' };
+  const reviews = (D.reviews || []).filter(r => r.voucher === v.id);
   document.title = `R-02 ${v.title} – CuDanDeals.vn`;
 
   $('heroImg').src = CDD.IMG + v.img; $('heroImg').alt = v.shop;
@@ -240,7 +246,7 @@
 
   // ---- Ảnh cửa hàng: ảnh của voucher + ảnh cùng ngành (Phase 3: lấy từ hồ sơ cửa hàng B-02) ----
   const EXTRA = { coffee: ['coffee-front.jpg', 'coffee-drinks.jpg', 'coffee-service.jpg', 'coffee-seating.jpg', 'coffee-counter.jpg', 'coffee-barista.jpg', 'tea-shop.jpg'] };
-  const pics = [...new Set([v.img, ...D.vouchers.filter(o => o.cat === v.cat).map(o => o.img), ...(EXTRA[v.cat] || [])])];
+  const pics = [...new Set([v.img, ...(D.vouchers || []).filter(o => o.cat === v.cat).map(o => o.img), ...(EXTRA[v.cat] || [])])];
   const thumb = (i) => `<button type="button" data-img="${i}" aria-label="Xem ảnh lớn"><img src="${CDD.IMG}${i}" alt="Ảnh ${v.shop}" loading="lazy"></button>`;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches || q.get('fx') === 'off';
   if (pics.length >= 4 && !still) {
@@ -333,7 +339,7 @@
   }
 
   // ---- Ưu đãi khác (băng chuyền ngang) ----
-  const related = D.vouchers.filter(o => o.id !== v.id && !CDD.isOut(o))   // không gợi ý voucher đã hết mã
+  const related = (D.vouchers || []).filter(o => o.id !== v.id && !CDD.isOut(o))   // không gợi ý voucher đã hết mã
    .sort((a, b) => (b.cat === v.cat) - (a.cat === v.cat) || b.rating - a.rating).slice(0, 8);
   const track = $('related');
   track.innerHTML = related.map(o => `<div class="car-item">${CDD.voucherCard(o)}</div>`).join('');
@@ -376,7 +382,6 @@
     $('unavail').classList.remove('d-none');
   }
 
-  if (q.get('code') === '1') CDD.showCode(v.id, 'CDD-HG2026-001', { fresh: true });   // trạng thái vừa nhận mã (để chụp giao diện)
 </script>
 </body>
 </html>
