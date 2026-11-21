@@ -169,19 +169,181 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="../../js/layout.js"></script>
-<script src="../../js/mock-data.js"></script>
-<script src="../../js/components.js"></script>
 <script>window.CDD_DATA = { vouchers: [], offVouchers: [], categories: [], reviews: [], areas: [] };</script>
 <script src="../../js/components.js"></script>
 <script type="module">
   import { taiDuLieuKhamPha } from '../../js/api-cu-dan.js';
+  const $ = (id) => document.getElementById(id);
   CDD.skeleton($('grid'), 6);          // khung chờ trong lúc tải
   try { await taiDuLieuKhamPha(); }
-  catch (e) { /* hiện thông báo lỗi trong lưới */ throw e; }
-  // ... bộ lọc, ô tìm kiếm giữ nguyên
+  catch (e) {
+    $('grid').innerHTML = `<div class="col-12"><div class="empty"><i class="bi bi-wifi-off fs-1 d-block mb-2"></i>${window.CDDApi ? window.CDDApi.dichLoi(e) : 'Không tải được ưu đãi. Vui lòng thử lại.'}</div></div>`;
+    throw e;
+  }
+  const D = window.CDD_DATA;           // lấy SAU khi tải xong
+  const qs = new URLSearchParams(location.search);
+  const noMotion = matchMedia('(prefers-reduced-motion: reduce)').matches || qs.get('fx') === 'off';
+  const state = { scope: 'all', cats: new Set(), types: new Set(), pct: 0, exp: 'all', rate: 0, q: '', sort: 'new' };
+
+  const TYPES = [['percent', 'Giảm theo %', 'bi-percent'], ['amount', 'Giảm tiền', 'bi-cash-coin'], ['gift', 'Tặng món / Mua 1 tặng 1', 'bi-gift']];
+  const PCTS = [[0, 'Tất cả'], [20, 'Từ 20%'], [30, 'Từ 30%'], [50, 'Từ 50%']];
+  const EXPS = [['all', 'Tất cả'], ['3', 'Sắp hết hạn (≤ 3 ngày)'], ['7', 'Trong 7 ngày']];
+  const RATES = [[0, 'Tất cả'], [4, 'Từ 4★'], [4.5, 'Từ 4.5★']];
+  const count = (fn) => D.vouchers.filter(fn).length;
+
+  // ---- Dựng bộ lọc chi tiết ----
+  const check = (group, val, label, icon, n) => `<div class="form-check"><input class="form-check-input" type="checkbox" data-g="${group}" value="${val}" id="${group}-${val}" ${n ? '' : 'disabled'}>
+      <label class="form-check-label" for="${group}-${val}"><i class="bi ${icon} text-muted-2"></i>${label}<span class="cnt">${n}</span></label></div>`;
+  $('catList').innerHTML = D.categories.map(c => check('cat', c.id, c.name, c.icon, count(v => v.cat === c.id))).join('');
+  $('typeList').innerHTML = TYPES.map(([id, name, icon]) => check('type', id, name, icon, count(v => v.type === id))).join('');
+  const seg = (name, opts) => opts.map(([val, label], i) => `<input type="radio" name="${name}" id="${name}${i}" value="${val}" ${i ? '' : 'checked'}><label for="${name}${i}">${label}</label>`).join('');
+  $('pctSeg').innerHTML = seg('pct', PCTS); $('expSeg').innerHTML = seg('exp', EXPS); $('rateSeg').innerHTML = seg('rate', RATES);
+
+  // Bỏ dấu tiếng Việt để tìm kiếm dễ hơn (FR-3.5: so khớp chuỗi, không cần AI)
+  const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+  const match = (v) =>
+    (!state.cats.size || state.cats.has(v.cat)) && (!state.types.size || state.types.has(v.type)) &&
+    v.pct >= state.pct && (state.exp === 'all' || v.daysLeft <= +state.exp) && v.rating >= state.rate &&
+    (!state.q || norm(v.title + ' ' + v.shop + ' ' + (v.cond || '')).includes(norm(state.q)));
+
+  // ---- Lọc nhanh: mỗi chip là lối tắt của một ô trong bộ lọc chi tiết ----
+  const QUICK = {
+    exp3:   { on: () => state.exp === '3',  toggle: (on) => state.exp = on ? 'all' : '3' },
+    pct30:  { on: () => state.pct === 30,   toggle: (on) => state.pct = on ? 0 : 30 },
+    gift:   { on: () => state.types.size === 1 && state.types.has('gift'), toggle: (on) => { state.types.clear(); if (!on) state.types.add('gift'); } },
+    rate45: { on: () => state.rate === 4.5, toggle: (on) => state.rate = on ? 0 : 4.5 },
+  };
+
+  function syncInputs() {
+    document.querySelectorAll('[data-g=cat]').forEach(i => i.checked = state.cats.has(i.value));
+    document.querySelectorAll('[data-g=type]').forEach(i => i.checked = state.types.has(i.value));
+    document.querySelectorAll('[name=pct]').forEach(i => i.checked = +i.value === state.pct);
+    document.querySelectorAll('[name=exp]').forEach(i => i.checked = i.value === state.exp);
+    document.querySelectorAll('[name=rate]').forEach(i => i.checked = +i.value === state.rate);
+    document.querySelectorAll('.qchip').forEach(b => { const on = QUICK[b.dataset.q].on(); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  }
+
+  function activeList() {
+    const a = [];
+    state.cats.forEach(id => a.push([D.categories.find(c => c.id === id).name, () => state.cats.delete(id)]));
+    state.types.forEach(id => a.push([TYPES.find(t => t[0] === id)[1], () => state.types.delete(id)]));
+    if (state.pct) a.push([`Giảm từ ${state.pct}%`, () => state.pct = 0]);
+    if (state.exp !== 'all') a.push([state.exp === '3' ? 'Sắp hết hạn' : 'Hết hạn trong 7 ngày', () => state.exp = 'all']);
+    if (state.rate) a.push([`Từ ${state.rate}★`, () => state.rate = 0]);
+    if (state.q) a.push([`“${state.q}”`, () => { state.q = ''; $('search').value = ''; }]);
+    return a;
+  }
+
+  const PAGE = 12;
+  let swapT = null, chips = [], list = [], shown = qs.get('all') ? 99 : PAGE;
+  function render(animate = !noMotion) {
+    shown = qs.get('all') ? 99 : PAGE;           // đổi bộ lọc / sắp xếp → quay về 12 thẻ đầu
+    // FR-3.1: chỉ hiện deal công khai + deal riêng khu của cư dân (dữ liệu mẫu đều thuộc khu Sunrise)
+    list = D.vouchers.filter(match);
+    ['all', 'area', 'public'].forEach(s => document.querySelector(`[data-n=${s}]`).textContent =
+      s === 'all' ? list.length : list.filter(v => v.scope === s).length);
+    if (state.scope !== 'all') list = list.filter(v => v.scope === state.scope);
+    const by = { new: (a, b) => a.added - b.added, discount: (a, b) => b.pct - a.pct, end: (a, b) => a.daysLeft - b.daysLeft,
+                 rating: (a, b) => b.rating - a.rating, popular: (a, b) => (b.total - b.left) - (a.total - a.left) }[state.sort];
+    list.sort(by);
+    list = [...list.filter(v => !CDD.isOut(v)), ...list.filter(CDD.isOut)];   // voucher đã hết mã luôn xếp cuối
+
+    syncInputs();
+    chips = activeList();
+    $('activeChips').innerHTML = chips.map(([label], i) => `<span class="achip">${label}<button data-rm="${i}" aria-label="Bỏ lọc ${label}"><i class="bi bi-x-lg"></i></button></span>`).join('');
+    $('clearAll').classList.toggle('d-none', !chips.length);
+    $('resCount').innerHTML = `<b class="text-body">${list.length}</b> ưu đãi${chips.length ? ' · đang lọc:' : ''}`;
+    const nDetail = chips.length - (state.q ? 1 : 0);
+    $('fCount').textContent = nDetail; $('fCount').classList.toggle('d-none', !nDetail);
+    $('ocCount').textContent = list.length;
+
+    const paint = () => {
+      $('grid').innerHTML = cardsHtml(list.slice(0, shown));
+      $('empty').classList.toggle('d-none', list.length > 0);
+      if (animate) enter([...$('grid').children]);
+      moreBar();
+    };
+    clearTimeout(swapT);
+    if (!animate || !$('grid').querySelector('.vcard')) return paint();
+    $('grid').classList.add('swap-out');
+    swapT = setTimeout(() => { $('grid').classList.remove('swap-out'); paint(); }, 180);
+  }
+
+  const cardsHtml = (arr) => arr.map(v => `<div class="col-md-6 col-xl-4">${CDD.voucherCard(v)}</div>`).join('');
+  function enter(cols) {            // thẻ mới trượt lên lần lượt (dùng thay cho hiệu ứng hiện dần chung)
+    cols.forEach((col, i) => {
+      col.querySelector('.vcard').classList.add('reveal', 'in');
+      col.style.animationDelay = Math.min(i, 8) * 60 + 'ms'; col.classList.add('enter');
+      col.addEventListener('animationend', () => { col.classList.remove('enter'); col.style.animationDelay = ''; }, { once: true });
+    });
+  }
+  function moreBar() {
+    const n = Math.min(shown, list.length), rest = list.length - n;
+    $('moreBar').classList.toggle('d-none', !list.length);
+    $('moreProg').style.width = (list.length ? n / list.length * 100 : 0) + '%';
+    $('moreTxt').innerHTML = rest ? `Đang xem <b class="text-body">${n}</b>/${list.length} ưu đãi`
+                                  : `<i class="bi bi-check2-circle me-1"></i>Bạn đã xem hết <b class="text-body">${list.length}</b> ưu đãi`;
+    $('moreBtn').classList.toggle('d-none', !rest);
+    $('moreLbl').textContent = `Xem thêm ${Math.min(PAGE, rest)} ưu đãi`;
+  }
+  $('moreBtn').addEventListener('click', () => {
+    const btn = $('moreBtn'), from = shown;
+    btn.disabled = true; btn.firstElementChild.outerHTML = '<span class="spinner-border" role="status" aria-hidden="true"></span>';
+    const tmp = document.createElement('div'); CDD.skeleton(tmp, Math.min(PAGE, list.length - from));
+    const skel = [...tmp.children]; skel.forEach(s => $('grid').appendChild(s));
+    setTimeout(() => {                                       // Phase 3: chờ truy vấn trang tiếp theo
+      skel.forEach(s => s.remove());
+      shown += PAGE;
+      $('grid').insertAdjacentHTML('beforeend', cardsHtml(list.slice(from, shown)));
+      const added = [...$('grid').children].slice(from);
+      noMotion ? added.forEach(c => c.querySelector('.vcard').classList.add('reveal', 'in')) : enter(added);
+      btn.disabled = false; btn.firstElementChild.outerHTML = '<i class="bi bi-arrow-down-circle"></i>';
+      moreBar();
+    }, 600);
+  });
+
+  // ---- Sự kiện ----
+  $('scopeTabs').addEventListener('click', (e) => {
+    const b = e.target.closest('.pill'); if (!b) return;
+    document.querySelectorAll('#scopeTabs .pill').forEach(p => p.classList.toggle('active', p === b));
+    state.scope = b.dataset.scope; render();
+  });
+  $('filters').addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.dataset.g === 'cat') t.checked ? state.cats.add(t.value) : state.cats.delete(t.value);
+    if (t.dataset.g === 'type') t.checked ? state.types.add(t.value) : state.types.delete(t.value);
+    if (t.name === 'pct') state.pct = +t.value;
+    if (t.name === 'exp') state.exp = t.value;
+    if (t.name === 'rate') state.rate = +t.value;
+    render();
+  });
+  $('quick').addEventListener('click', (e) => { const b = e.target.closest('.qchip'); if (!b) return; const q = QUICK[b.dataset.q]; q.toggle(q.on()); render(); });
+  $('activeChips').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (!b) return; chips[+b.dataset.rm][1](); render(); });
+  let typing = null;
+  $('search').addEventListener('input', (e) => { clearTimeout(typing); typing = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 250); });
+  $('sort').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
+  const clearAll = () => { state.cats.clear(); state.types.clear(); state.pct = 0; state.exp = 'all'; state.rate = 0; state.q = ''; $('search').value = ''; render(); };
+  ['clearFilter', 'clearFilterM', 'clearAll', 'emptyClear'].forEach(id => $(id).addEventListener('click', clearAll));
+
+  // ---- Chuyển sang Bản đồ: mang theo từ khóa & phạm vi đang chọn ----
+  $('toMap').addEventListener('click', (e) => {
+    e.preventDefault(); const p = new URLSearchParams();
+    if (state.q) p.set('q', state.q); if (state.scope !== 'all') p.set('scope', state.scope);
+    location.href = 'explore-map.html' + (p.toString() ? '?' + p : '');
+  });
+  if (qs.get('q')) { state.q = qs.get('q'); $('search').value = state.q; }
+  if (['area', 'public'].includes(qs.get('scope'))) { state.scope = qs.get('scope'); document.querySelectorAll('#scopeTabs .pill').forEach(p => p.classList.toggle('active', p.dataset.scope === state.scope)); }
+
+  // ---- Trạng thái mở sẵn (để chụp giao diện) ----
+  if (QUICK[qs.get('quick')]) QUICK[qs.get('quick')].toggle(false);
+  if (qs.get('filter') === 'open' && innerWidth < 992) bootstrap.Offcanvas.getOrCreateInstance($('filters')).show();
+
+  // Dữ liệu đã tải xong ở đầu script → vẽ ngay
   render(false);
+  const h = qs.get('hover'); if (h) { const c = document.querySelector(`[data-save="${h}"]`); c && c.closest('.vcard').classList.add('is-hover'); }
 </script>
-<script>
+</body>
+</html>
   const D = window.CDD_DATA, $ = (id) => document.getElementById(id);
   const qs = new URLSearchParams(location.search);
   const noMotion = matchMedia('(prefers-reduced-motion: reduce)').matches || qs.get('fx') === 'off';
