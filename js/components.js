@@ -5,7 +5,6 @@
 window.CDD = (function () {
   const ROOT = window.CDD_ROOT || '';
   const IMG = ROOT + 'assets/img/';
-  const D = window.CDD_DATA || {};
   const saved = new Set(['v1', 'v4']);         // demo: voucher đã lưu (FR-3.3)
 
   const stars = (n) => Array.from({ length: 5 }, (_, i) =>
@@ -15,7 +14,7 @@ window.CDD = (function () {
     ? `<span class="tag tag-primary"><i class="bi bi-buildings"></i>Riêng khu Sunrise</span>`
     : `<span class="tag tag-muted"><i class="bi bi-globe2"></i>Công khai</span>`;
 
-  const findVoucher = (id) => (D.vouchers || []).find(v => v.id === id) || (D.offVouchers || []).find(v => v.id === id);
+  const findVoucher = (id) => { const D = window.CDD_DATA || {}; return (D.vouchers || []).find(v => v.id === id) || (D.offVouchers || []).find(v => v.id === id); };
   const isOut = (v) => v.total && v.left <= 0;          // đã phát hết lượt (FR-2.4)
 
   /* ---------- Thẻ voucher (R-01, P-01) ----------
@@ -160,13 +159,12 @@ window.CDD = (function () {
       const r = await confirmBox({ title: 'Trả lại mã?', message: 'Mã sẽ hết hiệu lực và lượt được trả về cho cư dân khác. Bạn có thể nhận lại sau nếu voucher còn lượt.',
         okText: 'Trả lại mã', okClass: 'btn-danger', icon: 'bi-arrow-counterclockwise', tone: 'danger' });
       if (!r.ok) { showCode(id, code, { ...opt, fresh: false, heldUntil }); return; }
-      // Bản thật: await supabase.rpc('tra_ma', { p_ma_uu_dai_id: ... }) thành công rồi mới cập nhật giao diện
+      if (opt.maId && window.CDDApi) {            // gọi hàm tra_ma trước; lỗi thì mở lại mã, KHÔNG cập nhật giao diện
+        try { await window.CDDApi.traMa(opt.maId); }
+        catch (e) { toast(window.CDDApi.dichLoi(e)); showCode(id, code, { ...opt, fresh: false, heldUntil }); return; }
+      }
       toast('Đã trả lại mã. Lượt được trả về cho voucher.');
       if (opt.onReturn) opt.onReturn(id, code);
-      if (opt.maId && window.CDDApi) {
-           try { await window.CDDApi.traMa(opt.maId); }
-           catch (e) { toast(window.CDDApi.dichLoi(e)); showCode(id, code, { ...opt, fresh: false, heldUntil }); return; }
-         }
     });
     ov.querySelector('.slot-copy').addEventListener('click', (e) => {
       navigator.clipboard && navigator.clipboard.writeText(code);
@@ -246,6 +244,24 @@ window.CDD = (function () {
     });
   }
 
+
+  /* ---------- Nhận mã thật (Supabase) ----------
+     Trang đã nối Supabase (có window.CDDApi) thì gọi hàm nhan_ma; trang khác giữ hành vi demo */
+  async function nhanMaThat(id) {
+    if (!window.CDDApi) { showCode(id); return; }
+    const v = findVoucher(id) || {};
+    if (isOut(v)) { toast('Voucher này đã phát hết mã'); return; }
+    try {
+      const ma = await window.CDDApi.nhanMa(id);
+      const p = (n) => String(n).padStart(2, '0');
+      const d = ma.han_giu_cho ? new Date(ma.han_giu_cho) : null;
+      const han = d && !isNaN(d) ? `${p(d.getHours())}:${p(d.getMinutes())} ${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}` : undefined;
+      showCode(id, ma.ma_code, { fresh: true, maId: ma.ma_uu_dai_id, heldUntil: han });
+    } catch (e) {
+      toast(window.CDDApi.dichLoi(e));
+    }
+  }
+
   /* ---------- Xử lý nút Lưu / Nhận mã (dùng chung) ---------- */
   document.addEventListener('click', (e) => {
     if (document.body.dataset.role === 'public' && e.target.closest('[data-save],[data-code]')) {
@@ -262,7 +278,7 @@ window.CDD = (function () {
       toast(on ? 'Đã lưu voucher vào danh sách đã lưu' : 'Đã bỏ lưu voucher');
     }
     const c = e.target.closest('[data-code]');
-    if (c) showCode(c.dataset.code);
+    if (c) nhanMaThat(c.dataset.code);
   });
 
   const isSaved = (id) => saved.has(id);
@@ -301,19 +317,5 @@ window.CDD = (function () {
     input._pw = { warn() { box.classList.add('warn'); input.classList.add('is-invalid'); update(); } };
     return input._pw;
   }
-  return { stars, scopeTag, voucherCard, isOut, showCode, stubOf, estSave, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, pwOk, pwMeter, IMG, ROOT, D };
+  return { stars, scopeTag, voucherCard, isOut, showCode, stubOf, estSave, toast, skeleton, skeletonRows, confirm: confirmBox, findVoucher, isSaved, pwOk, pwMeter, nhanMaThat, IMG, ROOT, get D() { return window.CDD_DATA || {}; } };
 })();
-
-// Bấm "Nhận mã": trang đã nối Supabase (có window.CDDApi) thì gọi hàm nhan_ma; trang khác giữ hành vi demo
-async function nhanMaThat(id) {
-  if (!window.CDDApi) { showCode(id); return; }
-  const v = findVoucher(id) || {};
-  if (isOut(v)) { toast('Voucher này đã phát hết mã'); return; }
-  try {
-    const ma = await window.CDDApi.nhanMa(id);
-    // ... tính giờ hết hạn giữ chỗ từ ma.han_giu_cho
-    showCode(id, ma.ma_code, { fresh: true, maId: ma.ma_uu_dai_id, heldUntil: han });
-  } catch (e) {
-    toast(window.CDDApi.dichLoi(e));
-  }
-}
