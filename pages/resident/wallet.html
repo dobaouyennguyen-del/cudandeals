@@ -187,26 +187,19 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="../../js/layout.js"></script>
-<script src="../../js/mock-data.js"></script>
+<script>window.CDD_DATA = { vouchers: [], offVouchers: [], categories: [], reviews: [], areas: [] };</script>
 <script src="../../js/components.js"></script>
-<script>
+<script type="module">
+  import { taiVi } from '../../js/api-cu-dan.js';
+  // Mục 5.7: đọc ví thật (phải xong TRƯỚC khi vẽ). WALLET có dạng { saved, unused, used, expired }
+  let WALLET;
+  try { WALLET = await taiVi(); }
+  catch (e) {
+    document.getElementById('list').innerHTML = `<div class="cdd-card text-center text-muted-2">${window.CDDApi ? window.CDDApi.dichLoi(e) : 'Không tải được Ví voucher. Vui lòng thử lại.'}</div>`;
+    throw e;
+  }
   const $ = (id) => document.getElementById(id), D = window.CDD_DATA, q0 = new URLSearchParams(location.search);
   const V = (id) => CDD.findVoucher(id);
-  // Dữ liệu mẫu ví (Phase 3: collection savedVouchers / redemptions)
-  const WALLET = {
-    saved:   [{ v: 'v4' }, { v: 'v6' }],
-    // holdLeft: số giờ giữ chỗ còn lại (Phase 3: tính từ cột han_giu_cho của bảng ma_uu_dai)
-    unused:  [{ v: 'v1', code: 'CDD-HG2026-001', holdLeft: 36 }, { v: 'v2', code: 'CDD-HG2026-014', holdLeft: 5 }, { v: 'v5', code: 'CDD-HG2026-022', holdLeft: 47 }],
-    // saved: số tiền tiết kiệm của lần dùng mã (Phase 3: lưu trong redemptions khi đối tác xác nhận mã ở B-05)
-    used:    [{ v: 'v3', code: 'CDD-HG2026-009', usedAt: '14:30 · 18/10/2026', saved: 13000 },
-              { v: 'v8', code: 'CDD-HG2026-005', usedAt: '12/10/2026', saved: 45000, review: { stars: 5, text: 'Trà thơm, nhân viên dễ thương. Sẽ quay lại!' } },
-              { v: 'v7', code: 'CDD-HG2026-012', usedAt: '19:10 · 09/10/2026', saved: 48000 },
-              { v: 'v12', code: 'CDD-HG2026-010', usedAt: '07:45 · 05/10/2026', saved: 22500 },
-              { v: 'v15', code: 'CDD-HG2026-008', usedAt: '04/10/2026', saved: 16500 },
-              { v: 'v13', code: 'CDD-HG2026-006', usedAt: '02/10/2026', saved: 100000 }],
-    expired: [{ v: 'v90', code: 'CDD-HG2026-002', expiredAt: '30/09/2026' }],
-  };
-
   // Cuống vé: mức ưu đãi + màu theo loại (giảm % / giảm tiền / tặng món)
   function stubOf(v) {
     if (v.type === 'amount') return { big: v.badge.replace('GIẢM ', ''), sm: 'GIẢM TIỀN', cls: 'amount' };
@@ -222,16 +215,20 @@
   function removeUnused(code) { WALLET.unused = WALLET.unused.filter(x => x.code !== code); refreshCounts(); show('unused'); }
   function openCode(id, code) {
     const w = WALLET.unused.find(x => x.code === code);
-    CDD.showCode(id, code, { heldUntil: fmtT(new Date(Date.now() + w.holdLeft * 3600000)), onReturn: (_, c) => removeUnused(c) });
+    CDD.showCode(id, code, { maId: w.maId, heldUntil: fmtT(new Date(Date.now() + w.holdLeft * 3600000)), onReturn: (_, c) => removeUnused(c) });
   }
   async function returnCode(id, code) {
     const r = await CDD.confirm({ title: 'Trả lại mã?', message: 'Mã sẽ hết hiệu lực và lượt được trả về cho cư dân khác. Bạn có thể nhận lại sau nếu voucher còn lượt.',
       okText: 'Trả lại mã', okClass: 'btn-danger', icon: 'bi-arrow-counterclockwise', tone: 'danger' });
     if (!r.ok) return;
-    // Bản thật: await supabase.rpc('tra_ma', { p_ma_uu_dai_id: ... }) thành công rồi mới cập nhật giao diện
+    const w = WALLET.unused.find(x => x.code === code);
+    try { await window.CDDApi.traMa(w.maId); }
+    catch (e) { CDD.toast(window.CDDApi.dichLoi(e)); return; }
     CDD.toast('Đã trả lại mã. Lượt được trả về cho voucher.');
     removeUnused(code);
   }
+  // Nút trong HTML dùng onclick nên phải gán hàm vào window (script type="module" không có phạm vi toàn cục)
+  window.openCode = openCode; window.returnCode = returnCode;
 
   function item(tab, w) {
     const v = V(w.v);
@@ -305,7 +302,7 @@
   $('allTime').textContent = money(MONTHS.reduce((s, m) => s + m[1], 0));
   const CC = { coffee: '#B45309', food: '#EA580C', spa: '#DB2777', market: '#16A34A', gym: '#2563EB' }, byCat = {};
   WALLET.used.forEach(w => { const c = V(w.v).cat; byCat[c] = (byCat[c] || 0) + w.saved; });
-  $('cats').innerHTML = Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, a]) => { const cat = D.categories.find(x => x.id === c); return `
+  $('cats').innerHTML = Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, a]) => { const cat = (D.categories || []).find(x => x.id === c) || { icon: 'bi-tag', name: c }; return `
     <div class="catrow"><div class="d-flex justify-content-between small-2"><span><i class="bi ${cat.icon} me-1" style="color:${CC[c]}"></i><b class="text-body">${cat.name}</b></span><b class="text-body">${money(a)}</b></div>
     <div class="catbar"><span data-w="${a / thisMonth * 100}" style="background:${CC[c]}"></span></div></div>`; }).join('');
   $('recent').innerHTML = WALLET.used.map(w => { const v = V(w.v); return `
