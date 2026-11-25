@@ -10,6 +10,7 @@
   // Tìm thư mục gốc dự án dựa vào vị trí file layout.js
   const me = document.currentScript.getAttribute('src');
   const ROOT = me.replace(/js\/layout\.js$/, '');
+  const SELF = document.currentScript.src;   // địa chỉ đầy đủ của layout.js (dùng để import supabase-config.js)
   window.CDD_ROOT = ROOT;   // dùng cho components.js (đường dẫn ảnh, link)
 
   const NAV = {
@@ -46,10 +47,11 @@
     ],
   };
 
+  // Tên thật được nạp từ Supabase (bảng nguoi_dung) ở cuối file; đây chỉ là giá trị tạm khi đang tải
   const USER = {
-    resident: { initials: 'HG', name: 'Hoàng Giang', meta: 'Khu dân cư Sunrise', cls: '' },
-    partner:  { initials: 'SC', name: 'Sunrise Coffee & Tea', meta: 'Đối tác · Khu dân cư Sunrise', cls: 'orange' },
-    admin:    { initials: 'AD', name: 'Admin BQL', meta: 'Ban quản lý', cls: '' },
+    resident: { initials: '', name: 'Đang tải…', meta: '', cls: '' },
+    partner:  { initials: '', name: 'Đang tải…', meta: 'Đối tác', cls: 'orange' },
+    admin:    { initials: '', name: 'Đang tải…', meta: 'Ban quản lý', cls: '' },
   };
 
   const role = document.body.dataset.role || 'public';
@@ -85,7 +87,7 @@
           <li><a class="dropdown-item" href="${ROOT}pages/common/profile.html?role=${role}"><i class="bi bi-person-gear me-2"></i>Tài khoản & mật khẩu</a></li>
           ${role !== 'resident' ? `<li><a class="dropdown-item" href="${ROOT}pages/common/notifications.html?role=${role}"><i class="bi bi-bell me-2"></i>Thông báo</a></li>` : ''}
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item text-danger" href="${ROOT}login.html"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+          <li><a class="dropdown-item text-danger" data-dang-xuat href="${ROOT}login.html"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
         </ul>
       </div>`;
   }
@@ -152,4 +154,34 @@
 
   // Nạp hiệu ứng nhẹ dùng chung (js/effects.js)
   const fx = document.createElement('script'); fx.src = ROOT + 'js/effects.js'; document.body.appendChild(fx);
+  // ---- Nạp tên người dùng thật từ Supabase và xử lý Đăng xuất ----
+  const nap = () => import(new URL('supabase-config.js', SELF).href);
+
+  if (!isAuth && role !== 'public') {
+    nap().then(async ({ supabase }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: hs } = await supabase.from('nguoi_dung')
+        .select('ho_ten, khu_dan_cu_id').eq('user_id', user.id).single();
+      if (!hs) return;
+      const box = document.querySelector('.cdd-user');
+      if (!box) return;
+      const ten = hs.ho_ten || '';
+      box.querySelector('.name').textContent = ten;
+      box.querySelector('.cdd-avatar').textContent =
+        ten.split(' ').slice(-2).map(x => x[0] || '').join('').toUpperCase();
+      if (role === 'resident' && hs.khu_dan_cu_id) {
+        const { data: kv } = await supabase.from('khu_dan_cu')
+          .select('ten_khu').eq('khu_dan_cu_id', hs.khu_dan_cu_id).single();
+        if (kv) box.querySelector('.meta').textContent = kv.ten_khu;
+      }
+    }).catch(() => {});
+  }
+
+  document.querySelectorAll('[data-dang-xuat]').forEach(a =>
+    a.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { const { supabase } = await nap(); await supabase.auth.signOut(); } catch (_) {}
+      location.href = a.href;
+    }));
 })();
